@@ -4,7 +4,7 @@ import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 import { usernameToEmail } from '@/lib/operator-login'
 
-const QUEUE_SELECT = '*, request_types(name, allows_quantity, request_categories(name))'
+const QUEUE_SELECT = '*, request_types(name, allows_quantity, request_categories(name)), accepted_by_staff:staff_profiles!accepted_by(name)'
 
 export async function fetchMyProfile(): Promise<StaffProfile | null> {
   const {
@@ -34,7 +34,7 @@ export async function signOut() {
 }
 
 export async function fetchQueue(): Promise<QueuedRequest[]> {
-  const { data, error } = await supabase.from('guest_requests').select(QUEUE_SELECT).order('created_at')
+  const { data, error } = await supabase.from('guest_requests').select(QUEUE_SELECT).order('priority')
   if (error) throw error
   return (data ?? []) as unknown as QueuedRequest[]
 }
@@ -76,4 +76,15 @@ export async function cancelRequest(id: string) {
 export async function reassignRequest(id: string, department: Department) {
   const { error } = await supabase.from('guest_requests').update({ assigned_department: department }).eq('id', id)
   if (error) throw error
+}
+
+// Swaps two requests' priority so one moves ahead of the other in the
+// "in carico" column. Two sequential updates rather than one atomic
+// statement — a partial failure just leaves the order unchanged, which is
+// an acceptable failure mode for a manual reorder action.
+export async function swapPriority(a: { id: string; priority: number }, b: { id: string; priority: number }) {
+  const { error: e1 } = await supabase.from('guest_requests').update({ priority: b.priority }).eq('id', a.id)
+  if (e1) throw e1
+  const { error: e2 } = await supabase.from('guest_requests').update({ priority: a.priority }).eq('id', b.id)
+  if (e2) throw e2
 }

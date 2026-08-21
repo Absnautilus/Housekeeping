@@ -3,6 +3,7 @@ import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/field'
+import { Avatar } from '@/components/avatar'
 import { DEPARTMENT_LABEL } from '@/lib/constants'
 import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
@@ -14,11 +15,17 @@ export function RequestRow({
   now,
   staffId,
   mode,
+  canReorder = false,
+  onMoveUp,
+  onMoveDown,
 }: {
   request: QueuedRequest
   now: Date
   staffId: string
   mode: 'active' | 'done'
+  canReorder?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +44,15 @@ export function RequestRow({
     }
   }
 
+  const elapsedLabel =
+    mode !== 'active'
+      ? request.status === 'completed'
+        ? `Evasa in ${formatElapsed(request.created_at, new Date(request.completed_at ?? request.created_at))}`
+        : 'Annullata'
+      : request.status === 'in_progress' && request.accepted_at
+        ? `In carico da ${formatElapsed(request.accepted_at, now)}`
+        : `In attesa da ${formatElapsed(request.created_at, now)}`
+
   return (
     <Card>
       <CardBody>
@@ -52,6 +68,7 @@ export function RequestRow({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {request.accepted_by_staff && <Avatar name={request.accepted_by_staff.name} />}
             <StatusBadge status={request.status} />
             <Badge>{DEPARTMENT_LABEL[request.assigned_department]}</Badge>
           </div>
@@ -60,13 +77,31 @@ export function RequestRow({
         {request.note && <p className="mt-2 rounded-md bg-slate-50 p-2 text-sm text-slate-600">{request.note}</p>}
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
-          <p className="text-xs text-slate-400">
-            {mode === 'active'
-              ? `In attesa da ${formatElapsed(request.created_at, now)}`
-              : request.status === 'completed'
-                ? `Evasa in ${formatElapsed(request.created_at, new Date(request.completed_at ?? request.created_at))}`
-                : 'Annullata'}
-          </p>
+          <div className="flex items-center gap-2">
+            {canReorder && mode === 'active' && request.status === 'in_progress' && (
+              <div className="flex flex-col">
+                <button
+                  type="button"
+                  disabled={!onMoveUp}
+                  onClick={onMoveUp}
+                  aria-label="Sposta su"
+                  className="cursor-pointer leading-none text-slate-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  disabled={!onMoveDown}
+                  onClick={onMoveDown}
+                  aria-label="Sposta giù"
+                  className="cursor-pointer leading-none text-slate-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  ▼
+                </button>
+              </div>
+            )}
+            <p className="text-xs text-slate-400">{elapsedLabel}</p>
+          </div>
 
           {mode === 'active' && (
             <div className="flex flex-wrap items-center gap-2">
