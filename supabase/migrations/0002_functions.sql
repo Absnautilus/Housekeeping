@@ -33,7 +33,7 @@ $$;
 -- ---------------------------------------------------------------------------
 create function guest_login(p_hotel_id uuid, p_room_number text, p_last_name text, p_ip inet default null)
 returns text
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_normalized text := normalize_guest_name(p_last_name);
   v_stay stays%rowtype;
@@ -85,7 +85,7 @@ $$;
 -- internal only — never granted to anon directly
 -- ---------------------------------------------------------------------------
 create function guest_stay_from_token(p_token text) returns stays
-language sql security definer stable set search_path = public as $$
+language sql security definer stable set search_path = public, extensions as $$
   select s.*
   from guest_sessions gs
   join stays s on s.id = gs.stay_id
@@ -102,7 +102,7 @@ $$;
 -- ---------------------------------------------------------------------------
 create function create_guest_request(p_token text, p_request_type_id uuid, p_quantity int default null, p_note text default null)
 returns guest_requests
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_stay stays%rowtype;
   v_request guest_requests%rowtype;

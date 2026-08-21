@@ -30,8 +30,11 @@ $$;
 -- column or index expression. Wrapping it IMMUTABLE is the standard,
 -- widely-used workaround (the default dictionary doesn't change at
 -- runtime in a way that would break this).
+-- search_path is pinned explicitly (Supabase installs pgcrypto/unaccent
+-- into `extensions`, not `public`) so this resolves regardless of the
+-- caller's own search_path.
 create function immutable_unaccent(text) returns text
-language sql immutable as $$
+language sql immutable set search_path = public, extensions as $$
   select unaccent('unaccent', $1);
 $$;
 
