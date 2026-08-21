@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { LOCALES } from '@/lib/i18n/locales'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { FlagIcon } from '@/components/flag-icon'
 import { cn } from '@/lib/cn'
 
 export function LanguageToggle() {
   const { locale, setLocale } = useLocale()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-  const current = LOCALES.find((l) => l.code === locale) ?? LOCALES[0]!
 
   useEffect(() => {
     if (!open) return
@@ -25,12 +25,12 @@ export function LanguageToggle() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Lingua"
         aria-expanded={open}
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-lg shadow-sm hover:border-purple-300"
+        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-slate-200 shadow-sm hover:border-purple-300"
       >
-        <span aria-hidden>{current.flag}</span>
+        <FlagIcon code={locale} className="h-7 w-7" />
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-2 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 z-10 mt-2 flex gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 shadow-lg">
           {LOCALES.map((l) => (
             <button
               key={l.code}
@@ -39,13 +39,14 @@ export function LanguageToggle() {
                 setLocale(l.code)
                 setOpen(false)
               }}
+              aria-label={l.label}
+              title={l.label}
               className={cn(
-                'flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-slate-50',
-                l.code === locale ? 'font-semibold text-purple-700' : 'text-slate-700',
+                'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
+                l.code === locale && 'ring-2 ring-purple-500',
               )}
             >
-              <span aria-hidden>{l.flag}</span>
-              {l.label}
+              <FlagIcon code={l.code} className="h-7 w-7" />
             </button>
           ))}
         </div>
