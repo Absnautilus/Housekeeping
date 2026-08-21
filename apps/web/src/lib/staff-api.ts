@@ -7,7 +7,14 @@ import { usernameToEmail } from '@/lib/operator-login'
 const QUEUE_SELECT = '*, request_types(name, allows_quantity, request_categories(name))'
 
 export async function fetchMyProfile(): Promise<StaffProfile | null> {
-  const { data, error } = await supabase.from('staff_profiles').select('*').maybeSingle()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+  // RLS lets a master see every staff row at every hotel, and any staff
+  // member sees the rest of their own hotel's team — so this can never rely
+  // on "RLS happens to return one row" once there's more than one account.
+  const { data, error } = await supabase.from('staff_profiles').select('*').eq('auth_user_id', user.id).maybeSingle()
   if (error) throw error
   return data
 }
