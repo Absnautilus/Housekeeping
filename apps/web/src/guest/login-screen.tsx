@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { PublicHeader } from '@/components/public-header'
 import { Button } from '@/components/ui/button'
@@ -75,6 +76,9 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
             </form>
           </CardBody>
         </Card>
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Fai parte dello staff? <Link to="/staff" className="underline hover:text-slate-600">Accedi qui</Link>
+        </p>
       </div>
     </div>
   )
