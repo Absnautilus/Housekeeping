@@ -5,7 +5,7 @@ export type Department = 'reception' | 'housekeeping' | 'maintenance' | 'porter'
 // master isn't scoped to one hotel: it creates hotel admins, an admin
 // creates operatori for its own hotel only.
 export type StaffRole = 'master' | 'admin' | 'operatore'
-export type StaffDepartment = Extract<Department, 'housekeeping' | 'reception'>
+export type StaffDepartment = Extract<Department, 'housekeeping' | 'reception' | 'maintenance'>
 
 export interface RequestCategory {
   id: string

@@ -6,6 +6,7 @@ import { useToasts } from '@/hooks/use-toasts'
 import { useRequestAlerts } from '@/hooks/use-request-alerts'
 import { playAlertSound } from '@/lib/beep'
 import { RequestRow } from '@/staff/request-row'
+import { NewRequestForm } from '@/staff/new-request-form'
 import { DEPARTMENT_LABEL } from '@/lib/constants'
 import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
@@ -15,6 +16,7 @@ type DepartmentFilter = 'all' | Department
 
 export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const [queue, setQueue] = useState<QueuedRequest[] | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('active')
   const [department, setDepartment] = useState<DepartmentFilter>('all')
   const [now, setNow] = useState(() => new Date())
@@ -24,19 +26,24 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const canReorder = profile.role === 'admin' || profile.role === 'master' || (profile.role === 'operatore' && profile.department === 'reception')
 
   const reload = useCallback(async () => {
-    const data = await fetchQueue()
-    setQueue(data)
+    try {
+      const data = await fetchQueue()
+      setLoadError(null)
+      setQueue(data)
 
-    if (knownIds.current === null) {
-      knownIds.current = new Set(data.map((r) => r.id))
-      return
-    }
-    for (const request of data) {
-      if (!knownIds.current.has(request.id)) {
-        knownIds.current.add(request.id)
-        push(`Nuova richiesta — Camera ${request.room_number}: ${request.request_types?.name ?? 'richiesta'}`, 'info')
-        playAlertSound()
+      if (knownIds.current === null) {
+        knownIds.current = new Set(data.map((r) => r.id))
+        return
       }
+      for (const request of data) {
+        if (!knownIds.current.has(request.id)) {
+          knownIds.current.add(request.id)
+          push(`Nuova richiesta — Camera ${request.room_number}: ${request.request_types?.name ?? 'richiesta'}`, 'info')
+          playAlertSound()
+        }
+      }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : String(err))
     }
   }, [push])
 
@@ -84,6 +91,10 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         <DepartmentFilterBar value={department} onChange={setDepartment} />
       </div>
 
+      <div className="mb-5">
+        <NewRequestForm staffId={profile.id} onCreated={reload} />
+      </div>
+
       <div className="mb-5 flex gap-1 rounded-md bg-slate-100 p-1 sm:w-fit">
         <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
           Richieste attive ({active.length})
@@ -93,7 +104,11 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         </TabButton>
       </div>
 
-      {queue === null ? (
+      {loadError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Non riusciamo a caricare le richieste: {loadError}
+        </div>
+      ) : queue === null ? (
         <p className="text-sm text-slate-500">Caricamento…</p>
       ) : tab === 'active' ? (
         active.length === 0 ? (
@@ -102,10 +117,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <h2 className="mb-2 text-sm font-semibold text-slate-500">Nuove ({pending.length})</h2>
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-800">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                Nuove ({pending.length})
+              </h2>
               {pending.length === 0 ? (
-                <p className="text-sm text-slate-400">Nessuna richiesta da prendere in carico.</p>
+                <p className="px-1 text-sm text-amber-700/60">Nessuna richiesta da prendere in carico.</p>
               ) : (
                 <div className="space-y-3">
                   {pending.map((request) => (
@@ -114,10 +132,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
                 </div>
               )}
             </div>
-            <div>
-              <h2 className="mb-2 text-sm font-semibold text-slate-500">Prese in carico ({inProgress.length})</h2>
+            <div className="rounded-xl border border-purple-200 bg-purple-50/60 p-3">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-800">
+                <span className="h-2 w-2 rounded-full bg-purple-500" />
+                Prese in carico ({inProgress.length})
+              </h2>
               {inProgress.length === 0 ? (
-                <p className="text-sm text-slate-400">Nessuna richiesta al momento in carico.</p>
+                <p className="px-1 text-sm text-purple-700/60">Nessuna richiesta al momento in carico.</p>
               ) : (
                 <div className="space-y-3">
                   {inProgress.map((request, i) => (

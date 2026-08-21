@@ -78,6 +78,18 @@ export async function reassignRequest(id: string, department: Department) {
   if (error) throw error
 }
 
+// Staff-reported issue, not tied to a guest — hotel_id and assigned_department
+// are filled in by DB triggers (see 0009_maintenance_and_staff_requests.sql)
+export async function createStaffRequest(input: { roomNumber: string; requestTypeId: string; note: string | null; staffId: string }) {
+  const { error } = await supabase.from('guest_requests').insert({
+    room_number: input.roomNumber,
+    request_type_id: input.requestTypeId,
+    note: input.note,
+    created_by_staff: input.staffId,
+  })
+  if (error) throw error
+}
+
 // Swaps two requests' priority so one moves ahead of the other in the
 // "in carico" column. Two sequential updates rather than one atomic
 // statement — a partial failure just leaves the order unchanged, which is

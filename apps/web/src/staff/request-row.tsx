@@ -123,7 +123,7 @@ export function RequestRow({
                 </Button>
               )}
               {request.status === 'in_progress' && (
-                <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
+                <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
                   Completa
                 </Button>
               )}

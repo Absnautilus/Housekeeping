@@ -26,6 +26,7 @@ function describeCreateAccountError(err: unknown): string {
 const DEPARTMENT_LABEL: Record<StaffDepartment, string> = {
   housekeeping: 'Housekeeping',
   reception: 'Reception',
+  maintenance: 'Maintenance',
 }
 
 const ROLE_LABEL: Record<StaffRole, string> = {
@@ -221,6 +222,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
                 <Select id="department" value={department} onChange={(e) => setDepartment(e.target.value as StaffDepartment)}>
                   <option value="housekeeping">Housekeeping</option>
                   <option value="reception">Reception</option>
+                  <option value="maintenance">Maintenance</option>
                 </Select>
               </FieldGroup>
             )}

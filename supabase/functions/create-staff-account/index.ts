@@ -83,7 +83,7 @@ Deno.serve(async (req: Request) => {
       department = String(body.department ?? '')
       const pin = String(body.pin ?? '')
       loginUsername = normalizeUsername(String(body.username ?? ''))
-      if (!['housekeeping', 'reception'].includes(department) || !loginUsername || !/^\d{6}$/.test(pin)) {
+      if (!['housekeeping', 'reception', 'maintenance'].includes(department) || !loginUsername || !/^\d{6}$/.test(pin)) {
         return json({ error: 'invalid_input' }, 400)
       }
       email = `${loginUsername}@${OPERATOR_EMAIL_DOMAIN}`

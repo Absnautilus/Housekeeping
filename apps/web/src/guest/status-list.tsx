@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Card, CardBody } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/badge'
-import { cancelMyRequest, isInvalidSessionError, listMyRequests } from '@/lib/guest-api'
+import { AutoText } from '@/components/auto-text'
+import { cancelMyRequest, fetchMenu, isInvalidSessionError, listMyRequests } from '@/lib/guest-api'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { GuestRequest, RequestStatus } from '@/lib/types'
 
@@ -18,7 +19,16 @@ export function StatusList({
 }) {
   const { t } = useLocale()
   const [requests, setRequests] = useState<GuestRequest[] | null>(null)
+  const [typeNames, setTypeNames] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchMenu()
+      .then(({ types }) => setTypeNames(Object.fromEntries(types.map((rt) => [rt.id, rt.name]))))
+      .catch(() => {
+        // the request cards still work without the item name, just less useful
+      })
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -55,6 +65,7 @@ export function StatusList({
         <RequestCard
           key={request.id}
           request={request}
+          typeName={typeNames[request.request_type_id]}
           onCancel={async () => {
             try {
               const updated = await cancelMyRequest(token, request.id)
@@ -76,7 +87,7 @@ const STATUS_LABEL_KEY: Record<RequestStatus, `statusLabel.${RequestStatus}`> = 
   cancelled: 'statusLabel.cancelled',
 }
 
-function RequestCard({ request, onCancel }: { request: GuestRequest; onCancel: () => void }) {
+function RequestCard({ request, typeName, onCancel }: { request: GuestRequest; typeName: string | undefined; onCancel: () => void }) {
   const { t } = useLocale()
   const time = new Date(request.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
   return (
@@ -85,8 +96,9 @@ function RequestCard({ request, onCancel }: { request: GuestRequest; onCancel: (
         <div>
           <p className="text-sm font-medium text-slate-900">
             {request.quantity ? `${request.quantity} × ` : ''}
-            {t('status.requestAt', { time })}
+            {typeName ? <AutoText text={typeName} /> : t('status.requestAt', { time })}
           </p>
+          <p className="mt-0.5 text-xs text-slate-400">{t('status.requestAt', { time })}</p>
           {request.note && <p className="mt-0.5 text-xs text-slate-500">{request.note}</p>}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
