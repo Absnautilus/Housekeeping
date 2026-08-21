@@ -2,26 +2,38 @@ import { useEffect, useState } from 'react'
 import { PublicHeader } from '@/components/public-header'
 import { cn } from '@/lib/cn'
 import { clearGuestToken, getGuestToken, setGuestToken } from '@/lib/guest-token'
-import { isInvalidSessionError, listMyRequests } from '@/lib/guest-api'
+import { getStayInfo, isInvalidSessionError, listMyRequests, type StayInfo } from '@/lib/guest-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import { LoginScreen } from '@/guest/login-screen'
 import { RequestFlow } from '@/guest/request-flow'
 import { StatusList } from '@/guest/status-list'
+import { Greeting } from '@/guest/greeting'
 
 type Tab = 'new' | 'status'
 
 export function GuestApp() {
+  const { t } = useLocale()
   const [token, setToken] = useState<string | null>(() => getGuestToken())
   // a token surviving in localStorage doesn't mean the stay is still valid
   // (checked out, cancelled, expired) — confirm before showing anything,
   // rather than waiting for the first write to fail
   const [checked, setChecked] = useState(false)
+  const [stay, setStay] = useState<StayInfo | null>(null)
   const [tab, setTab] = useState<Tab>('new')
   const [refreshKey, setRefreshKey] = useState(0)
 
   function onSessionExpired() {
     clearGuestToken()
     setToken(null)
+    setStay(null)
     setChecked(true)
+  }
+
+  function onLogout() {
+    clearGuestToken()
+    setToken(null)
+    setStay(null)
+    setTab('new')
   }
 
   useEffect(() => {
@@ -32,7 +44,11 @@ export function GuestApp() {
     let cancelled = false
     listMyRequests(token)
       .then(() => {
-        if (!cancelled) setChecked(true)
+        if (cancelled) return
+        setChecked(true)
+        getStayInfo(token).then((info) => {
+          if (!cancelled) setStay(info)
+        })
       })
       .catch((err) => {
         if (cancelled) return
@@ -66,14 +82,16 @@ export function GuestApp() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
-      <PublicHeader />
+      <PublicHeader onLogout={onLogout} />
       <div className="mx-auto max-w-xl px-4 pt-4">
+        {stay && <Greeting stay={stay} />}
+
         <div className="mb-5 flex gap-1 rounded-md bg-slate-100 p-1">
           <TabButton active={tab === 'new'} onClick={() => setTab('new')}>
-            Nuova richiesta
+            {t('tabs.new')}
           </TabButton>
           <TabButton active={tab === 'status'} onClick={() => setTab('status')}>
-            Le mie richieste
+            {t('tabs.status')}
           </TabButton>
         </div>
 
@@ -100,7 +118,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       className={cn(
-        'flex-1 rounded px-3 py-1.5 text-sm font-medium transition-colors',
+        'flex-1 cursor-pointer rounded px-3 py-1.5 text-sm font-medium transition-colors',
         active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
       )}
     >

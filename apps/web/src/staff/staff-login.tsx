@@ -120,7 +120,7 @@ function ModeButton({ active, onClick, children }: { active: boolean; onClick: (
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+        'cursor-pointer rounded px-2.5 py-1 text-xs font-medium transition-colors',
         active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
       )}
     >

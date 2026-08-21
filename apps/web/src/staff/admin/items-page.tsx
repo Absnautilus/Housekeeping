@@ -69,7 +69,7 @@ export function ItemsPage() {
                         <td className="px-4 py-2 text-right">
                           <button
                             type="button"
-                            className="text-xs text-slate-400 hover:text-slate-700"
+                            className="cursor-pointer text-xs text-slate-400 hover:text-slate-700"
                             onClick={() => setRequestTypeActive(item.id, !item.active).then(reload)}
                           >
                             {item.active ? 'Disattiva' : 'Riattiva'}

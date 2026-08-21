@@ -30,7 +30,7 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={cn(controlClass, props.className)} />
+  return <select {...props} className={cn(controlClass, 'cursor-pointer', props.className)} />
 }
 
 export function FieldError({ children }: { children?: string }) {

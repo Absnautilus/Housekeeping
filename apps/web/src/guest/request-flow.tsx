@@ -3,7 +3,9 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Label, Textarea } from '@/components/ui/field'
 import { CategoryIcon } from '@/components/category-icon'
+import { AutoText } from '@/components/auto-text'
 import { createGuestRequest, fetchMenu, isInvalidSessionError } from '@/lib/guest-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { GuestRequest, RequestCategory, RequestType } from '@/lib/types'
 
 type Step =
@@ -21,6 +23,7 @@ export function RequestFlow({
   onSessionExpired: () => void
   onCreated: (request: GuestRequest) => void
 }) {
+  const { t } = useLocale()
   const [menu, setMenu] = useState<{ categories: RequestCategory[]; types: RequestType[] } | null>(null)
   const [menuError, setMenuError] = useState<string | null>(null)
   const [step, setStep] = useState<Step>({ name: 'categories' })
@@ -28,7 +31,8 @@ export function RequestFlow({
   useEffect(() => {
     fetchMenu()
       .then(setMenu)
-      .catch(() => setMenuError('Non riusciamo a caricare le richieste disponibili. Riprova tra poco.'))
+      .catch(() => setMenuError(t('flow.menuLoadError')))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (menuError) {
@@ -36,7 +40,7 @@ export function RequestFlow({
   }
 
   if (!menu) {
-    return <p className="text-center text-sm text-slate-500">Caricamento…</p>
+    return <p className="text-center text-sm text-slate-500">{t('flow.loading')}</p>
   }
 
   if (step.name === 'categories') {
@@ -49,7 +53,7 @@ export function RequestFlow({
   }
 
   if (step.name === 'types') {
-    const types = menu.types.filter((t) => t.category_id === step.category.id)
+    const types = menu.types.filter((rt) => rt.category_id === step.category.id)
     return (
       <TypesList
         category={step.category}
@@ -105,10 +109,12 @@ function CategoriesGrid({
           key={category.id}
           type="button"
           onClick={() => onSelect(category)}
-          className="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white p-5 text-center shadow-sm transition-colors hover:border-purple-300 hover:bg-purple-50"
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white p-5 text-center shadow-sm transition-colors hover:border-purple-300 hover:bg-purple-50"
         >
           <CategoryIcon icon={category.icon} className="h-7 w-7 text-purple-600" />
-          <span className="text-sm font-medium text-slate-800">{category.name}</span>
+          <span className="text-sm font-medium text-slate-800">
+            <AutoText text={category.name} />
+          </span>
         </button>
       ))}
     </div>
@@ -126,25 +132,34 @@ function TypesList({
   onBack: () => void
   onSelect: (type: RequestType) => void
 }) {
+  const { t } = useLocale()
   return (
     <Card>
       <CardHeader className="flex items-center gap-2">
-        <button type="button" onClick={onBack} className="text-slate-400 hover:text-slate-700" aria-label="Indietro">
+        <button type="button" onClick={onBack} className="cursor-pointer text-slate-400 hover:text-slate-700" aria-label={t('flow.back')}>
           ←
         </button>
-        <h2 className="text-sm font-semibold text-slate-700">{category.name}</h2>
+        <h2 className="text-sm font-semibold text-slate-700">
+          <AutoText text={category.name} />
+        </h2>
       </CardHeader>
       <CardBody className="space-y-2">
-        {types.length === 0 && <p className="text-sm text-slate-500">Nessuna richiesta disponibile in questa categoria.</p>}
+        {types.length === 0 && <p className="text-sm text-slate-500">{t('flow.noItems')}</p>}
         {types.map((type) => (
           <button
             key={type.id}
             type="button"
             onClick={() => onSelect(type)}
-            className="block w-full rounded-md border border-slate-200 p-3 text-left text-sm hover:border-purple-300 hover:bg-purple-50"
+            className="block w-full cursor-pointer rounded-md border border-slate-200 p-3 text-left text-sm hover:border-purple-300 hover:bg-purple-50"
           >
-            <span className="font-medium text-slate-900">{type.name}</span>
-            {type.description && <p className="mt-0.5 text-xs text-slate-500">{type.description}</p>}
+            <span className="font-medium text-slate-900">
+              <AutoText text={type.name} />
+            </span>
+            {type.description && (
+              <p className="mt-0.5 text-xs text-slate-500">
+                <AutoText text={type.description} />
+              </p>
+            )}
           </button>
         ))}
       </CardBody>
@@ -161,6 +176,7 @@ function ComposeForm({
   onBack: () => void
   onSubmit: (quantity: number | null, note: string | null) => Promise<void>
 }) {
+  const { t } = useLocale()
   const [quantity, setQuantity] = useState(1)
   const [note, setNote] = useState('')
   const [pending, setPending] = useState(false)
@@ -172,7 +188,7 @@ function ComposeForm({
     try {
       await onSubmit(type.allows_quantity ? quantity : null, note.trim() || null)
     } catch {
-      setError('Non siamo riusciti a inviare la richiesta. Riprova.')
+      setError(t('flow.submitError'))
     } finally {
       setPending(false)
     }
@@ -181,15 +197,17 @@ function ComposeForm({
   return (
     <Card>
       <CardHeader className="flex items-center gap-2">
-        <button type="button" onClick={onBack} className="text-slate-400 hover:text-slate-700" aria-label="Indietro">
+        <button type="button" onClick={onBack} className="cursor-pointer text-slate-400 hover:text-slate-700" aria-label={t('flow.back')}>
           ←
         </button>
-        <h2 className="text-sm font-semibold text-slate-700">{type.name}</h2>
+        <h2 className="text-sm font-semibold text-slate-700">
+          <AutoText text={type.name} />
+        </h2>
       </CardHeader>
       <CardBody>
         {type.allows_quantity && (
           <FieldGroup>
-            <Label>Quantità</Label>
+            <Label>{t('flow.quantity')}</Label>
             <div className="flex items-center gap-3">
               <Button
                 type="button"
@@ -208,12 +226,12 @@ function ComposeForm({
           </FieldGroup>
         )}
         <FieldGroup>
-          <Label htmlFor="note">Note (facoltative)</Label>
-          <Textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Aggiungi un dettaglio per lo staff…" />
+          <Label htmlFor="note">{t('flow.notes')}</Label>
+          <Textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('flow.notesPlaceholder')} />
         </FieldGroup>
         <FieldError>{error ?? undefined}</FieldError>
         <Button type="button" disabled={pending} onClick={onConfirm} className="mt-2 w-full">
-          {pending ? 'Invio in corso…' : 'Invia richiesta'}
+          {pending ? t('flow.sendPending') : t('flow.send')}
         </Button>
       </CardBody>
     </Card>
@@ -229,19 +247,20 @@ function ConfirmPanel({
   request: GuestRequest
   onNewRequest: () => void
 }) {
+  const { t } = useLocale()
   const time = useMemo(
     () => new Date(request.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
     [request.created_at],
   )
   return (
     <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center">
-      <p className="text-lg font-semibold text-emerald-800">Richiesta inviata alla Reception</p>
+      <p className="text-lg font-semibold text-emerald-800">{t('flow.confirmTitle')}</p>
       <p className="mt-2 text-sm text-emerald-700">
-        {type.name}
-        {request.quantity ? ` · ${request.quantity}` : ''} — ore {time}
+        <AutoText text={type.name} />
+        {request.quantity ? ` · ${request.quantity}` : ''} — {t('flow.confirmAt', { time })}
       </p>
       <Button variant="outline" className="mt-4 bg-white" onClick={onNewRequest}>
-        Nuova richiesta
+        {t('tabs.new')}
       </Button>
     </div>
   )

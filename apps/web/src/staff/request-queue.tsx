@@ -108,7 +108,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       className={cn(
-        'flex-1 whitespace-nowrap rounded px-3 py-1.5 text-sm font-medium transition-colors sm:flex-none',
+        'flex-1 cursor-pointer whitespace-nowrap rounded px-3 py-1.5 text-sm font-medium transition-colors sm:flex-none',
         active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
       )}
     >

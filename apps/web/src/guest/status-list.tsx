@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Card, CardBody } from '@/components/ui/card'
 import { StatusBadge } from '@/components/ui/badge'
 import { cancelMyRequest, isInvalidSessionError, listMyRequests } from '@/lib/guest-api'
-import type { GuestRequest } from '@/lib/types'
+import { useLocale } from '@/lib/i18n/locale-context'
+import type { GuestRequest, RequestStatus } from '@/lib/types'
 
 const POLL_INTERVAL_MS = 12_000
 
@@ -15,6 +16,7 @@ export function StatusList({
   refreshKey: number
   onSessionExpired: () => void
 }) {
+  const { t } = useLocale()
   const [requests, setRequests] = useState<GuestRequest[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,7 +32,7 @@ export function StatusList({
           onSessionExpired()
           return
         }
-        if (!cancelled) setError('Non riusciamo ad aggiornare le tue richieste.')
+        if (!cancelled) setError(t('status.refreshError'))
       }
     }
 
@@ -40,11 +42,12 @@ export function StatusList({
       cancelled = true
       clearInterval(interval)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, refreshKey, onSessionExpired])
 
   if (error) return <p className="text-center text-sm text-red-600">{error}</p>
-  if (!requests) return <p className="text-center text-sm text-slate-500">Caricamento…</p>
-  if (requests.length === 0) return <p className="text-center text-sm text-slate-500">Non hai ancora inviato richieste.</p>
+  if (!requests) return <p className="text-center text-sm text-slate-500">{t('flow.loading')}</p>
+  if (requests.length === 0) return <p className="text-center text-sm text-slate-500">{t('status.empty')}</p>
 
   return (
     <div className="space-y-3">
@@ -66,7 +69,15 @@ export function StatusList({
   )
 }
 
+const STATUS_LABEL_KEY: Record<RequestStatus, `statusLabel.${RequestStatus}`> = {
+  requested: 'statusLabel.requested',
+  in_progress: 'statusLabel.in_progress',
+  completed: 'statusLabel.completed',
+  cancelled: 'statusLabel.cancelled',
+}
+
 function RequestCard({ request, onCancel }: { request: GuestRequest; onCancel: () => void }) {
+  const { t } = useLocale()
   const time = new Date(request.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
   return (
     <Card>
@@ -74,15 +85,15 @@ function RequestCard({ request, onCancel }: { request: GuestRequest; onCancel: (
         <div>
           <p className="text-sm font-medium text-slate-900">
             {request.quantity ? `${request.quantity} × ` : ''}
-            Richiesta delle {time}
+            {t('status.requestAt', { time })}
           </p>
           {request.note && <p className="mt-0.5 text-xs text-slate-500">{request.note}</p>}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <StatusBadge status={request.status} />
+          <StatusBadge status={request.status} label={t(STATUS_LABEL_KEY[request.status])} />
           {request.status === 'requested' && (
-            <button type="button" onClick={onCancel} className="text-xs text-slate-400 hover:text-red-600">
-              Annulla
+            <button type="button" onClick={onCancel} className="cursor-pointer text-xs text-slate-400 hover:text-red-600">
+              {t('status.cancel')}
             </button>
           )}
         </div>

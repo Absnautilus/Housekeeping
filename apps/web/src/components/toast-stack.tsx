@@ -15,7 +15,7 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
           )}
         >
           <span className="flex-1">{toast.message}</span>
-          <button type="button" onClick={() => onDismiss(toast.id)} className="text-xs text-slate-400 hover:text-slate-700">
+          <button type="button" onClick={() => onDismiss(toast.id)} className="cursor-pointer text-xs text-slate-400 hover:text-slate-700">
             ✕
           </button>
         </div>

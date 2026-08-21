@@ -93,7 +93,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
                     {canToggle && (
                       <button
                         type="button"
-                        className="text-xs text-slate-400 hover:text-slate-700"
+                        className="cursor-pointer text-xs text-slate-400 hover:text-slate-700"
                         onClick={() => setStaffActive(person.id, !person.active).then(reload)}
                       >
                         {person.active ? 'Disattiva' : 'Riattiva'}

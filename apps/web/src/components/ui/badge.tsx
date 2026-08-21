@@ -9,12 +9,12 @@ const colors: Record<RequestStatus, string> = {
   cancelled: 'bg-slate-200 text-slate-600',
 }
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, label }: { status: string; label?: string }) {
   const key = (status in colors ? status : REQUEST_STATUS.REQUESTED) as RequestStatus
   return (
     <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', colors[key])}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {REQUEST_STATUS_LABEL[key]}
+      {label ?? REQUEST_STATUS_LABEL[key]}
     </span>
   )
 }
