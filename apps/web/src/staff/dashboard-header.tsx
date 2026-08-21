@@ -11,7 +11,9 @@ const DEPARTMENT_LABEL: Record<string, string> = {
 
 export function DashboardHeader({ profile }: { profile: StaffProfile }) {
   const location = useLocation()
-  const roleLabel = profile.role === 'admin' ? 'Admin' : DEPARTMENT_LABEL[profile.department ?? ''] ?? 'Operatore'
+  const roleLabel =
+    profile.role === 'master' ? 'Master' : profile.role === 'admin' ? 'Admin' : DEPARTMENT_LABEL[profile.department ?? ''] ?? 'Operatore'
+  const isAdminLike = profile.role === 'admin' || profile.role === 'master'
 
   return (
     <header className="border-b border-slate-200 bg-white">
@@ -25,12 +27,10 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
         </div>
         <nav className="flex gap-1">
           <NavLink to="/staff" label="Richieste" active={location.pathname === '/staff'} />
-          {(profile.role === 'admin' || profile.department === 'reception') && (
+          {(isAdminLike || profile.department === 'reception') && (
             <NavLink to="/staff/soggiorni" label="Soggiorni" active={location.pathname.startsWith('/staff/soggiorni')} />
           )}
-          {profile.role === 'admin' && (
-            <NavLink to="/staff/admin" label="Gestione" active={location.pathname.startsWith('/staff/admin')} />
-          )}
+          {isAdminLike && <NavLink to="/staff/admin" label="Gestione" active={location.pathname.startsWith('/staff/admin')} />}
         </nav>
         <button type="button" onClick={() => void signOut()} className="cursor-pointer text-sm font-medium text-slate-500 hover:text-slate-900">
           Esci

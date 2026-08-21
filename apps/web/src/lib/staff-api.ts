@@ -2,6 +2,7 @@ import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
+import { usernameToEmail } from '@/lib/operator-login'
 
 const QUEUE_SELECT = '*, request_types(name, allows_quantity, request_categories(name))'
 
@@ -13,6 +14,11 @@ export async function fetchMyProfile(): Promise<StaffProfile | null> {
 
 export async function signIn(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+}
+
+export async function signInOperator(username: string, pin: string) {
+  const { error } = await supabase.auth.signInWithPassword({ email: usernameToEmail(username), password: pin })
   if (error) throw error
 }
 

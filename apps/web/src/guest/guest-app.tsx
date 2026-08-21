@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PublicHeader } from '@/components/public-header'
 import { cn } from '@/lib/cn'
 import { clearGuestToken, getGuestToken, setGuestToken } from '@/lib/guest-token'
+import { isInvalidSessionError, listMyRequests } from '@/lib/guest-api'
 import { LoginScreen } from '@/guest/login-screen'
 import { RequestFlow } from '@/guest/request-flow'
 import { StatusList } from '@/guest/status-list'
@@ -10,13 +11,46 @@ type Tab = 'new' | 'status'
 
 export function GuestApp() {
   const [token, setToken] = useState<string | null>(() => getGuestToken())
+  // a token surviving in localStorage doesn't mean the stay is still valid
+  // (checked out, cancelled, expired) — confirm before showing anything,
+  // rather than waiting for the first write to fail
+  const [checked, setChecked] = useState(false)
   const [tab, setTab] = useState<Tab>('new')
   const [refreshKey, setRefreshKey] = useState(0)
 
   function onSessionExpired() {
     clearGuestToken()
     setToken(null)
+    setChecked(true)
   }
+
+  useEffect(() => {
+    if (!token) {
+      setChecked(true)
+      return
+    }
+    let cancelled = false
+    listMyRequests(token)
+      .then(() => {
+        if (!cancelled) setChecked(true)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        if (isInvalidSessionError(err)) {
+          onSessionExpired()
+        } else {
+          // a transient/network error shouldn't log the guest out — let them in,
+          // individual actions will surface their own errors if it's really down
+          setChecked(true)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+
+  if (!checked) return null
 
   if (!token) {
     return (
@@ -24,6 +58,7 @@ export function GuestApp() {
         onSuccess={(newToken) => {
           setGuestToken(newToken)
           setToken(newToken)
+          setChecked(true)
         }}
       />
     )

@@ -54,16 +54,16 @@ export function StaffApp() {
     )
   }
 
+  const isAdminLike = profile.role === 'admin' || profile.role === 'master'
+
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader profile={profile} />
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <Routes>
           <Route path="/" element={<RequestQueue profile={profile} />} />
-          {(profile.role === 'admin' || profile.department === 'reception') && (
-            <Route path="/soggiorni" element={<StaysPage />} />
-          )}
-          {profile.role === 'admin' && <Route path="/admin/*" element={<AdminHome />} />}
+          {(isAdminLike || profile.department === 'reception') && <Route path="/soggiorni" element={<StaysPage />} />}
+          {isAdminLike && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
         </Routes>
       </main>
     </div>

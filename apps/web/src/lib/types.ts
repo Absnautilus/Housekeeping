@@ -2,7 +2,9 @@ export type RequestStatus = 'requested' | 'in_progress' | 'completed' | 'cancell
 export type Department = 'reception' | 'housekeeping' | 'maintenance' | 'porter'
 // An operatore's own department is only ever 'housekeeping' or 'reception'
 // (the other two Department values exist for request_categories only).
-export type StaffRole = 'admin' | 'operatore'
+// master isn't scoped to one hotel: it creates hotel admins, an admin
+// creates operatori for its own hotel only.
+export type StaffRole = 'master' | 'admin' | 'operatore'
 export type StaffDepartment = Extract<Department, 'housekeeping' | 'reception'>
 
 export interface RequestCategory {
@@ -21,6 +23,8 @@ export interface RequestType {
   name: string
   description: string | null
   allows_quantity: boolean
+  // how many the hotel actually has on hand; null = not tracked
+  available_quantity: number | null
   active: boolean
   sort_order: number
 }
