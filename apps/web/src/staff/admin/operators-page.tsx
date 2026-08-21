@@ -15,6 +15,14 @@ import { isValidPin } from '@/lib/operator-login'
 import type { StaffDepartment, StaffRole } from '@/lib/types'
 import type { StaffProfile } from '@/lib/staff-types'
 
+function describeCreateAccountError(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err)
+  if (/non-2xx|failed to send a request|not found/i.test(message)) {
+    return "La funzione che crea gli account non risulta pubblicata su Supabase (Edge Functions → create-staff-account)."
+  }
+  return `Impossibile creare l'account: ${message}`
+}
+
 const DEPARTMENT_LABEL: Record<StaffDepartment, string> = {
   housekeeping: 'Housekeeping',
   reception: 'Reception',
@@ -156,15 +164,11 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
       setEmail('')
       setPassword('')
       await onCreated()
-    } catch {
-      setError(effectiveRoleErrorMessage(effectiveRole))
+    } catch (err) {
+      setError(describeCreateAccountError(err))
     } finally {
       setPending(false)
     }
-  }
-
-  function effectiveRoleErrorMessage(r: 'admin' | 'operatore') {
-    return r === 'admin' ? "Impossibile creare l'account (email già in uso?)." : "Impossibile creare l'account (username già in uso?)."
   }
 
   return (
