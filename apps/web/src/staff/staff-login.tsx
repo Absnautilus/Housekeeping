@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
@@ -109,6 +110,9 @@ export function StaffLogin() {
             </form>
           </CardBody>
         </Card>
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Sei un ospite? <Link to="/g" className="underline hover:text-slate-600">Accedi qui</Link>
+        </p>
       </div>
     </div>
   )
