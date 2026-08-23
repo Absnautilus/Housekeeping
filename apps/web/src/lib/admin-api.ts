@@ -113,3 +113,61 @@ export async function setRequestTypeActive(id: string, active: boolean): Promise
   const { error } = await supabase.from('request_types').update({ active }).eq('id', id)
   if (error) throw error
 }
+
+export type PmsMode = 'manual' | 'opera'
+
+export interface PmsIntegrationStatus {
+  hotel_id: string
+  mode: PmsMode
+  ohip_hotel_code: string | null
+  ohip_enterprise_id: string | null
+  ohip_gateway_url: string | null
+  has_credentials: boolean
+  last_sync_at: string | null
+  last_sync_status: 'success' | 'error' | null
+  last_sync_error: string | null
+}
+
+export async function getPmsIntegrationStatus(hotelId?: string): Promise<PmsIntegrationStatus> {
+  const { data, error } = await supabase.rpc('get_pms_integration_status', { p_hotel_id: hotelId ?? null })
+  if (error) throw error
+  const row = data?.[0]
+  if (!row) throw new Error('missing_status')
+  return row as PmsIntegrationStatus
+}
+
+export async function savePmsIntegration(input: {
+  hotelId?: string
+  mode: PmsMode
+  ohipHotelCode: string
+  ohipEnterpriseId: string
+  ohipGatewayUrl: string
+  ohipClientId: string | null
+  ohipClientSecret: string | null
+  ohipAppKey: string | null
+}): Promise<void> {
+  const { error } = await supabase.rpc('save_pms_integration', {
+    p_hotel_id: input.hotelId ?? null,
+    p_mode: input.mode,
+    p_ohip_hotel_code: input.ohipHotelCode || null,
+    p_ohip_enterprise_id: input.ohipEnterpriseId || null,
+    p_ohip_gateway_url: input.ohipGatewayUrl || null,
+    p_ohip_client_id: input.ohipClientId || null,
+    p_ohip_client_secret: input.ohipClientSecret || null,
+    p_ohip_app_key: input.ohipAppKey || null,
+  })
+  if (error) throw error
+}
+
+export interface PmsSyncResult {
+  ok: boolean
+  created?: number
+  updated?: number
+  error?: string
+}
+
+export async function triggerPmsSync(hotelId?: string): Promise<PmsSyncResult> {
+  const { data, error } = await supabase.functions.invoke('sync-pms-stays', { body: { hotelId } })
+  if (error) throw error
+  return data as PmsSyncResult
+}

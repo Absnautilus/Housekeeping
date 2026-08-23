@@ -3,6 +3,7 @@ import { cn } from '@/lib/cn'
 import { RoomsPage } from '@/staff/admin/rooms-page'
 import { OperatorsPage } from '@/staff/admin/operators-page'
 import { ItemsPage } from '@/staff/admin/items-page'
+import { PmsIntegrationPage } from '@/staff/admin/pms-integration-page'
 import type { StaffProfile } from '@/lib/staff-types'
 
 export function AdminHome({ profile }: { profile: StaffProfile }) {
@@ -11,6 +12,7 @@ export function AdminHome({ profile }: { profile: StaffProfile }) {
     { to: '/staff/admin', label: 'Staff', match: (p: string) => p === '/staff/admin' },
     { to: '/staff/admin/camere', label: 'Camere', match: (p: string) => p.startsWith('/staff/admin/camere') },
     { to: '/staff/admin/menu', label: 'Menu richieste', match: (p: string) => p.startsWith('/staff/admin/menu') },
+    { to: '/staff/admin/pms', label: 'Integrazione PMS', match: (p: string) => p.startsWith('/staff/admin/pms') },
   ]
 
   return (
@@ -33,6 +35,7 @@ export function AdminHome({ profile }: { profile: StaffProfile }) {
         <Route path="/" element={<OperatorsPage profile={profile} />} />
         <Route path="/camere" element={<RoomsPage />} />
         <Route path="/menu" element={<ItemsPage />} />
+        <Route path="/pms" element={<PmsIntegrationPage profile={profile} />} />
       </Routes>
     </div>
   )
