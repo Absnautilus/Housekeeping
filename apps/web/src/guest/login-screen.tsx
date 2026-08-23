@@ -10,7 +10,7 @@ import { useLocale } from '@/lib/i18n/locale-context'
 export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void }) {
   const { t } = useLocale()
   const [roomNumber, setRoomNumber] = useState('')
-  const [lastName, setLastName] = useState('')
+  const [pin, setPin] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
@@ -19,7 +19,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
     setError(null)
     setPending(true)
     try {
-      const token = await guestLogin(roomNumber.trim(), lastName.trim())
+      const token = await guestLogin(roomNumber.trim(), pin.trim())
       if (!token) {
         setError(t('login.genericError'))
         return
@@ -60,15 +60,18 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
                 />
               </FieldGroup>
               <FieldGroup>
-                <Label htmlFor="lastName" required>
-                  {t('login.lastName')}
+                <Label htmlFor="pin" required>
+                  {t('login.pin')}
                 </Label>
                 <Input
-                  id="lastName"
+                  id="pin"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   autoComplete="off"
                   required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 />
               </FieldGroup>
               <FieldError>{error ?? undefined}</FieldError>

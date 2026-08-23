@@ -57,18 +57,21 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
   const [checkOut, setCheckOut] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [createdPin, setCreatedPin] = useState<{ roomNumber: string; pin: string } | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setPending(true)
     setError(null)
+    setCreatedPin(null)
     try {
-      await createStay({
+      const stay = await createStay({
         roomId,
         guestLastName: lastName.trim(),
         checkInAt: new Date(checkIn).toISOString(),
         checkOutAt: new Date(checkOut).toISOString(),
       })
+      setCreatedPin({ roomNumber: stay.rooms?.room_number ?? '', pin: stay.guest_pin })
       setLastName('')
       setCheckIn('')
       setCheckOut('')
@@ -86,6 +89,14 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
         <h2 className="text-sm font-semibold text-slate-700">Attiva soggiorno</h2>
       </CardHeader>
       <CardBody>
+        {createdPin && (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+            Soggiorno attivato — Camera {createdPin.roomNumber}, PIN ospite:{' '}
+            <span className="font-mono text-base font-semibold tracking-widest">{createdPin.pin}</span>
+            <br />
+            Comunica questo PIN all'ospite (es. scrivilo sulla busta della chiave).
+          </div>
+        )}
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FieldGroup>
@@ -155,7 +166,8 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
             Camera {stay.rooms?.room_number} · {stay.guest_last_name}
           </p>
           <p className="text-sm text-slate-500">
-            Check-out: {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}
+            Check-out: {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} · PIN:{' '}
+            <span className="font-mono font-semibold tracking-widest text-slate-700">{stay.guest_pin}</span>
           </p>
         </div>
         {editingCheckout ? (

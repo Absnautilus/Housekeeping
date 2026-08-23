@@ -6,11 +6,11 @@ export function isInvalidSessionError(error: unknown): boolean {
   return error instanceof Error && error.message.includes('invalid_session')
 }
 
-export async function guestLogin(roomNumber: string, lastName: string): Promise<string | null> {
+export async function guestLogin(roomNumber: string, pin: string): Promise<string | null> {
   const { data, error } = await supabase.rpc('guest_login', {
     p_hotel_id: HOTEL_ID,
     p_room_number: roomNumber,
-    p_last_name: lastName,
+    p_pin: pin,
   })
   if (error) throw error
   return data
