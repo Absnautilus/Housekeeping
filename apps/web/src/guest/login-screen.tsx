@@ -33,8 +33,8 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
   }
 
   return (
-    <div className="min-h-screen bg-background pb-10">
-      <div className="mx-auto max-w-sm px-4 pt-10">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm">
         <div className="rounded-lg border border-line bg-surface p-9 shadow-md">
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
             <LogoMark className="h-6 w-6" mouthColor="#fff" />

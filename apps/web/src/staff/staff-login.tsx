@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { LanguageToggle } from '@/components/language-toggle'
+import { LogoMark } from '@/components/logo'
 import { signIn, signInOperator } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
 import { cn } from '@/lib/cn'
@@ -41,12 +42,7 @@ export function StaffLogin() {
       <div className="w-full max-w-sm">
         <div className="rounded-lg border border-line bg-surface p-9 shadow-md">
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="8" r="3" />
-              <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" />
-              <circle cx="17" cy="9" r="2.5" />
-              <path d="M15.5 14.2A5 5 0 0 1 21 19" />
-            </svg>
+            <LogoMark className="h-6 w-6" mouthColor="#fff" />
           </div>
           <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">{t('staff.login.badge')}</div>
           <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">{t('staff.login.title')}</h1>
