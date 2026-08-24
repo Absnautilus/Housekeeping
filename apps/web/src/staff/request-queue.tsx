@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { ToastStack } from '@/components/toast-stack'
 import { EmptyState, IconInboxEmpty } from '@/components/empty-state'
 import { cn } from '@/lib/cn'
-import { fetchQueue, subscribeToQueue, swapPriority } from '@/lib/staff-api'
+import { fetchQueue, subscribeToQueue } from '@/lib/staff-api'
 import { useToasts } from '@/hooks/use-toasts'
 import { useRequestAlerts } from '@/hooks/use-request-alerts'
 import { playAlertSound } from '@/lib/beep'
 import { RequestRow } from '@/staff/request-row'
+import { InProgressColumn } from '@/staff/in-progress-column'
 import { NewRequestForm } from '@/staff/new-request-form'
 import { DEPARTMENTS } from '@/lib/constants'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { getErrorMessage } from '@/lib/errors'
 import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 
@@ -46,7 +48,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         }
       }
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : String(err))
+      setLoadError(getErrorMessage(err))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [push])
@@ -76,14 +78,6 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
 
   const onAlert = useCallback((message: string, tone: 'info' | 'warning') => push(message, tone), [push])
   useRequestAlerts(active, onAlert)
-
-  async function move(index: number, direction: -1 | 1) {
-    const other = inProgress[index + direction]
-    const current = inProgress[index]
-    if (!other || !current) return
-    await swapPriority(current, other)
-    await reload()
-  }
 
   return (
     <div>
@@ -146,20 +140,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
               {inProgress.length === 0 ? (
                 <p className="px-1 text-sm text-prog-ink/60">{t('staff.queue.emptyInProgressShort')}</p>
               ) : (
-                <div className="space-y-3">
-                  {inProgress.map((request, i) => (
-                    <RequestRow
-                      key={request.id}
-                      request={request}
-                      now={now}
-                      staffId={profile.id}
-                      mode="active"
-                      canReorder={canReorder}
-                      onMoveUp={i > 0 ? () => move(i, -1) : undefined}
-                      onMoveDown={i < inProgress.length - 1 ? () => move(i, 1) : undefined}
-                    />
-                  ))}
-                </div>
+                <InProgressColumn items={inProgress} now={now} staffId={profile.id} canReorder={canReorder} onReordered={reload} />
               )}
             </div>
           </div>

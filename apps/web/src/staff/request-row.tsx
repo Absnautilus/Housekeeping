@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge, StatusBadge } from '@/components/ui/badge'
@@ -21,6 +21,9 @@ export function RequestRow({
   canReorder = false,
   onMoveUp,
   onMoveDown,
+  onDragHandlePointerDown,
+  onDragHandlePointerMove,
+  onDragHandlePointerUp,
 }: {
   request: QueuedRequest
   now: Date
@@ -29,6 +32,9 @@ export function RequestRow({
   canReorder?: boolean
   onMoveUp?: () => void
   onMoveDown?: () => void
+  onDragHandlePointerDown?: (e: ReactPointerEvent<HTMLButtonElement>) => void
+  onDragHandlePointerMove?: (e: ReactPointerEvent<HTMLButtonElement>) => void
+  onDragHandlePointerUp?: (e: ReactPointerEvent<HTMLButtonElement>) => void
 }) {
   const { t } = useLocale()
   const [pending, setPending] = useState(false)
@@ -100,26 +106,42 @@ export function RequestRow({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
           <div className="flex items-center gap-2">
             {canReorder && mode === 'active' && request.status === 'in_progress' && (
-              <div className="flex flex-col">
-                <button
-                  type="button"
-                  disabled={!onMoveUp}
-                  onClick={onMoveUp}
-                  aria-label={t('staff.row.moveUp')}
-                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  ▲
-                </button>
-                <button
-                  type="button"
-                  disabled={!onMoveDown}
-                  onClick={onMoveDown}
-                  aria-label={t('staff.row.moveDown')}
-                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  ▼
-                </button>
-              </div>
+              <>
+                {onDragHandlePointerDown && (
+                  <button
+                    type="button"
+                    onPointerDown={onDragHandlePointerDown}
+                    onPointerMove={onDragHandlePointerMove}
+                    onPointerUp={onDragHandlePointerUp}
+                    onPointerCancel={onDragHandlePointerUp}
+                    aria-label={t('staff.row.drag')}
+                    title={t('staff.row.drag')}
+                    className="flex touch-none cursor-grab items-center justify-center text-muted hover:text-accent active:cursor-grabbing"
+                  >
+                    <DragHandleIcon className="h-4 w-4" />
+                  </button>
+                )}
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    disabled={!onMoveUp}
+                    onClick={onMoveUp}
+                    aria-label={t('staff.row.moveUp')}
+                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!onMoveDown}
+                    onClick={onMoveDown}
+                    aria-label={t('staff.row.moveDown')}
+                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </>
             )}
             <p className="text-xs text-muted">{elapsedLabel}</p>
           </div>
@@ -157,5 +179,18 @@ export function RequestRow({
         {error && <p className="mt-2 text-xs text-bad-ink">{error}</p>}
       </CardBody>
     </Card>
+  )
+}
+
+function DragHandleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <circle cx="9" cy="6" r="1.5" />
+      <circle cx="15" cy="6" r="1.5" />
+      <circle cx="9" cy="12" r="1.5" />
+      <circle cx="15" cy="12" r="1.5" />
+      <circle cx="9" cy="18" r="1.5" />
+      <circle cx="15" cy="18" r="1.5" />
+    </svg>
   )
 }

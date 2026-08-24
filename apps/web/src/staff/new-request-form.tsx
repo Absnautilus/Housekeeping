@@ -6,6 +6,7 @@ import { AutoText } from '@/components/auto-text'
 import { listMenu, listRooms, type Room } from '@/lib/admin-api'
 import { createStaffRequest } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { getErrorMessage } from '@/lib/errors'
 import type { RequestCategoryAdmin, RequestTypeAdmin } from '@/lib/admin-api'
 
 export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCreated: () => void }) {
@@ -52,7 +53,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
       setOpen(false)
       onCreated()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('staff.newRequest.error'))
+      setError(getErrorMessage(err) || t('staff.newRequest.error'))
     } finally {
       setPending(false)
     }

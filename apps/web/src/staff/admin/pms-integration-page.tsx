@@ -15,6 +15,7 @@ import {
   type PmsSyncResult,
 } from '@/lib/admin-api'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { getErrorMessage } from '@/lib/errors'
 import type { StaffProfile } from '@/lib/staff-types'
 
 export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
@@ -87,7 +88,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       setOhipGatewayUrl(data.ohip_gateway_url ?? '')
       setLoadError(null)
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : String(err))
+      setLoadError(getErrorMessage(err))
     }
   }
 
@@ -118,7 +119,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       setSaved(true)
       await reload()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('staff.pms.saveError'))
+      setError(getErrorMessage(err) || t('staff.pms.saveError'))
     } finally {
       setPending(false)
     }
@@ -131,7 +132,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       const result = await triggerPmsSync(hotelId)
       setSyncResult(result)
     } catch (err) {
-      setSyncResult({ ok: false, error: err instanceof Error ? err.message : t('staff.pms.syncFailedGeneric') })
+      setSyncResult({ ok: false, error: getErrorMessage(err) || t('staff.pms.syncFailedGeneric') })
     } finally {
       setSyncing(false)
       await reload()

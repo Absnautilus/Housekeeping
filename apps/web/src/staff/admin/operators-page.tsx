@@ -13,13 +13,14 @@ import {
 } from '@/lib/admin-api'
 import { isValidPin } from '@/lib/operator-login'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { getErrorMessage } from '@/lib/errors'
 import type { TranslationKey } from '@/lib/i18n/dictionaries'
 import type { StaffDepartment, StaffRole } from '@/lib/types'
 import type { StaffProfile } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
 
 function describeCreateAccountError(err: unknown, t: (key: TranslationKey, vars?: Record<string, string | number>) => string): string {
-  const message = err instanceof Error ? err.message : String(err)
+  const message = getErrorMessage(err)
   if (/non-2xx|failed to send a request|not found/i.test(message)) {
     return t('staff.operators.createErrorFunctionMissing')
   }
