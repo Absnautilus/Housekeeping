@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { fetchMyProfile } from '@/lib/staff-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 import { StaffLogin } from '@/staff/staff-login'
 import { DashboardHeader } from '@/staff/dashboard-header'
@@ -10,6 +11,7 @@ import { AdminHome } from '@/staff/admin/admin-home'
 import { StaysPage } from '@/staff/stays/stays-page'
 
 export function StaffApp() {
+  const { t } = useLocale()
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<StaffProfile | null>(null)
 
@@ -55,7 +57,7 @@ export function StaffApp() {
   if (!profile.active) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">
-        Il tuo account è disattivato. Contatta l'amministratore dell'hotel.
+        {t('staff.accountDisabled')}
       </div>
     )
   }
@@ -74,7 +76,7 @@ export function StaffApp() {
             path="*"
             element={
               <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-                Questa sezione non è disponibile per il tuo ruolo.
+                {t('staff.routeUnavailable')}
               </div>
             }
           />

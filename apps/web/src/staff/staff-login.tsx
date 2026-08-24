@@ -2,12 +2,15 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
+import { LanguageToggle } from '@/components/language-toggle'
 import { signIn, signInOperator } from '@/lib/staff-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import { cn } from '@/lib/cn'
 
 type Mode = 'operator' | 'email'
 
 export function StaffLogin() {
+  const { t } = useLocale()
   const [mode, setMode] = useState<Mode>('operator')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,7 +30,7 @@ export function StaffLogin() {
         await signIn(email.trim(), password)
       }
     } catch {
-      setError(mode === 'operator' ? 'Username o PIN non corretti.' : 'Email o password non corrette.')
+      setError(mode === 'operator' ? t('staff.login.errorOperator') : t('staff.login.errorEmail'))
     } finally {
       setPending(false)
     }
@@ -45,16 +48,16 @@ export function StaffLogin() {
               <path d="M15.5 14.2A5 5 0 0 1 21 19" />
             </svg>
           </div>
-          <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">Staff</div>
-          <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">Accedi</h1>
-          <p className="mx-auto mt-1.5 max-w-[230px] text-center text-xs leading-relaxed text-muted">Con la tua email o il tuo nome operatore</p>
+          <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">{t('staff.login.badge')}</div>
+          <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">{t('staff.login.title')}</h1>
+          <p className="mx-auto mt-1.5 max-w-[230px] text-center text-xs leading-relaxed text-muted">{t('staff.login.subtitle')}</p>
 
           <div className="mt-6 flex gap-0.5 rounded-full bg-surface-2 p-[3px]">
             <ModeButton active={mode === 'operator'} onClick={() => setMode('operator')}>
-              Operatore
+              {t('staff.login.modeOperator')}
             </ModeButton>
             <ModeButton active={mode === 'email'} onClick={() => setMode('email')}>
-              Email
+              {t('staff.login.modeEmail')}
             </ModeButton>
           </div>
 
@@ -64,13 +67,13 @@ export function StaffLogin() {
                 <>
                   <FieldGroup>
                     <Label htmlFor="username" required>
-                      Username
+                      {t('staff.login.username')}
                     </Label>
                     <Input id="username" autoComplete="username" required value={username} onChange={(e) => setUsername(e.target.value)} />
                   </FieldGroup>
                   <FieldGroup>
                     <Label htmlFor="pin" required>
-                      PIN
+                      {t('staff.login.pin')}
                     </Label>
                     <Input
                       id="pin"
@@ -89,13 +92,13 @@ export function StaffLogin() {
                 <>
                   <FieldGroup>
                     <Label htmlFor="email" required>
-                      Email
+                      {t('staff.login.email')}
                     </Label>
                     <Input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
                   </FieldGroup>
                   <FieldGroup>
                     <Label htmlFor="password" required>
-                      Password
+                      {t('staff.login.password')}
                     </Label>
                     <Input
                       id="password"
@@ -110,14 +113,17 @@ export function StaffLogin() {
               )}
               <FieldError>{error ?? undefined}</FieldError>
               <Button type="submit" disabled={pending} className="mt-1 w-full">
-                {pending ? 'Accesso in corso…' : 'Accedi'}
+                {pending ? t('staff.login.submitPending') : t('staff.login.submit')}
               </Button>
             </form>
           </div>
         </div>
         <p className="mt-6 text-center text-[11.5px] text-muted">
-          Sei un ospite? <Link to="/g" className="font-semibold text-accent hover:underline">Accedi qui</Link>
+          {t('staff.login.guestPrompt')} <Link to="/g" className="font-semibold text-accent hover:underline">{t('staff.login.guestLink')}</Link>
         </p>
+        <div className="mt-4 flex justify-center">
+          <LanguageToggle />
+        </div>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { PublicHeader } from '@/components/public-header'
 import { LogoMark } from '@/components/logo'
+import { LanguageToggle } from '@/components/language-toggle'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { guestLogin } from '@/lib/guest-api'
@@ -34,7 +34,6 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
 
   return (
     <div className="min-h-screen bg-background pb-10">
-      <PublicHeader />
       <div className="mx-auto max-w-sm px-4 pt-10">
         <div className="rounded-lg border border-line bg-surface p-9 shadow-md">
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
@@ -83,6 +82,9 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
         <p className="mt-6 text-center text-[11.5px] text-muted">
           {t('login.staffPrompt')} <Link to="/staff" className="font-semibold text-accent hover:underline">{t('login.staffLink')}</Link>
         </p>
+        <div className="mt-4 flex justify-center">
+          <LanguageToggle />
+        </div>
       </div>
     </div>
   )

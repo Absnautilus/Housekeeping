@@ -8,7 +8,8 @@ import { useRequestAlerts } from '@/hooks/use-request-alerts'
 import { playAlertSound } from '@/lib/beep'
 import { RequestRow } from '@/staff/request-row'
 import { NewRequestForm } from '@/staff/new-request-form'
-import { DEPARTMENT_LABEL } from '@/lib/constants'
+import { DEPARTMENTS } from '@/lib/constants'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 
@@ -16,6 +17,7 @@ type Tab = 'active' | 'done'
 type DepartmentFilter = 'all' | Department
 
 export function RequestQueue({ profile }: { profile: StaffProfile }) {
+  const { t } = useLocale()
   const [queue, setQueue] = useState<QueuedRequest[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('active')
@@ -39,13 +41,14 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       for (const request of data) {
         if (!knownIds.current.has(request.id)) {
           knownIds.current.add(request.id)
-          push(`Nuova richiesta — Camera ${request.room_number}: ${request.request_types?.name ?? 'richiesta'}`, 'info')
+          push(t('staff.queue.newRequestToast', { room: request.room_number, item: request.request_types?.name ?? t('staff.queue.newRequestFallbackItem') }), 'info')
           playAlertSound()
         }
       }
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : String(err))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [push])
 
   useEffect(() => {
@@ -86,8 +89,8 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Richieste ospiti</h1>
-          <p className="text-sm text-muted">Coda condivisa fra housekeeping e reception.</p>
+          <h1 className="text-xl font-semibold text-foreground">{t('staff.queue.title')}</h1>
+          <p className="text-sm text-muted">{t('staff.queue.subtitle')}</p>
         </div>
         <DepartmentFilterBar value={department} onChange={setDepartment} />
       </div>
@@ -98,35 +101,35 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
 
       <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
         <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
-          Richieste attive ({active.length})
+          {t('staff.queue.tabActive')} ({active.length})
         </TabButton>
         <TabButton active={tab === 'done'} onClick={() => setTab('done')}>
-          Richieste evase
+          {t('staff.queue.tabDone')}
         </TabButton>
       </div>
 
       {loadError ? (
         <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">
-          Non riusciamo a caricare le richieste: {loadError}
+          {t('staff.queue.loadError', { error: loadError })}
         </div>
       ) : queue === null ? (
-        <p className="text-sm text-muted">Caricamento…</p>
+        <p className="text-sm text-muted">{t('staff.queue.loading')}</p>
       ) : tab === 'active' ? (
         active.length === 0 ? (
           <EmptyState
             icon={<IconInboxEmpty className="h-6 w-6" />}
-            title="Nessuna richiesta in attesa"
-            description="Le nuove richieste degli ospiti e dello staff appariranno qui non appena arrivano."
+            title={t('staff.queue.emptyActiveTitle')}
+            description={t('staff.queue.emptyActiveDesc')}
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-wait-ink/25 bg-wait-bg/60 p-3">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-wait-ink">
                 <span className="h-2 w-2 rounded-full bg-wait-ink" />
-                Nuove ({pending.length})
+                {t('staff.queue.columnNew')} ({pending.length})
               </h2>
               {pending.length === 0 ? (
-                <p className="px-1 text-sm text-wait-ink/60">Nessuna richiesta da prendere in carico.</p>
+                <p className="px-1 text-sm text-wait-ink/60">{t('staff.queue.emptyNewShort')}</p>
               ) : (
                 <div className="space-y-3">
                   {pending.map((request) => (
@@ -138,10 +141,10 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
             <div className="rounded-xl border border-prog-ink/25 bg-prog-bg/60 p-3">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-prog-ink">
                 <span className="h-2 w-2 rounded-full bg-prog-ink" />
-                Prese in carico ({inProgress.length})
+                {t('staff.queue.columnInProgress')} ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? (
-                <p className="px-1 text-sm text-prog-ink/60">Nessuna richiesta al momento in carico.</p>
+                <p className="px-1 text-sm text-prog-ink/60">{t('staff.queue.emptyInProgressShort')}</p>
               ) : (
                 <div className="space-y-3">
                   {inProgress.map((request, i) => (
@@ -162,7 +165,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
           </div>
         )
       ) : done.length === 0 ? (
-        <EmptyState icon={<IconInboxEmpty className="h-6 w-6" />} title="Nessuna richiesta evasa" description="Le richieste completate o annullate finiranno qui." />
+        <EmptyState icon={<IconInboxEmpty className="h-6 w-6" />} title={t('staff.queue.emptyDoneTitle')} description={t('staff.queue.emptyDoneDesc')} />
       ) : (
         <div className="space-y-3">
           {done.map((request) => (
@@ -177,7 +180,8 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
 }
 
 function DepartmentFilterBar({ value, onChange }: { value: DepartmentFilter; onChange: (d: DepartmentFilter) => void }) {
-  const options: DepartmentFilter[] = ['all', 'reception', 'housekeeping', 'maintenance', 'porter']
+  const { t } = useLocale()
+  const options: DepartmentFilter[] = ['all', ...DEPARTMENTS]
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((opt) => (
@@ -190,7 +194,7 @@ function DepartmentFilterBar({ value, onChange }: { value: DepartmentFilter; onC
             value === opt ? 'border-accent bg-accent text-white' : 'border-line bg-white text-muted hover:border-accent-soft-line',
           )}
         >
-          {opt === 'all' ? 'Tutti' : DEPARTMENT_LABEL[opt]}
+          {opt === 'all' ? t('staff.queue.filterAll') : t(`department.${opt}`)}
         </button>
       ))}
     </div>

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { useLocale } from '@/lib/i18n/locale-context'
 
 export interface ConfirmOptions {
   title: string
@@ -15,6 +16,7 @@ interface PendingConfirm extends ConfirmOptions {
 // that function resolves to true/false once the person picks a button,
 // so a destructive action can just `if (!(await confirm({...}))) return`.
 export function useConfirm(): [ReactNode, (options: ConfirmOptions) => Promise<boolean>] {
+  const { t } = useLocale()
   const [pending, setPending] = useState<PendingConfirm | null>(null)
 
   function confirm(options: ConfirmOptions) {
@@ -61,7 +63,7 @@ export function useConfirm(): [ReactNode, (options: ConfirmOptions) => Promise<b
             onClick={() => settle(false)}
             className="flex-1 cursor-pointer rounded-sm border border-line-strong bg-surface px-4 py-2.5 text-sm font-bold text-foreground/70 hover:bg-surface-2"
           >
-            Annulla
+            {t('staff.confirm.cancel')}
           </button>
           <button
             type="button"
@@ -71,7 +73,7 @@ export function useConfirm(): [ReactNode, (options: ConfirmOptions) => Promise<b
               (pending.tone === 'neutral' ? 'bg-accent text-accent-ink hover:brightness-[1.06]' : 'border border-bad-ink/25 bg-bad-bg text-bad-ink hover:bg-bad-ink/15')
             }
           >
-            {pending.confirmLabel ?? 'Conferma'}
+            {pending.confirmLabel ?? t('staff.confirm.confirm')}
           </button>
         </div>
       </div>

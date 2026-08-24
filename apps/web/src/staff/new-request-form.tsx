@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Label, Select, Textarea } from '@/components/ui/field'
+import { AutoText } from '@/components/auto-text'
 import { listMenu, listRooms, type Room } from '@/lib/admin-api'
 import { createStaffRequest } from '@/lib/staff-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { RequestCategoryAdmin, RequestTypeAdmin } from '@/lib/admin-api'
 
 export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCreated: () => void }) {
+  const { t } = useLocale()
   const [open, setOpen] = useState(false)
   const [rooms, setRooms] = useState<Room[]>([])
   const [categories, setCategories] = useState<RequestCategoryAdmin[]>([])
@@ -49,7 +52,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
       setOpen(false)
       onCreated()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossibile creare la segnalazione.')
+      setError(err instanceof Error ? err.message : t('staff.newRequest.error'))
     } finally {
       setPending(false)
     }
@@ -58,7 +61,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
   if (!open) {
     return (
       <Button variant="outline" onClick={() => setOpen(true)}>
-        + Nuova segnalazione
+        {t('staff.newRequest.toggle')}
       </Button>
     )
   }
@@ -66,14 +69,14 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
   return (
     <Card className="mb-5">
       <CardHeader>
-        <h2 className="text-sm font-semibold text-foreground">Nuova segnalazione</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t('staff.newRequest.title')}</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
             <FieldGroup>
               <Label htmlFor="sr-room" required>
-                Camera
+                {t('staff.newRequest.room')}
               </Label>
               <Select id="sr-room" required value={roomId} onChange={(e) => setRoomId(e.target.value)}>
                 {rooms.map((r) => (
@@ -85,40 +88,40 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="sr-category" required>
-                Categoria
+                {t('staff.newRequest.category')}
               </Label>
               <Select id="sr-category" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    <AutoText text={c.name} />
                   </option>
                 ))}
               </Select>
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="sr-type" required>
-                Cosa
+                {t('staff.newRequest.what')}
               </Label>
               <Select id="sr-type" required value={typeId} onChange={(e) => setTypeId(e.target.value)}>
-                {typesForCategory.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
+                {typesForCategory.map((rt) => (
+                  <option key={rt.id} value={rt.id}>
+                    <AutoText text={rt.name} />
                   </option>
                 ))}
               </Select>
             </FieldGroup>
           </div>
           <FieldGroup>
-            <Label htmlFor="sr-note">Note</Label>
-            <Textarea id="sr-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Es. porta rotta, non si chiude bene…" />
+            <Label htmlFor="sr-note">{t('staff.newRequest.notes')}</Label>
+            <Textarea id="sr-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('staff.newRequest.notesPlaceholder')} />
           </FieldGroup>
           <FieldError>{error ?? undefined}</FieldError>
           <div className="flex gap-2">
             <Button type="submit" disabled={pending || !roomId || !typeId}>
-              {pending ? 'Invio…' : 'Segnala'}
+              {pending ? t('staff.newRequest.submitPending') : t('staff.newRequest.submit')}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Annulla
+              {t('staff.newRequest.cancel')}
             </Button>
           </div>
         </form>

@@ -14,9 +14,11 @@ import {
   type PmsMode,
   type PmsSyncResult,
 } from '@/lib/admin-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 
 export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
+  const { t } = useLocale()
   const isMaster = profile.role === 'master'
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [hotelId, setHotelId] = useState('')
@@ -30,21 +32,19 @@ export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
   }, [isMaster])
 
   if (isMaster && !hotelId) {
-    return <p className="text-sm text-muted">Caricamento…</p>
+    return <p className="text-sm text-muted">{t('staff.pms.loading')}</p>
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Integrazione PMS</h1>
-        <p className="text-sm text-muted">
-          Scegli se gestire camere e soggiorni manualmente oppure collegarli automaticamente a OperaCloud.
-        </p>
+        <h1 className="text-xl font-semibold text-foreground">{t('staff.pms.title')}</h1>
+        <p className="text-sm text-muted">{t('staff.pms.subtitle')}</p>
       </div>
 
       {isMaster && (
         <FieldGroup className="max-w-xs">
-          <Label htmlFor="hotel">Hotel</Label>
+          <Label htmlFor="hotel">{t('staff.pms.hotel')}</Label>
           <Select id="hotel" value={hotelId} onChange={(e) => setHotelId(e.target.value)}>
             {hotels.map((h) => (
               <option key={h.id} value={h.id}>
@@ -61,6 +61,7 @@ export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
 }
 
 function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
+  const { t } = useLocale()
   const [status, setStatus] = useState<PmsIntegrationStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [mode, setMode] = useState<PmsMode>('manual')
@@ -117,7 +118,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       setSaved(true)
       await reload()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossibile salvare la configurazione.')
+      setError(err instanceof Error ? err.message : t('staff.pms.saveError'))
     } finally {
       setPending(false)
     }
@@ -130,7 +131,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       const result = await triggerPmsSync(hotelId)
       setSyncResult(result)
     } catch (err) {
-      setSyncResult({ ok: false, error: err instanceof Error ? err.message : 'Sincronizzazione fallita.' })
+      setSyncResult({ ok: false, error: err instanceof Error ? err.message : t('staff.pms.syncFailedGeneric') })
     } finally {
       setSyncing(false)
       await reload()
@@ -138,48 +139,46 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
   }
 
   if (loadError) {
-    return <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">Non riusciamo a caricare la configurazione: {loadError}</div>
+    return <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">{t('staff.pms.loadError', { error: loadError })}</div>
   }
   if (!status) {
-    return <p className="text-sm text-muted">Caricamento…</p>
+    return <p className="text-sm text-muted">{t('staff.pms.loading')}</p>
   }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Modalità gestione camere e soggiorni</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('staff.pms.modeTitle')}</h2>
           <div className="flex gap-1 rounded-md bg-surface-2 p-1">
             <ModeButton active={mode === 'manual'} onClick={() => setMode('manual')}>
-              Manuale
+              {t('staff.pms.modeManual')}
             </ModeButton>
             <ModeButton active={mode === 'opera'} onClick={() => setMode('opera')}>
-              OperaCloud (OHIP)
+              {t('staff.pms.modeOpera')}
             </ModeButton>
           </div>
         </div>
       </CardHeader>
       <CardBody>
         {mode === 'manual' ? (
-          <p className="text-sm text-muted">
-            Camere e soggiorni si continuano a inserire a mano dalle pagine "Camere" e "Soggiorni", come oggi.
-          </p>
+          <p className="text-sm text-muted">{t('staff.pms.manualDesc')}</p>
         ) : (
           <form onSubmit={onSubmit}>
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
               <FieldGroup>
                 <Label htmlFor="ohipHotelCode" required>
-                  Hotel Code (Opera)
+                  {t('staff.pms.hotelCode')}
                 </Label>
                 <Input id="ohipHotelCode" required value={ohipHotelCode} onChange={(e) => setOhipHotelCode(e.target.value)} placeholder="es. PVVCVE" />
               </FieldGroup>
               <FieldGroup>
-                <Label htmlFor="ohipEnterpriseId">Enterprise ID</Label>
+                <Label htmlFor="ohipEnterpriseId">{t('staff.pms.enterpriseId')}</Label>
                 <Input id="ohipEnterpriseId" value={ohipEnterpriseId} onChange={(e) => setOhipEnterpriseId(e.target.value)} placeholder="es. VENCOL" />
               </FieldGroup>
               <FieldGroup className="sm:col-span-2">
                 <Label htmlFor="ohipGatewayUrl" required>
-                  Endpoint OHIP
+                  {t('staff.pms.gatewayUrl')}
                 </Label>
                 <Input
                   id="ohipGatewayUrl"
@@ -191,19 +190,19 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
               </FieldGroup>
               <FieldGroup>
                 <Label htmlFor="ohipClientId" required={!status.has_credentials}>
-                  Client ID
+                  {t('staff.pms.clientId')}
                 </Label>
                 <Input
                   id="ohipClientId"
                   required={!status.has_credentials}
                   value={ohipClientId}
                   onChange={(e) => setOhipClientId(e.target.value)}
-                  placeholder={status.has_credentials ? '•••••••• (configurato — lascia vuoto per non modificare)' : ''}
+                  placeholder={status.has_credentials ? t('staff.pms.configuredPlaceholder') : ''}
                 />
               </FieldGroup>
               <FieldGroup>
                 <Label htmlFor="ohipClientSecret" required={!status.has_credentials}>
-                  Client Secret
+                  {t('staff.pms.clientSecret')}
                 </Label>
                 <Input
                   id="ohipClientSecret"
@@ -211,24 +210,24 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
                   required={!status.has_credentials}
                   value={ohipClientSecret}
                   onChange={(e) => setOhipClientSecret(e.target.value)}
-                  placeholder={status.has_credentials ? '•••••••• (configurato — lascia vuoto per non modificare)' : ''}
+                  placeholder={status.has_credentials ? t('staff.pms.configuredPlaceholder') : ''}
                 />
               </FieldGroup>
               <FieldGroup>
-                <Label htmlFor="ohipAppKey">App Key (x-app-key)</Label>
+                <Label htmlFor="ohipAppKey">{t('staff.pms.appKey')}</Label>
                 <Input
                   id="ohipAppKey"
                   type="password"
                   value={ohipAppKey}
                   onChange={(e) => setOhipAppKey(e.target.value)}
-                  placeholder={status.has_credentials ? '•••••••• (configurato — lascia vuoto per non modificare)' : ''}
+                  placeholder={status.has_credentials ? t('staff.pms.configuredPlaceholder') : ''}
                 />
               </FieldGroup>
             </div>
             <FieldError>{error ?? undefined}</FieldError>
-            {saved && <p className="mb-2 text-sm text-ok-ink">Configurazione salvata.</p>}
+            {saved && <p className="mb-2 text-sm text-ok-ink">{t('staff.pms.saved')}</p>}
             <Button type="submit" disabled={pending}>
-              {pending ? 'Salvataggio…' : 'Salva configurazione'}
+              {pending ? t('staff.pms.saving') : t('staff.pms.save')}
             </Button>
           </form>
         )}
@@ -237,7 +236,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
           <div className="mt-6 border-t border-line pt-4">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <Badge className={status.last_sync_status === 'success' ? 'bg-ok-bg text-ok-ink' : status.last_sync_status === 'error' ? 'bg-bad-bg text-bad-ink' : undefined}>
-                {status.last_sync_status === 'success' ? 'Ultima sincronizzazione riuscita' : status.last_sync_status === 'error' ? 'Ultima sincronizzazione fallita' : 'Non ancora sincronizzato'}
+                {status.last_sync_status === 'success' ? t('staff.pms.syncSuccess') : status.last_sync_status === 'error' ? t('staff.pms.syncError') : t('staff.pms.syncNever')}
               </Badge>
               {status.last_sync_at && (
                 <span className="text-xs text-muted">
@@ -247,13 +246,13 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
             </div>
             {status.last_sync_error && <p className="mb-3 text-sm text-bad-ink">{status.last_sync_error}</p>}
             <Button type="button" variant="outline" disabled={syncing} onClick={onSync}>
-              {syncing ? 'Sincronizzazione…' : 'Sincronizza ora'}
+              {syncing ? t('staff.pms.syncing') : t('staff.pms.syncNow')}
             </Button>
             {syncResult && (
               <p className="mt-2 text-sm text-muted">
                 {syncResult.ok
-                  ? `Fatto: ${syncResult.created ?? 0} nuovi soggiorni, ${syncResult.updated ?? 0} aggiornati.`
-                  : `Errore: ${syncResult.error}`}
+                  ? t('staff.pms.syncResultOk', { created: syncResult.created ?? 0, updated: syncResult.updated ?? 0 })
+                  : t('staff.pms.syncResultError', { error: syncResult.error ?? '' })}
               </p>
             )}
           </div>

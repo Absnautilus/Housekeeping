@@ -3,6 +3,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { FieldError, FieldGroup, Input, Label, Select, Textarea } from '@/components/ui/field'
+import { AutoText } from '@/components/auto-text'
 import {
   createRequestType,
   listMenu,
@@ -11,8 +12,10 @@ import {
   type RequestTypeAdmin,
 } from '@/lib/admin-api'
 import { useConfirm } from '@/components/confirm-dialog'
+import { useLocale } from '@/lib/i18n/locale-context'
 
 export function ItemsPage() {
+  const { t } = useLocale()
   const [categories, setCategories] = useState<RequestCategoryAdmin[]>([])
   const [types, setTypes] = useState<RequestTypeAdmin[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -25,15 +28,16 @@ export function ItemsPage() {
   }
 
   useEffect(() => {
-    reload().catch(() => setError('Non riusciamo a caricare il menu.'))
+    reload().catch(() => setError(t('staff.items.loadError')))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function onToggle(item: RequestTypeAdmin) {
     if (item.active) {
       const ok = await confirm({
-        title: 'Disattivare questo elemento?',
-        description: `"${item.name}" non sarà più richiedibile dagli ospiti.`,
-        confirmLabel: 'Disattiva',
+        title: t('staff.items.deactivateTitle'),
+        description: t('staff.items.deactivateDesc', { name: item.name }),
+        confirmLabel: t('staff.items.deactivateConfirm'),
       })
       if (!ok) return
     }
@@ -45,8 +49,8 @@ export function ItemsPage() {
     <div className="space-y-6">
       {confirmDialog}
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Menu richieste</h1>
-        <p className="text-sm text-muted">Gli oggetti/servizi che l'ospite può richiedere, raggruppati per categoria.</p>
+        <h1 className="text-xl font-semibold text-foreground">{t('staff.items.title')}</h1>
+        <p className="text-sm text-muted">{t('staff.items.subtitle')}</p>
       </div>
 
       <NewItemForm categories={categories} onCreated={reload} />
@@ -55,31 +59,35 @@ export function ItemsPage() {
 
       <div className="space-y-6">
         {categories.map((category) => {
-          const items = types.filter((t) => t.category_id === category.id)
+          const items = types.filter((rt) => rt.category_id === category.id)
           if (items.length === 0) return null
           return (
             <div key={category.id}>
-              <h2 className="mb-2 text-sm font-semibold text-muted">{category.name}</h2>
+              <h2 className="mb-2 text-sm font-semibold text-muted">
+                <AutoText text={category.name} />
+              </h2>
               <div className="overflow-hidden rounded-lg border border-line bg-white">
                 <table className="w-full text-sm">
                   <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
                     <tr>
-                      <th className="px-4 py-2">Nome</th>
-                      <th className="px-4 py-2">Descrizione</th>
-                      <th className="px-4 py-2">Quantità in hotel</th>
-                      <th className="px-4 py-2">Stato</th>
+                      <th className="px-4 py-2">{t('staff.items.colName')}</th>
+                      <th className="px-4 py-2">{t('staff.items.colDescription')}</th>
+                      <th className="px-4 py-2">{t('staff.items.colQuantity')}</th>
+                      <th className="px-4 py-2">{t('staff.items.colStatus')}</th>
                       <th className="px-4 py-2" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
                     {items.map((item) => (
                       <tr key={item.id}>
-                        <td className="px-4 py-2 font-medium text-foreground">{item.name}</td>
-                        <td className="px-4 py-2 text-muted">{item.description || '—'}</td>
+                        <td className="px-4 py-2 font-medium text-foreground">
+                          <AutoText text={item.name} />
+                        </td>
+                        <td className="px-4 py-2 text-muted">{item.description ? <AutoText text={item.description} /> : '—'}</td>
                         <td className="px-4 py-2 tabular-nums text-muted">{item.available_quantity ?? '—'}</td>
                         <td className="px-4 py-2">
                           <Badge className={item.active ? 'bg-ok-bg text-ok-ink' : undefined}>
-                            {item.active ? 'Attivo' : 'Disattivato'}
+                            {item.active ? t('staff.items.statusActive') : t('staff.items.statusInactive')}
                           </Badge>
                         </td>
                         <td className="px-4 py-2 text-right">
@@ -88,7 +96,7 @@ export function ItemsPage() {
                             className="cursor-pointer text-xs text-muted hover:text-foreground"
                             onClick={() => onToggle(item)}
                           >
-                            {item.active ? 'Disattiva' : 'Riattiva'}
+                            {item.active ? t('staff.items.deactivate') : t('staff.items.reactivate')}
                           </button>
                         </td>
                       </tr>
@@ -105,6 +113,7 @@ export function ItemsPage() {
 }
 
 function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdmin[]; onCreated: () => Promise<void> }) {
+  const { t } = useLocale()
   const [categoryId, setCategoryId] = useState('')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -135,7 +144,7 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
       setAvailableQuantity('')
       await onCreated()
     } catch {
-      setError('Impossibile aggiungere questo elemento al menu.')
+      setError(t('staff.items.addError'))
     } finally {
       setPending(false)
     }
@@ -144,59 +153,59 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-foreground">Aggiungi elemento</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t('staff.items.addTitle')}</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FieldGroup>
               <Label htmlFor="category" required>
-                Categoria
+                {t('staff.items.category')}
               </Label>
               <Select id="category" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    <AutoText text={c.name} />
                   </option>
                 ))}
               </Select>
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="itemName" required>
-                Nome
+                {t('staff.items.name')}
               </Label>
-              <Input id="itemName" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Es. Cuscino extra" />
+              <Input id="itemName" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t('staff.items.namePlaceholder')} />
             </FieldGroup>
           </div>
 
           <FieldGroup>
-            <Label htmlFor="description">Descrizione (facoltativa)</Label>
+            <Label htmlFor="description">{t('staff.items.description')}</Label>
             <Textarea id="description" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </FieldGroup>
 
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FieldGroup>
-              <Label htmlFor="availableQuantity">Quantità disponibile in hotel (facoltativa)</Label>
+              <Label htmlFor="availableQuantity">{t('staff.items.availableQuantity')}</Label>
               <Input
                 id="availableQuantity"
                 type="number"
                 min={0}
                 value={availableQuantity}
                 onChange={(e) => setAvailableQuantity(e.target.value)}
-                placeholder="Es. 10"
+                placeholder={t('staff.items.availableQuantityPlaceholder')}
               />
             </FieldGroup>
             <FieldGroup className="flex items-end pb-2.5">
               <label className="flex items-center gap-2 text-sm text-foreground">
                 <input type="checkbox" checked={allowsQuantity} onChange={(e) => setAllowsQuantity(e.target.checked)} />
-                L'ospite può scegliere quante unità richiedere
+                {t('staff.items.allowsQuantity')}
               </label>
             </FieldGroup>
           </div>
 
           <FieldError>{error ?? undefined}</FieldError>
           <Button type="submit" disabled={pending}>
-            {pending ? 'Aggiunta…' : 'Aggiungi elemento'}
+            {pending ? t('staff.items.submitPending') : t('staff.items.submit')}
           </Button>
         </form>
       </CardBody>

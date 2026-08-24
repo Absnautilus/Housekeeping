@@ -4,15 +4,17 @@ import { RoomsPage } from '@/staff/admin/rooms-page'
 import { OperatorsPage } from '@/staff/admin/operators-page'
 import { ItemsPage } from '@/staff/admin/items-page'
 import { PmsIntegrationPage } from '@/staff/admin/pms-integration-page'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 
 export function AdminHome({ profile }: { profile: StaffProfile }) {
+  const { t } = useLocale()
   const location = useLocation()
   const tabs = [
-    { to: '/staff/admin', label: 'Staff', match: (p: string) => p === '/staff/admin' },
-    { to: '/staff/admin/camere', label: 'Camere', match: (p: string) => p.startsWith('/staff/admin/camere') },
-    { to: '/staff/admin/menu', label: 'Menu richieste', match: (p: string) => p.startsWith('/staff/admin/menu') },
-    { to: '/staff/admin/pms', label: 'Integrazione PMS', match: (p: string) => p.startsWith('/staff/admin/pms') },
+    { to: '/staff/admin', label: t('staff.admin.tabStaff'), match: (p: string) => p === '/staff/admin' },
+    { to: '/staff/admin/camere', label: t('staff.admin.tabRooms'), match: (p: string) => p.startsWith('/staff/admin/camere') },
+    { to: '/staff/admin/menu', label: t('staff.admin.tabMenu'), match: (p: string) => p.startsWith('/staff/admin/menu') },
+    { to: '/staff/admin/pms', label: t('staff.admin.tabPms'), match: (p: string) => p.startsWith('/staff/admin/pms') },
   ]
 
   return (

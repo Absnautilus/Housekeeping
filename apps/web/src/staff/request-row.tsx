@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/field'
 import { Avatar } from '@/components/avatar'
-import { DEPARTMENT_LABEL } from '@/lib/constants'
+import { AutoText } from '@/components/auto-text'
+import { DEPARTMENTS } from '@/lib/constants'
 import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
 import { cancelRequest, claimRequest, completeRequest, reassignRequest } from '@/lib/staff-api'
 import type { QueuedRequest } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
+import { useLocale } from '@/lib/i18n/locale-context'
 
 export function RequestRow({
   request,
@@ -28,10 +30,11 @@ export function RequestRow({
   onMoveUp?: () => void
   onMoveDown?: () => void
 }) {
+  const { t } = useLocale()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
-  const typeName = request.request_types?.name ?? 'Richiesta'
+  const typeName = request.request_types?.name ?? t('staff.row.defaultTypeName')
   const categoryName = request.request_types?.request_categories?.name
 
   async function run(action: () => Promise<void>) {
@@ -40,7 +43,7 @@ export function RequestRow({
     try {
       await action()
     } catch {
-      setError('Operazione non riuscita, riprova.')
+      setError(t('staff.row.opFailed'))
     } finally {
       setPending(false)
     }
@@ -48,9 +51,9 @@ export function RequestRow({
 
   async function onCancel() {
     const ok = await confirm({
-      title: 'Annullare la richiesta?',
-      description: `Camera ${request.room_number} · ${typeName}. L'ospite non verrà più servito su questa richiesta.`,
-      confirmLabel: 'Annulla richiesta',
+      title: t('staff.row.cancelTitle'),
+      description: t('staff.row.cancelDesc', { room: request.room_number, type: typeName }),
+      confirmLabel: t('staff.row.cancelConfirm'),
     })
     if (ok) run(() => cancelRequest(request.id))
   }
@@ -58,11 +61,11 @@ export function RequestRow({
   const elapsedLabel =
     mode !== 'active'
       ? request.status === 'completed'
-        ? `Evasa in ${formatElapsed(request.created_at, new Date(request.completed_at ?? request.created_at))}`
-        : 'Annullata'
+        ? t('staff.row.resolvedIn', { time: formatElapsed(request.created_at, new Date(request.completed_at ?? request.created_at)) })
+        : t('staff.row.cancelledLabel')
       : request.status === 'in_progress' && request.accepted_at
-        ? `In carico da ${formatElapsed(request.accepted_at, now)}`
-        : `In attesa da ${formatElapsed(request.created_at, now)}`
+        ? t('staff.row.inChargeSince', { time: formatElapsed(request.accepted_at, now) })
+        : t('staff.row.waitingSince', { time: formatElapsed(request.created_at, now) })
 
   return (
     <Card>
@@ -71,18 +74,24 @@ export function RequestRow({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="font-semibold text-foreground">
-              Camera {request.room_number} <span className="font-normal text-muted">·</span> {typeName}
+              {t('staff.newRequest.room')} {request.room_number} <span className="font-normal text-muted">·</span>{' '}
+              <AutoText text={typeName} />
               {request.quantity ? ` × ${request.quantity}` : ''}
             </p>
             <p className="mt-0.5 text-sm text-muted">
               {formatTime(request.created_at)}
-              {categoryName && ` · ${categoryName}`}
+              {categoryName && (
+                <>
+                  {' · '}
+                  <AutoText text={categoryName} />
+                </>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {request.accepted_by_staff && <Avatar name={request.accepted_by_staff.name} />}
-            <StatusBadge status={request.status} />
-            <Badge>{DEPARTMENT_LABEL[request.assigned_department]}</Badge>
+            <StatusBadge status={request.status} label={t(`statusLabel.${request.status}` as const)} />
+            <Badge>{t(`department.${request.assigned_department}`)}</Badge>
           </div>
         </div>
 
@@ -96,7 +105,7 @@ export function RequestRow({
                   type="button"
                   disabled={!onMoveUp}
                   onClick={onMoveUp}
-                  aria-label="Sposta su"
+                  aria-label={t('staff.row.moveUp')}
                   className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   ▲
@@ -105,7 +114,7 @@ export function RequestRow({
                   type="button"
                   disabled={!onMoveDown}
                   onClick={onMoveDown}
-                  aria-label="Sposta giù"
+                  aria-label={t('staff.row.moveDown')}
                   className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   ▼
@@ -123,24 +132,24 @@ export function RequestRow({
                 onChange={(e) => run(() => reassignRequest(request.id, e.target.value as Department))}
                 className="w-auto py-1 text-xs"
               >
-                {Object.entries(DEPARTMENT_LABEL).map(([value, label]) => (
+                {DEPARTMENTS.map((value) => (
                   <option key={value} value={value}>
-                    {label}
+                    {t(`department.${value}`)}
                   </option>
                 ))}
               </Select>
               {request.status === 'requested' && (
                 <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))}>
-                  Prendi in carico
+                  {t('staff.row.claim')}
                 </Button>
               )}
               {request.status === 'in_progress' && (
                 <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
-                  Completa
+                  {t('staff.row.complete')}
                 </Button>
               )}
               <Button size="sm" variant="danger" disabled={pending} onClick={onCancel}>
-                Annulla
+                {t('staff.row.cancel')}
               </Button>
             </div>
           )}

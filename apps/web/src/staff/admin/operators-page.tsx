@@ -12,31 +12,28 @@ import {
   type OperatorSummary,
 } from '@/lib/admin-api'
 import { isValidPin } from '@/lib/operator-login'
+import { useLocale } from '@/lib/i18n/locale-context'
+import type { TranslationKey } from '@/lib/i18n/dictionaries'
 import type { StaffDepartment, StaffRole } from '@/lib/types'
 import type { StaffProfile } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
 
-function describeCreateAccountError(err: unknown): string {
+function describeCreateAccountError(err: unknown, t: (key: TranslationKey, vars?: Record<string, string | number>) => string): string {
   const message = err instanceof Error ? err.message : String(err)
   if (/non-2xx|failed to send a request|not found/i.test(message)) {
-    return "La funzione che crea gli account non risulta pubblicata su Supabase (Edge Functions → create-staff-account)."
+    return t('staff.operators.createErrorFunctionMissing')
   }
-  return `Impossibile creare l'account: ${message}`
+  return t('staff.operators.createError', { message })
 }
 
-const DEPARTMENT_LABEL: Record<StaffDepartment, string> = {
-  housekeeping: 'Housekeeping',
-  reception: 'Reception',
-  maintenance: 'Maintenance',
-}
-
-const ROLE_LABEL: Record<StaffRole, string> = {
-  master: 'Master',
-  admin: 'Admin',
-  operatore: 'Operatore',
+const ROLE_KEY: Record<StaffRole, TranslationKey> = {
+  master: 'role.master',
+  admin: 'role.admin',
+  operatore: 'role.operatore',
 }
 
 export function OperatorsPage({ profile }: { profile: StaffProfile }) {
+  const { t } = useLocale()
   const isMaster = profile.role === 'master'
   const [staff, setStaff] = useState<OperatorSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,15 +44,16 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
   }
 
   useEffect(() => {
-    reload().catch(() => setError('Non riusciamo a caricare lo staff.'))
+    reload().catch(() => setError(t('staff.operators.loadError')))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function onToggle(person: OperatorSummary) {
     if (person.active) {
       const ok = await confirm({
-        title: 'Disattivare questo account?',
-        description: `${person.name} non potrà più accedere finché non lo riattivi da qui.`,
-        confirmLabel: 'Disattiva',
+        title: t('staff.operators.deactivateTitle'),
+        description: t('staff.operators.deactivateDesc', { name: person.name }),
+        confirmLabel: t('staff.operators.deactivateConfirm'),
       })
       if (!ok) return
     }
@@ -67,12 +65,8 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
     <div className="space-y-6">
       {confirmDialog}
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Staff</h1>
-        <p className="text-sm text-muted">
-          {isMaster
-            ? "Crea account admin per un hotel (email e password), o operatore per housekeeping/reception (username e PIN)."
-            : 'Crea account operatore per housekeeping o reception: scegli tu username e PIN.'}
-        </p>
+        <h1 className="text-xl font-semibold text-foreground">{t('staff.operators.title')}</h1>
+        <p className="text-sm text-muted">{isMaster ? t('staff.operators.subtitleMaster') : t('staff.operators.subtitleAdmin')}</p>
       </div>
 
       <NewStaffForm isMaster={isMaster} onCreated={reload} />
@@ -83,16 +77,16 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
         <table className="w-full text-sm">
           <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
             <tr>
-              <th className="px-4 py-2">Nome</th>
-              <th className="px-4 py-2">Ruolo</th>
-              <th className="px-4 py-2">Accesso</th>
-              <th className="px-4 py-2">Stato</th>
+              <th className="px-4 py-2">{t('staff.operators.colName')}</th>
+              <th className="px-4 py-2">{t('staff.operators.colRole')}</th>
+              <th className="px-4 py-2">{t('staff.operators.colAccess')}</th>
+              <th className="px-4 py-2">{t('staff.operators.colStatus')}</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
             {staff?.map((person) => {
-              const roleLabel = person.role === 'operatore' ? DEPARTMENT_LABEL[person.department ?? 'reception'] : ROLE_LABEL[person.role]
+              const roleLabel = person.role === 'operatore' ? t(`department.${person.department ?? 'reception'}`) : t(ROLE_KEY[person.role])
               // an admin can only ever touch operatori; only master can deactivate an admin,
               // and nobody deactivates a master from this screen
               const canToggle = person.role === 'operatore' || (person.role === 'admin' && isMaster)
@@ -100,10 +94,10 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
                 <tr key={person.id}>
                   <td className="px-4 py-2 font-medium text-foreground">{person.name}</td>
                   <td className="px-4 py-2 text-muted">{roleLabel}</td>
-                  <td className="px-4 py-2 text-muted">{person.login_username ?? <span className="text-muted">email</span>}</td>
+                  <td className="px-4 py-2 text-muted">{person.login_username ?? <span className="text-muted">{t('staff.operators.accessEmail')}</span>}</td>
                   <td className="px-4 py-2">
                     <Badge className={person.active ? 'bg-ok-bg text-ok-ink' : undefined}>
-                      {person.active ? 'Attivo' : 'Disattivato'}
+                      {person.active ? t('staff.operators.statusActive') : t('staff.operators.statusInactive')}
                     </Badge>
                   </td>
                   <td className="px-4 py-2 text-right">
@@ -113,7 +107,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
                         className="cursor-pointer text-xs text-muted hover:text-foreground"
                         onClick={() => onToggle(person)}
                       >
-                        {person.active ? 'Disattiva' : 'Riattiva'}
+                        {person.active ? t('staff.operators.deactivate') : t('staff.operators.reactivate')}
                       </button>
                     )}
                   </td>
@@ -131,6 +125,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
   const [name, setName] = useState('')
   const [role, setRole] = useState<'admin' | 'operatore'>('operatore')
   const [department, setDepartment] = useState<StaffDepartment>('housekeeping')
+  const { t } = useLocale()
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [email, setEmail] = useState('')
@@ -147,7 +142,8 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
         setHotels(list)
         setHotelId((current) => current || (list[0]?.id ?? ''))
       })
-      .catch(() => setError('Non riusciamo a caricare gli hotel.'))
+      .catch(() => setError(t('staff.operators.hotelsLoadError')))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMaster])
 
   const effectiveRole = isMaster ? role : 'operatore'
@@ -157,7 +153,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
     setError(null)
 
     if (effectiveRole === 'operatore' && !isValidPin(pin)) {
-      setError('Il PIN deve avere esattamente 6 cifre.')
+      setError(t('staff.operators.pinError'))
       return
     }
 
@@ -182,7 +178,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
       setPassword('')
       await onCreated()
     } catch (err) {
-      setError(describeCreateAccountError(err))
+      setError(describeCreateAccountError(err, t))
     } finally {
       setPending(false)
     }
@@ -191,14 +187,14 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-foreground">{isMaster ? 'Nuovo account' : 'Nuovo operatore'}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{isMaster ? t('staff.operators.newAccount') : t('staff.operators.newOperator')}</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FieldGroup>
               <Label htmlFor="name" required>
-                Nome
+                {t('staff.operators.name')}
               </Label>
               <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
             </FieldGroup>
@@ -206,7 +202,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
             {isMaster && (
               <FieldGroup>
                 <Label htmlFor="hotel" required>
-                  Hotel
+                  {t('staff.operators.hotel')}
                 </Label>
                 <Select id="hotel" required value={hotelId} onChange={(e) => setHotelId(e.target.value)}>
                   {hotels.map((h) => (
@@ -221,11 +217,11 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
             {isMaster && (
               <FieldGroup>
                 <Label htmlFor="role" required>
-                  Ruolo
+                  {t('staff.operators.role')}
                 </Label>
                 <Select id="role" value={role} onChange={(e) => setRole(e.target.value as 'admin' | 'operatore')}>
-                  <option value="operatore">Operatore</option>
-                  <option value="admin">Admin hotel</option>
+                  <option value="operatore">{t('staff.operators.roleOperatore')}</option>
+                  <option value="admin">{t('staff.operators.roleAdminHotel')}</option>
                 </Select>
               </FieldGroup>
             )}
@@ -233,12 +229,12 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
             {effectiveRole === 'operatore' && (
               <FieldGroup>
                 <Label htmlFor="department" required>
-                  Reparto
+                  {t('staff.operators.department')}
                 </Label>
                 <Select id="department" value={department} onChange={(e) => setDepartment(e.target.value as StaffDepartment)}>
-                  <option value="housekeeping">Housekeeping</option>
-                  <option value="reception">Reception</option>
-                  <option value="maintenance">Maintenance</option>
+                  <option value="housekeeping">{t('department.housekeeping')}</option>
+                  <option value="reception">{t('department.reception')}</option>
+                  <option value="maintenance">{t('department.maintenance')}</option>
                 </Select>
               </FieldGroup>
             )}
@@ -247,13 +243,13 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
               <>
                 <FieldGroup>
                   <Label htmlFor="username" required>
-                    Username
+                    {t('staff.operators.username')}
                   </Label>
-                  <Input id="username" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="es. mario" />
+                  <Input id="username" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t('staff.operators.usernamePlaceholder')} />
                 </FieldGroup>
                 <FieldGroup>
                   <Label htmlFor="pin" required>
-                    PIN (6 cifre)
+                    {t('staff.operators.pin6')}
                   </Label>
                   <Input
                     id="pin"
@@ -269,13 +265,13 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
               <>
                 <FieldGroup>
                   <Label htmlFor="email" required>
-                    Email
+                    {t('staff.operators.email')}
                   </Label>
                   <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </FieldGroup>
                 <FieldGroup>
                   <Label htmlFor="password" required>
-                    Password iniziale
+                    {t('staff.operators.passwordInitial')}
                   </Label>
                   <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </FieldGroup>
@@ -284,7 +280,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
           </div>
           <FieldError>{error ?? undefined}</FieldError>
           <Button type="submit" disabled={pending || (isMaster && !hotelId)}>
-            {pending ? 'Creazione…' : 'Crea account'}
+            {pending ? t('staff.operators.submitPending') : t('staff.operators.submit')}
           </Button>
         </form>
       </CardBody>

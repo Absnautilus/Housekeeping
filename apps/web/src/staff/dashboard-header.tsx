@@ -1,20 +1,23 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { SVGProps } from 'react'
 import { LogoMark } from '@/components/logo'
+import { LanguageToggle } from '@/components/language-toggle'
 import { cn } from '@/lib/cn'
 import { signOut } from '@/lib/staff-api'
+import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 
-const DEPARTMENT_LABEL: Record<string, string> = {
-  reception: 'Reception',
-  housekeeping: 'Housekeeping',
-  maintenance: 'Maintenance',
-}
-
 export function DashboardHeader({ profile }: { profile: StaffProfile }) {
+  const { t } = useLocale()
   const location = useLocation()
   const roleLabel =
-    profile.role === 'master' ? 'Master' : profile.role === 'admin' ? 'Admin' : DEPARTMENT_LABEL[profile.department ?? ''] ?? 'Operatore'
+    profile.role === 'master'
+      ? t('role.master')
+      : profile.role === 'admin'
+        ? t('role.admin')
+        : profile.department
+          ? t(`department.${profile.department}`)
+          : t('role.operatore')
   const isAdminLike = profile.role === 'admin' || profile.role === 'master'
   const initials = profile.name
     .trim()
@@ -26,30 +29,32 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
 
   return (
     <div className="bg-background px-3 pt-3 sm:px-6 sm:pt-4">
-      <div className="mx-auto flex max-w-5xl items-center gap-1 rounded-full bg-foreground py-1.5 pr-2 pl-3 text-white shadow-md">
+      <div className="mx-auto flex max-w-5xl items-center gap-1 rounded-full bg-accent py-1.5 pr-2 pl-3 text-white shadow-md">
         <Link to="/staff" className="flex shrink-0 items-center gap-2 rounded-full py-1.5 pr-2 hover:opacity-80">
-          <LogoMark className="h-5 w-5 text-accent" mouthColor="#fff" />
+          <LogoMark className="h-5 w-5 text-white" mouthColor="var(--accent)" />
           <span className="hidden font-head text-sm font-extrabold sm:inline">RoomCall</span>
         </Link>
 
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
         <nav className="flex shrink-0 items-center gap-0.5">
-          <NavLink to="/staff" label="Richieste" icon={IconInbox} active={location.pathname === '/staff'} />
+          <NavLink to="/staff" label={t('staff.nav.requests')} icon={IconInbox} active={location.pathname === '/staff'} />
           {(isAdminLike || profile.department === 'reception') && (
-            <NavLink to="/staff/soggiorni" label="Soggiorni" icon={IconBed} active={location.pathname.startsWith('/staff/soggiorni')} />
+            <NavLink to="/staff/soggiorni" label={t('staff.nav.stays')} icon={IconBed} active={location.pathname.startsWith('/staff/soggiorni')} />
           )}
           {isAdminLike && (
-            <NavLink to="/staff/admin" label="Gestione" icon={IconSettings} active={location.pathname.startsWith('/staff/admin')} />
+            <NavLink to="/staff/admin" label={t('staff.nav.admin')} icon={IconSettings} active={location.pathname.startsWith('/staff/admin')} />
           )}
         </nav>
 
         <div className="flex-1" />
 
+        <LanguageToggle dark />
+
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
         <div className="hidden items-center gap-2 rounded-full bg-white/10 py-1 pr-3 pl-1 sm:flex">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-ink">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold text-accent">
             {initials}
           </span>
           <div className="leading-tight">
@@ -61,8 +66,8 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
         <button
           type="button"
           onClick={() => void signOut()}
-          title="Esci"
-          aria-label="Esci"
+          title={t('staff.nav.logout')}
+          aria-label={t('staff.nav.logout')}
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
         >
           <IconExit className="h-4 w-4" />

@@ -22,3 +22,5 @@ export const DEPARTMENT_LABEL: Record<Department, string> = {
   maintenance: 'Maintenance',
   porter: 'Portineria',
 }
+
+export const DEPARTMENTS: Department[] = ['reception', 'housekeeping', 'maintenance', 'porter']

@@ -6,6 +6,7 @@ import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/fi
 import { listRooms, type Room } from '@/lib/admin-api'
 import { cancelStay, createStay, listStays, updateCheckout, type Stay } from '@/lib/stays-api'
 import { useConfirm } from '@/components/confirm-dialog'
+import { useLocale } from '@/lib/i18n/locale-context'
 
 function toLocalInputValue(iso: string): string {
   const d = new Date(iso)
@@ -14,6 +15,7 @@ function toLocalInputValue(iso: string): string {
 }
 
 export function StaysPage() {
+  const { t } = useLocale()
   const [stays, setStays] = useState<Stay[] | null>(null)
   const [rooms, setRooms] = useState<Room[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -25,14 +27,15 @@ export function StaysPage() {
   }
 
   useEffect(() => {
-    reload().catch(() => setError('Non riusciamo a caricare i soggiorni.'))
+    reload().catch(() => setError(t('staff.stays.loadError')))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Soggiorni</h1>
-        <p className="text-sm text-muted">Attiva un soggiorno per abilitare l'accesso ospite alla camera.</p>
+        <h1 className="text-xl font-semibold text-foreground">{t('staff.stays.title')}</h1>
+        <p className="text-sm text-muted">{t('staff.stays.subtitle')}</p>
       </div>
 
       <NewStayForm rooms={rooms} onCreated={reload} />
@@ -41,9 +44,9 @@ export function StaysPage() {
 
       <div className="space-y-3">
         {stays === null ? (
-          <p className="text-sm text-muted">Caricamento…</p>
+          <p className="text-sm text-muted">{t('staff.stays.loading')}</p>
         ) : stays.length === 0 ? (
-          <EmptyState icon={<IconBedEmpty className="h-6 w-6" />} title="Nessun soggiorno attivo" description="Attiva un soggiorno qui sopra per abilitare l'accesso ospite alla camera." />
+          <EmptyState icon={<IconBedEmpty className="h-6 w-6" />} title={t('staff.stays.emptyTitle')} description={t('staff.stays.emptyDesc')} />
         ) : (
           stays.map((stay) => <StayRow key={stay.id} stay={stay} onChanged={reload} />)
         )}
@@ -53,6 +56,7 @@ export function StaysPage() {
 }
 
 function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Promise<void> }) {
+  const { t } = useLocale()
   const [roomId, setRoomId] = useState('')
   const [lastName, setLastName] = useState('')
   const [checkIn, setCheckIn] = useState('')
@@ -79,7 +83,7 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
       setCheckOut('')
       await onCreated()
     } catch {
-      setError('Impossibile attivare il soggiorno: controlla che la camera non abbia già un soggiorno attivo sovrapposto.')
+      setError(t('staff.stays.addError'))
     } finally {
       setPending(false)
     }
@@ -88,26 +92,26 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-foreground">Attiva soggiorno</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t('staff.stays.addTitle')}</h2>
       </CardHeader>
       <CardBody>
         {createdPin && (
           <div className="mb-4 rounded-lg border border-ok-ink/25 bg-ok-bg p-3 text-sm text-ok-ink">
-            Soggiorno attivato — Camera {createdPin.roomNumber}, PIN ospite:{' '}
+            {t('staff.stays.activatedBanner', { room: createdPin.roomNumber })}{' '}
             <span className="font-mono text-base font-semibold tracking-widest">{createdPin.pin}</span>
             <br />
-            Comunica questo PIN all'ospite (es. scrivilo sulla busta della chiave).
+            {t('staff.stays.communicatePin')}
           </div>
         )}
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <FieldGroup>
               <Label htmlFor="room" required>
-                Camera
+                {t('staff.stays.room')}
               </Label>
               <Select id="room" required value={roomId} onChange={(e) => setRoomId(e.target.value)}>
                 <option value="" disabled>
-                  Seleziona…
+                  {t('staff.stays.selectPlaceholder')}
                 </option>
                 {rooms.map((room) => (
                   <option key={room.id} value={room.id}>
@@ -118,26 +122,26 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="lastName" required>
-                Cognome ospite
+                {t('staff.stays.guestLastName')}
               </Label>
               <Input id="lastName" required value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="checkIn" required>
-                Check-in
+                {t('staff.stays.checkIn')}
               </Label>
               <Input id="checkIn" type="datetime-local" required value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="checkOut" required>
-                Check-out
+                {t('staff.stays.checkOut')}
               </Label>
               <Input id="checkOut" type="datetime-local" required value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
             </FieldGroup>
           </div>
           <FieldError>{error ?? undefined}</FieldError>
           <Button type="submit" disabled={pending}>
-            {pending ? 'Attivazione…' : 'Attiva soggiorno'}
+            {pending ? t('staff.stays.submitPending') : t('staff.stays.submit')}
           </Button>
         </form>
       </CardBody>
@@ -146,6 +150,7 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
 }
 
 function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<void> }) {
+  const { t } = useLocale()
   const [editingCheckout, setEditingCheckout] = useState(false)
   const [checkOut, setCheckOut] = useState(toLocalInputValue(stay.check_out_at))
   const [pending, setPending] = useState(false)
@@ -163,9 +168,9 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
 
   async function onDeactivate() {
     const ok = await confirm({
-      title: 'Disattivare il soggiorno?',
-      description: `Camera ${stay.rooms?.room_number} · ${stay.guest_last_name} perderà subito l'accesso con il PIN ${stay.guest_pin}.`,
-      confirmLabel: 'Disattiva',
+      title: t('staff.stays.deactivateTitle'),
+      description: t('staff.stays.deactivateDesc', { room: stay.rooms?.room_number ?? '', name: stay.guest_last_name, pin: stay.guest_pin }),
+      confirmLabel: t('staff.stays.deactivateConfirm'),
     })
     if (ok) run(() => cancelStay(stay.id))
   }
@@ -176,11 +181,11 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
       <CardBody className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-medium text-foreground">
-            Camera {stay.rooms?.room_number} · {stay.guest_last_name}
+            {t('staff.stays.room')} {stay.rooms?.room_number} · {stay.guest_last_name}
           </p>
           <p className="text-sm text-muted">
-            Check-out: {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} · PIN:{' '}
-            <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
+            {t('staff.stays.checkoutLabel')} {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} ·{' '}
+            {t('staff.stays.pinLabel')} <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
           </p>
         </div>
         {editingCheckout ? (
@@ -191,22 +196,22 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
               disabled={pending}
               onClick={() => run(() => updateCheckout(stay.id, new Date(checkOut).toISOString())).then(() => setEditingCheckout(false))}
             >
-              Salva
+              {t('staff.stays.save')}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditingCheckout(false)}>
-              Annulla
+              {t('staff.stays.cancel')}
             </Button>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}>
-              Anticipa checkout
+              {t('staff.stays.checkoutNow')}
             </Button>
             <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
-              Estendi
+              {t('staff.stays.extend')}
             </Button>
             <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
-              Disattiva
+              {t('staff.stays.deactivate')}
             </Button>
           </div>
         )}
