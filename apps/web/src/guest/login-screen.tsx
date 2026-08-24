@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { LogoMark } from '@/components/logo'
 import { LanguageToggle } from '@/components/language-toggle'
+import { TextSizeToggle } from '@/components/text-size-toggle'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { guestLogin } from '@/lib/guest-api'
@@ -82,7 +83,8 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
         <p className="mt-6 text-center text-[11.5px] text-muted">
           {t('login.staffPrompt')} <Link to="/staff" className="font-semibold text-accent hover:underline">{t('login.staffLink')}</Link>
         </p>
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4 flex justify-center gap-2">
+          <TextSizeToggle />
           <LanguageToggle />
         </div>
       </div>

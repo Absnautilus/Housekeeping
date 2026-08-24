@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { LogoMark } from '@/components/logo'
 import { LanguageToggle } from '@/components/language-toggle'
+import { TextSizeToggle } from '@/components/text-size-toggle'
 import { useLocale } from '@/lib/i18n/locale-context'
 
 export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
@@ -12,6 +13,7 @@ export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
           <LogoMark className="h-5 w-5 text-white" mouthColor="var(--accent)" />
           <span className="font-head text-sm font-extrabold">RoomCall</span>
         </Link>
+        <TextSizeToggle dark align="right" />
         <LanguageToggle dark align="right" />
         {onLogout && (
           <button

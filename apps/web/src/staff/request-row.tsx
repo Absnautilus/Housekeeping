@@ -6,12 +6,21 @@ import { Select } from '@/components/ui/field'
 import { Avatar } from '@/components/avatar'
 import { AutoText } from '@/components/auto-text'
 import { DEPARTMENTS } from '@/lib/constants'
+import { cn } from '@/lib/cn'
 import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
 import { cancelRequest, claimRequest, completeRequest, reassignRequest } from '@/lib/staff-api'
 import type { QueuedRequest } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
+
+// Buttons, the Select trigger, and its open option list all need normal
+// clicks to keep working even though the card around them is a drag
+// surface — this is what tells a pointerdown on one of those apart from a
+// pointerdown on blank card space that should start a drag.
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('button, select, a, input, textarea, [role="listbox"], [role="option"]') !== null
+}
 
 export function RequestRow({
   request,
@@ -21,9 +30,9 @@ export function RequestRow({
   canReorder = false,
   onMoveUp,
   onMoveDown,
-  onDragHandlePointerDown,
-  onDragHandlePointerMove,
-  onDragHandlePointerUp,
+  onDragPointerDown,
+  onDragPointerMove,
+  onDragPointerUp,
 }: {
   request: QueuedRequest
   now: Date
@@ -32,9 +41,9 @@ export function RequestRow({
   canReorder?: boolean
   onMoveUp?: () => void
   onMoveDown?: () => void
-  onDragHandlePointerDown?: (e: ReactPointerEvent<HTMLButtonElement>) => void
-  onDragHandlePointerMove?: (e: ReactPointerEvent<HTMLButtonElement>) => void
-  onDragHandlePointerUp?: (e: ReactPointerEvent<HTMLButtonElement>) => void
+  onDragPointerDown?: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onDragPointerMove?: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onDragPointerUp?: (e: ReactPointerEvent<HTMLDivElement>) => void
 }) {
   const { t } = useLocale()
   const [pending, setPending] = useState(false)
@@ -73,8 +82,24 @@ export function RequestRow({
         ? t('staff.row.inChargeSince', { time: formatElapsed(request.accepted_at, now) })
         : t('staff.row.waitingSince', { time: formatElapsed(request.created_at, now) })
 
+  const draggable = canReorder && mode === 'active' && request.status === 'in_progress' && Boolean(onDragPointerDown)
+
   return (
-    <Card>
+    <Card
+      onPointerDown={
+        draggable
+          ? (e) => {
+              if (isInteractiveTarget(e.target)) return
+              onDragPointerDown?.(e)
+            }
+          : undefined
+      }
+      onPointerMove={draggable ? onDragPointerMove : undefined}
+      onPointerUp={draggable ? onDragPointerUp : undefined}
+      onPointerCancel={draggable ? onDragPointerUp : undefined}
+      className={cn(draggable && 'touch-none cursor-grab select-none active:cursor-grabbing')}
+      aria-roledescription={draggable ? t('staff.row.drag') : undefined}
+    >
       {confirmDialog}
       <CardBody>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -106,42 +131,26 @@ export function RequestRow({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
           <div className="flex items-center gap-2">
             {canReorder && mode === 'active' && request.status === 'in_progress' && (
-              <>
-                {onDragHandlePointerDown && (
-                  <button
-                    type="button"
-                    onPointerDown={onDragHandlePointerDown}
-                    onPointerMove={onDragHandlePointerMove}
-                    onPointerUp={onDragHandlePointerUp}
-                    onPointerCancel={onDragHandlePointerUp}
-                    aria-label={t('staff.row.drag')}
-                    title={t('staff.row.drag')}
-                    className="flex touch-none cursor-grab items-center justify-center text-muted hover:text-accent active:cursor-grabbing"
-                  >
-                    <DragHandleIcon className="h-4 w-4" />
-                  </button>
-                )}
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    disabled={!onMoveUp}
-                    onClick={onMoveUp}
-                    aria-label={t('staff.row.moveUp')}
-                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!onMoveDown}
-                    onClick={onMoveDown}
-                    aria-label={t('staff.row.moveDown')}
-                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ▼
-                  </button>
-                </div>
-              </>
+              <div className="flex flex-col">
+                <button
+                  type="button"
+                  disabled={!onMoveUp}
+                  onClick={onMoveUp}
+                  aria-label={t('staff.row.moveUp')}
+                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  disabled={!onMoveDown}
+                  onClick={onMoveDown}
+                  aria-label={t('staff.row.moveDown')}
+                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  ▼
+                </button>
+              </div>
             )}
             <p className="text-xs text-muted">{elapsedLabel}</p>
           </div>
@@ -179,18 +188,5 @@ export function RequestRow({
         {error && <p className="mt-2 text-xs text-bad-ink">{error}</p>}
       </CardBody>
     </Card>
-  )
-}
-
-function DragHandleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="9" cy="6" r="1.5" />
-      <circle cx="15" cy="6" r="1.5" />
-      <circle cx="9" cy="12" r="1.5" />
-      <circle cx="15" cy="12" r="1.5" />
-      <circle cx="9" cy="18" r="1.5" />
-      <circle cx="15" cy="18" r="1.5" />
-    </svg>
   )
 }

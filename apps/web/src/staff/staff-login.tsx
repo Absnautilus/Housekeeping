@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { LanguageToggle } from '@/components/language-toggle'
+import { TextSizeToggle } from '@/components/text-size-toggle'
 import { LogoMark } from '@/components/logo'
 import { signIn, signInOperator } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -117,7 +118,8 @@ export function StaffLogin() {
         <p className="mt-6 text-center text-[11.5px] text-muted">
           {t('staff.login.guestPrompt')} <Link to="/g" className="font-semibold text-accent hover:underline">{t('staff.login.guestLink')}</Link>
         </p>
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4 flex justify-center gap-2">
+          <TextSizeToggle />
           <LanguageToggle />
         </div>
       </div>

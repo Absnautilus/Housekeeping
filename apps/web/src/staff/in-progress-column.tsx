@@ -53,7 +53,7 @@ export function InProgressColumn({
     })
   }
 
-  function onHandlePointerDown(e: ReactPointerEvent<HTMLButtonElement>, id: string) {
+  function onHandlePointerDown(e: ReactPointerEvent<HTMLDivElement>, id: string) {
     if (!canReorder) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -61,7 +61,7 @@ export function InProgressColumn({
     setDraggingId(id)
   }
 
-  function onHandlePointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
+  function onHandlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     if (!draggingId) return
     reorderAround(e.clientY, draggingId)
   }
@@ -112,9 +112,9 @@ export function InProgressColumn({
             canReorder={canReorder}
             onMoveUp={i > 0 ? () => moveAdjacent(order, i, -1, onReordered) : undefined}
             onMoveDown={i < order.length - 1 ? () => moveAdjacent(order, i, 1, onReordered) : undefined}
-            onDragHandlePointerDown={canReorder ? (e) => onHandlePointerDown(e, request.id) : undefined}
-            onDragHandlePointerMove={canReorder ? onHandlePointerMove : undefined}
-            onDragHandlePointerUp={canReorder ? onHandlePointerUp : undefined}
+            onDragPointerDown={canReorder ? (e) => onHandlePointerDown(e, request.id) : undefined}
+            onDragPointerMove={canReorder ? onHandlePointerMove : undefined}
+            onDragPointerUp={canReorder ? onHandlePointerUp : undefined}
           />
         </div>
       ))}

@@ -48,6 +48,11 @@ export const dictionaries = {
     'role.admin': 'Admin',
     'role.operatore': 'Operatore',
 
+    'uiScale.label': 'Dimensione testo',
+    'uiScale.normal': 'Normale',
+    'uiScale.large': 'Grande',
+    'uiScale.xlarge': 'Molto grande',
+
     'staff.nav.requests': 'Richieste',
     'staff.nav.stays': 'Soggiorni',
     'staff.nav.admin': 'Gestione',
@@ -309,6 +314,11 @@ export const dictionaries = {
     'role.admin': 'Admin',
     'role.operatore': 'Operator',
 
+    'uiScale.label': 'Text size',
+    'uiScale.normal': 'Normal',
+    'uiScale.large': 'Large',
+    'uiScale.xlarge': 'Extra large',
+
     'staff.nav.requests': 'Requests',
     'staff.nav.stays': 'Stays',
     'staff.nav.admin': 'Management',
@@ -568,6 +578,11 @@ export const dictionaries = {
     'role.master': 'Master',
     'role.admin': 'Admin',
     'role.operatore': 'Opérateur',
+
+    'uiScale.label': 'Taille du texte',
+    'uiScale.normal': 'Normale',
+    'uiScale.large': 'Grande',
+    'uiScale.xlarge': 'Très grande',
 
     'staff.nav.requests': 'Demandes',
     'staff.nav.stays': 'Séjours',
@@ -831,6 +846,11 @@ export const dictionaries = {
     'role.admin': 'Admin',
     'role.operatore': 'Mitarbeiter',
 
+    'uiScale.label': 'Textgröße',
+    'uiScale.normal': 'Normal',
+    'uiScale.large': 'Groß',
+    'uiScale.xlarge': 'Sehr groß',
+
     'staff.nav.requests': 'Anfragen',
     'staff.nav.stays': 'Aufenthalte',
     'staff.nav.admin': 'Verwaltung',
@@ -1091,6 +1111,11 @@ export const dictionaries = {
     'role.master': 'Master',
     'role.admin': 'Admin',
     'role.operatore': 'Operador',
+
+    'uiScale.label': 'Tamaño del texto',
+    'uiScale.normal': 'Normal',
+    'uiScale.large': 'Grande',
+    'uiScale.xlarge': 'Muy grande',
 
     'staff.nav.requests': 'Solicitudes',
     'staff.nav.stays': 'Estancias',
@@ -1353,6 +1378,11 @@ export const dictionaries = {
     'role.master': 'Master',
     'role.admin': 'Admin',
     'role.operatore': 'Operador',
+
+    'uiScale.label': 'Tamanho do texto',
+    'uiScale.normal': 'Normal',
+    'uiScale.large': 'Grande',
+    'uiScale.xlarge': 'Muito grande',
 
     'staff.nav.requests': 'Pedidos',
     'staff.nav.stays': 'Estadias',

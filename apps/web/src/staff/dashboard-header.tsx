@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import type { SVGProps } from 'react'
 import { LogoMark } from '@/components/logo'
 import { LanguageToggle } from '@/components/language-toggle'
+import { TextSizeToggle } from '@/components/text-size-toggle'
 import { cn } from '@/lib/cn'
 import { signOut } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -49,6 +50,7 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
 
         <div className="flex-1" />
 
+        <TextSizeToggle dark align="right" />
         <LanguageToggle dark align="right" />
 
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
