@@ -49,7 +49,7 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
 
         <div className="flex-1" />
 
-        <LanguageToggle dark />
+        <LanguageToggle dark align="right" />
 
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 

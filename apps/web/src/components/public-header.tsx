@@ -12,7 +12,7 @@ export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
           <LogoMark className="h-5 w-5 text-white" mouthColor="var(--accent)" />
           <span className="font-head text-sm font-extrabold">RoomCall</span>
         </Link>
-        <LanguageToggle dark />
+        <LanguageToggle dark align="right" />
         {onLogout && (
           <button
             type="button"

@@ -4,7 +4,7 @@ import { useLocale } from '@/lib/i18n/locale-context'
 import { FlagIcon } from '@/components/flag-icon'
 import { cn } from '@/lib/cn'
 
-export function LanguageToggle({ dark = false }: { dark?: boolean } = {}) {
+export function LanguageToggle({ dark = false, align = 'center' }: { dark?: boolean; align?: 'center' | 'right' } = {}) {
   const { locale, setLocale } = useLocale()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -33,7 +33,12 @@ export function LanguageToggle({ dark = false }: { dark?: boolean } = {}) {
         <FlagIcon code={locale} className="h-6 w-6" />
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-2 flex gap-1.5 rounded-full border border-line bg-white p-1.5 shadow-lg">
+        <div
+          className={cn(
+            'absolute z-10 mt-2 flex gap-1.5 rounded-full border border-line bg-white p-1.5 shadow-lg',
+            align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2',
+          )}
+        >
           {LOCALES.map((l) => (
             <button
               key={l.code}
