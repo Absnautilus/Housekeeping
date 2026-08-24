@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { SVGProps } from 'react'
 import { LogoMark } from '@/components/logo'
-import { LanguageToggle } from '@/components/language-toggle'
 import { cn } from '@/lib/cn'
 import { signOut } from '@/lib/staff-api'
 import type { StaffProfile } from '@/lib/staff-types'
@@ -46,8 +45,6 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
         </nav>
 
         <div className="flex-1" />
-
-        <LanguageToggle dark />
 
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 

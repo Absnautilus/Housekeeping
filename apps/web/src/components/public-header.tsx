@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/logo'
-import { LanguageToggle } from '@/components/language-toggle'
 import { useLocale } from '@/lib/i18n/locale-context'
 
 export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
@@ -11,7 +10,6 @@ export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
         <Link to="/g" className="flex flex-1 items-center hover:opacity-80">
           <Logo />
         </Link>
-        <LanguageToggle />
         {onLogout && (
           <button
             type="button"

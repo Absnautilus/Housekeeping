@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { PublicHeader } from '@/components/public-header'
+import { LogoMark } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { guestLogin } from '@/lib/guest-api'
@@ -37,10 +38,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
       <div className="mx-auto max-w-sm px-4 pt-10">
         <div className="rounded-lg border border-line bg-surface p-9 shadow-md">
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="5" y="11" width="14" height="9" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
+            <LogoMark className="h-6 w-6" mouthColor="#fff" />
           </div>
           <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">RoomCall</div>
           <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">{t('login.title')}</h1>
