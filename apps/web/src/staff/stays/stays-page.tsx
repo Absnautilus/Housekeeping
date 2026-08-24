@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { listRooms, type Room } from '@/lib/admin-api'
 import { cancelStay, createStay, listStays, updateCheckout, type Stay } from '@/lib/stays-api'
+import { useConfirm } from '@/components/confirm-dialog'
 
 function toLocalInputValue(iso: string): string {
   const d = new Date(iso)
@@ -148,6 +149,7 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
   const [editingCheckout, setEditingCheckout] = useState(false)
   const [checkOut, setCheckOut] = useState(toLocalInputValue(stay.check_out_at))
   const [pending, setPending] = useState(false)
+  const [confirmDialog, confirm] = useConfirm()
 
   async function run(action: () => Promise<void>) {
     setPending(true)
@@ -159,8 +161,18 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
     }
   }
 
+  async function onDeactivate() {
+    const ok = await confirm({
+      title: 'Disattivare il soggiorno?',
+      description: `Camera ${stay.rooms?.room_number} · ${stay.guest_last_name} perderà subito l'accesso con il PIN ${stay.guest_pin}.`,
+      confirmLabel: 'Disattiva',
+    })
+    if (ok) run(() => cancelStay(stay.id))
+  }
+
   return (
     <Card>
+      {confirmDialog}
       <CardBody className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-medium text-foreground">
@@ -193,7 +205,7 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
             <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
               Estendi
             </Button>
-            <Button size="sm" variant="danger" disabled={pending} onClick={() => run(() => cancelStay(stay.id))}>
+            <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
               Disattiva
             </Button>
           </div>

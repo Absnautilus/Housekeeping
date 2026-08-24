@@ -14,6 +14,7 @@ import {
 import { isValidPin } from '@/lib/operator-login'
 import type { StaffDepartment, StaffRole } from '@/lib/types'
 import type { StaffProfile } from '@/lib/staff-types'
+import { useConfirm } from '@/components/confirm-dialog'
 
 function describeCreateAccountError(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err)
@@ -39,6 +40,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
   const isMaster = profile.role === 'master'
   const [staff, setStaff] = useState<OperatorSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
     setStaff(await listStaff())
@@ -48,8 +50,22 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
     reload().catch(() => setError('Non riusciamo a caricare lo staff.'))
   }, [])
 
+  async function onToggle(person: OperatorSummary) {
+    if (person.active) {
+      const ok = await confirm({
+        title: 'Disattivare questo account?',
+        description: `${person.name} non potrà più accedere finché non lo riattivi da qui.`,
+        confirmLabel: 'Disattiva',
+      })
+      if (!ok) return
+    }
+    await setStaffActive(person.id, !person.active)
+    await reload()
+  }
+
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <div>
         <h1 className="text-xl font-semibold text-foreground">Staff</h1>
         <p className="text-sm text-muted">
@@ -95,7 +111,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
                       <button
                         type="button"
                         className="cursor-pointer text-xs text-muted hover:text-foreground"
-                        onClick={() => setStaffActive(person.id, !person.active).then(reload)}
+                        onClick={() => onToggle(person)}
                       >
                         {person.active ? 'Disattiva' : 'Riattiva'}
                       </button>

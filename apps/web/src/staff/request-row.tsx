@@ -9,6 +9,7 @@ import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
 import { cancelRequest, claimRequest, completeRequest, reassignRequest } from '@/lib/staff-api'
 import type { QueuedRequest } from '@/lib/staff-types'
+import { useConfirm } from '@/components/confirm-dialog'
 
 export function RequestRow({
   request,
@@ -29,6 +30,7 @@ export function RequestRow({
 }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, confirm] = useConfirm()
   const typeName = request.request_types?.name ?? 'Richiesta'
   const categoryName = request.request_types?.request_categories?.name
 
@@ -44,6 +46,15 @@ export function RequestRow({
     }
   }
 
+  async function onCancel() {
+    const ok = await confirm({
+      title: 'Annullare la richiesta?',
+      description: `Camera ${request.room_number} · ${typeName}. L'ospite non verrà più servito su questa richiesta.`,
+      confirmLabel: 'Annulla richiesta',
+    })
+    if (ok) run(() => cancelRequest(request.id))
+  }
+
   const elapsedLabel =
     mode !== 'active'
       ? request.status === 'completed'
@@ -55,6 +66,7 @@ export function RequestRow({
 
   return (
     <Card>
+      {confirmDialog}
       <CardBody>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -127,7 +139,7 @@ export function RequestRow({
                   Completa
                 </Button>
               )}
-              <Button size="sm" variant="danger" disabled={pending} onClick={() => run(() => cancelRequest(request.id))}>
+              <Button size="sm" variant="danger" disabled={pending} onClick={onCancel}>
                 Annulla
               </Button>
             </div>

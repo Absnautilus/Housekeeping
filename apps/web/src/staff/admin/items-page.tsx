@@ -10,11 +10,13 @@ import {
   type RequestCategoryAdmin,
   type RequestTypeAdmin,
 } from '@/lib/admin-api'
+import { useConfirm } from '@/components/confirm-dialog'
 
 export function ItemsPage() {
   const [categories, setCategories] = useState<RequestCategoryAdmin[]>([])
   const [types, setTypes] = useState<RequestTypeAdmin[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
     const menu = await listMenu()
@@ -26,8 +28,22 @@ export function ItemsPage() {
     reload().catch(() => setError('Non riusciamo a caricare il menu.'))
   }, [])
 
+  async function onToggle(item: RequestTypeAdmin) {
+    if (item.active) {
+      const ok = await confirm({
+        title: 'Disattivare questo elemento?',
+        description: `"${item.name}" non sarà più richiedibile dagli ospiti.`,
+        confirmLabel: 'Disattiva',
+      })
+      if (!ok) return
+    }
+    await setRequestTypeActive(item.id, !item.active)
+    await reload()
+  }
+
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <div>
         <h1 className="text-xl font-semibold text-foreground">Menu richieste</h1>
         <p className="text-sm text-muted">Gli oggetti/servizi che l'ospite può richiedere, raggruppati per categoria.</p>
@@ -70,7 +86,7 @@ export function ItemsPage() {
                           <button
                             type="button"
                             className="cursor-pointer text-xs text-muted hover:text-foreground"
-                            onClick={() => setRequestTypeActive(item.id, !item.active).then(reload)}
+                            onClick={() => onToggle(item)}
                           >
                             {item.active ? 'Disattiva' : 'Riattiva'}
                           </button>

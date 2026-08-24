@@ -66,7 +66,13 @@ export function GuestApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
-  if (!checked) return null
+  if (!checked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-7 w-7 animate-spin rounded-full border-3 border-line-strong border-t-accent" />
+      </div>
+    )
+  }
 
   if (!token) {
     return (

@@ -44,7 +44,13 @@ export function StaffApp() {
     }
   }, [])
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-7 w-7 animate-spin rounded-full border-3 border-line-strong border-t-accent" />
+      </div>
+    )
+  }
   if (!profile) return <StaffLogin />
   if (!profile.active) {
     return (
@@ -64,6 +70,14 @@ export function StaffApp() {
           <Route path="/" element={<RequestQueue profile={profile} />} />
           {(isAdminLike || profile.department === 'reception') && <Route path="/soggiorni" element={<StaysPage />} />}
           {isAdminLike && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
+          <Route
+            path="*"
+            element={
+              <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
+                Questa sezione non è disponibile per il tuo ruolo.
+              </div>
+            }
+          />
         </Routes>
       </main>
     </div>

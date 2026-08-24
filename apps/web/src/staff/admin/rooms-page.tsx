@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import { createRoom, listRooms, setRoomActive, type Room } from '@/lib/admin-api'
+import { useConfirm } from '@/components/confirm-dialog'
 
 export function RoomsPage() {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [roomNumber, setRoomNumber] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
     setRooms(await listRooms())
@@ -18,6 +20,19 @@ export function RoomsPage() {
   useEffect(() => {
     reload().catch(() => setError('Non riusciamo a caricare le camere.'))
   }, [])
+
+  async function onToggle(room: Room) {
+    if (room.active) {
+      const ok = await confirm({
+        title: 'Disattivare questa camera?',
+        description: `La camera ${room.room_number} non sarà più selezionabile per nuovi soggiorni.`,
+        confirmLabel: 'Disattiva',
+      })
+      if (!ok) return
+    }
+    await setRoomActive(room.id, !room.active)
+    await reload()
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,6 +51,7 @@ export function RoomsPage() {
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <div>
         <h1 className="text-xl font-semibold text-foreground">Camere</h1>
         <p className="text-sm text-muted">Le camere qui sotto sono selezionabili quando si attiva un soggiorno.</p>
@@ -83,7 +99,7 @@ export function RoomsPage() {
                   <button
                     type="button"
                     className="cursor-pointer text-xs text-muted hover:text-foreground"
-                    onClick={() => setRoomActive(room.id, !room.active).then(reload)}
+                    onClick={() => onToggle(room)}
                   >
                     {room.active ? 'Disattiva' : 'Riattiva'}
                   </button>
