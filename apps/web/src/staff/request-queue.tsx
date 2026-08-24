@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ToastStack } from '@/components/toast-stack'
+import { EmptyState, IconInboxEmpty } from '@/components/empty-state'
 import { cn } from '@/lib/cn'
 import { fetchQueue, subscribeToQueue, swapPriority } from '@/lib/staff-api'
 import { useToasts } from '@/hooks/use-toasts'
@@ -112,9 +113,11 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         <p className="text-sm text-muted">Caricamento…</p>
       ) : tab === 'active' ? (
         active.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-line-strong bg-white p-10 text-center text-sm text-muted">
-            Nessuna richiesta in attesa al momento.
-          </div>
+          <EmptyState
+            icon={<IconInboxEmpty className="h-6 w-6" />}
+            title="Nessuna richiesta in attesa"
+            description="Le nuove richieste degli ospiti e dello staff appariranno qui non appena arrivano."
+          />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-wait-ink/25 bg-wait-bg/60 p-3">
@@ -159,9 +162,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
           </div>
         )
       ) : done.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-line-strong bg-white p-10 text-center text-sm text-muted">
-          Nessuna richiesta evasa finora.
-        </div>
+        <EmptyState icon={<IconInboxEmpty className="h-6 w-6" />} title="Nessuna richiesta evasa" description="Le richieste completate o annullate finiranno qui." />
       ) : (
         <div className="space-y-3">
           {done.map((request) => (

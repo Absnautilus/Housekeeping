@@ -4,7 +4,7 @@ import { useLocale } from '@/lib/i18n/locale-context'
 import { FlagIcon } from '@/components/flag-icon'
 import { cn } from '@/lib/cn'
 
-export function LanguageToggle() {
+export function LanguageToggle({ dark = false }: { dark?: boolean } = {}) {
   const { locale, setLocale } = useLocale()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -25,9 +25,12 @@ export function LanguageToggle() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Lingua"
         aria-expanded={open}
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-line shadow-sm hover:border-accent-soft-line"
+        className={cn(
+          'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors',
+          dark ? 'hover:bg-white/10' : 'border border-line shadow-sm hover:border-accent-soft-line',
+        )}
       >
-        <FlagIcon code={locale} className="h-7 w-7" />
+        <FlagIcon code={locale} className="h-6 w-6" />
       </button>
       {open && (
         <div className="absolute right-0 z-10 mt-2 flex gap-1.5 rounded-full border border-line bg-white p-1.5 shadow-lg">

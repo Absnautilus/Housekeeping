@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { SVGProps } from 'react'
-import { Logo } from '@/components/logo'
+import { LogoMark } from '@/components/logo'
+import { LanguageToggle } from '@/components/language-toggle'
 import { cn } from '@/lib/cn'
 import { signOut } from '@/lib/staff-api'
 import type { StaffProfile } from '@/lib/staff-types'
@@ -16,22 +17,25 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
   const roleLabel =
     profile.role === 'master' ? 'Master' : profile.role === 'admin' ? 'Admin' : DEPARTMENT_LABEL[profile.department ?? ''] ?? 'Operatore'
   const isAdminLike = profile.role === 'admin' || profile.role === 'master'
+  const initials = profile.name
+    .trim()
+    .split(/\s+/)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
-    <header className="border-b border-line bg-white">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
-        <Link to="/staff" className="shrink-0 hover:opacity-80">
-          <Logo />
+    <div className="bg-background px-3 pt-3 sm:px-6 sm:pt-4">
+      <div className="mx-auto flex max-w-5xl items-center gap-1 rounded-full bg-foreground py-1.5 pr-2 pl-3 text-white shadow-md">
+        <Link to="/staff" className="flex shrink-0 items-center gap-2 rounded-full py-1.5 pr-2 hover:opacity-80">
+          <LogoMark className="h-5 w-5 text-accent" mouthColor="#fff" />
+          <span className="hidden font-head text-sm font-extrabold sm:inline">RoomCall</span>
         </Link>
 
-        <div className="hidden h-8 w-px shrink-0 bg-line-strong sm:block" />
+        <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-wide text-muted">{roleLabel}</p>
-          <p className="truncate font-semibold text-foreground">{profile.name}</p>
-        </div>
-
-        <nav className="flex shrink-0 items-center gap-1">
+        <nav className="flex shrink-0 items-center gap-0.5">
           <NavLink to="/staff" label="Richieste" icon={IconInbox} active={location.pathname === '/staff'} />
           {(isAdminLike || profile.department === 'reception') && (
             <NavLink to="/staff/soggiorni" label="Soggiorni" icon={IconBed} active={location.pathname.startsWith('/staff/soggiorni')} />
@@ -41,17 +45,33 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
           )}
         </nav>
 
+        <div className="flex-1" />
+
+        <LanguageToggle dark />
+
+        <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
+
+        <div className="hidden items-center gap-2 rounded-full bg-white/10 py-1 pr-3 pl-1 sm:flex">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-ink">
+            {initials}
+          </span>
+          <div className="leading-tight">
+            <p className="text-[9px] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p>
+            <p className="truncate text-xs font-semibold">{profile.name}</p>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={() => void signOut()}
           title="Esci"
           aria-label="Esci"
-          className="flex shrink-0 cursor-pointer items-center justify-center rounded-md p-2 text-muted hover:bg-surface-2 hover:text-bad-ink"
+          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
         >
-          <IconExit className="h-5 w-5" />
+          <IconExit className="h-4 w-4" />
         </button>
       </div>
-    </header>
+    </div>
   )
 }
 
@@ -71,8 +91,8 @@ function NavLink({
       to={to}
       title={label}
       className={cn(
-        'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium hover:bg-surface-2 sm:px-3',
-        active ? 'bg-accent-soft text-accent' : 'text-muted',
+        'flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3.5 sm:text-sm',
+        active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white',
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />

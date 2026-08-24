@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
+import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { listRooms, type Room } from '@/lib/admin-api'
@@ -41,7 +42,7 @@ export function StaysPage() {
         {stays === null ? (
           <p className="text-sm text-muted">Caricamento…</p>
         ) : stays.length === 0 ? (
-          <p className="text-sm text-muted">Nessun soggiorno attivo.</p>
+          <EmptyState icon={<IconBedEmpty className="h-6 w-6" />} title="Nessun soggiorno attivo" description="Attiva un soggiorno qui sopra per abilitare l'accesso ospite alla camera." />
         ) : (
           stays.map((stay) => <StayRow key={stay.id} stay={stay} onChanged={reload} />)
         )}
