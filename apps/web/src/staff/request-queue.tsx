@@ -85,8 +85,8 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Richieste ospiti</h1>
-          <p className="text-sm text-slate-500">Coda condivisa fra housekeeping e reception.</p>
+          <h1 className="text-xl font-semibold text-foreground">Richieste ospiti</h1>
+          <p className="text-sm text-muted">Coda condivisa fra housekeeping e reception.</p>
         </div>
         <DepartmentFilterBar value={department} onChange={setDepartment} />
       </div>
@@ -95,7 +95,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         <NewRequestForm staffId={profile.id} onCreated={reload} />
       </div>
 
-      <div className="mb-5 flex gap-1 rounded-md bg-slate-100 p-1 sm:w-fit">
+      <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
         <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
           Richieste attive ({active.length})
         </TabButton>
@@ -105,25 +105,25 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       </div>
 
       {loadError ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">
           Non riusciamo a caricare le richieste: {loadError}
         </div>
       ) : queue === null ? (
-        <p className="text-sm text-slate-500">Caricamento…</p>
+        <p className="text-sm text-muted">Caricamento…</p>
       ) : tab === 'active' ? (
         active.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+          <div className="rounded-lg border border-dashed border-line-strong bg-white p-10 text-center text-sm text-muted">
             Nessuna richiesta in attesa al momento.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-800">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <div className="rounded-xl border border-wait-ink/25 bg-wait-bg/60 p-3">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-wait-ink">
+                <span className="h-2 w-2 rounded-full bg-wait-ink" />
                 Nuove ({pending.length})
               </h2>
               {pending.length === 0 ? (
-                <p className="px-1 text-sm text-amber-700/60">Nessuna richiesta da prendere in carico.</p>
+                <p className="px-1 text-sm text-wait-ink/60">Nessuna richiesta da prendere in carico.</p>
               ) : (
                 <div className="space-y-3">
                   {pending.map((request) => (
@@ -132,13 +132,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-purple-200 bg-purple-50/60 p-3">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-purple-800">
-                <span className="h-2 w-2 rounded-full bg-purple-500" />
+            <div className="rounded-xl border border-prog-ink/25 bg-prog-bg/60 p-3">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-prog-ink">
+                <span className="h-2 w-2 rounded-full bg-prog-ink" />
                 Prese in carico ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? (
-                <p className="px-1 text-sm text-purple-700/60">Nessuna richiesta al momento in carico.</p>
+                <p className="px-1 text-sm text-prog-ink/60">Nessuna richiesta al momento in carico.</p>
               ) : (
                 <div className="space-y-3">
                   {inProgress.map((request, i) => (
@@ -159,7 +159,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
           </div>
         )
       ) : done.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-dashed border-line-strong bg-white p-10 text-center text-sm text-muted">
           Nessuna richiesta evasa finora.
         </div>
       ) : (
@@ -186,7 +186,7 @@ function DepartmentFilterBar({ value, onChange }: { value: DepartmentFilter; onC
           onClick={() => onChange(opt)}
           className={cn(
             'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-            value === opt ? 'border-purple-600 bg-purple-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-purple-300',
+            value === opt ? 'border-accent bg-accent text-white' : 'border-line bg-white text-muted hover:border-accent-soft-line',
           )}
         >
           {opt === 'all' ? 'Tutti' : DEPARTMENT_LABEL[opt]}
@@ -203,7 +203,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       onClick={onClick}
       className={cn(
         'flex-1 cursor-pointer whitespace-nowrap rounded px-3 py-1.5 text-sm font-medium transition-colors sm:flex-none',
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+        active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
       )}
     >
       {children}

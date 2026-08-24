@@ -17,14 +17,14 @@ export function AdminHome({ profile }: { profile: StaffProfile }) {
 
   return (
     <div>
-      <div className="mb-5 flex gap-1 rounded-md bg-slate-100 p-1 sm:w-fit">
+      <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
         {tabs.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
             className={cn(
               'rounded px-3 py-1.5 text-sm font-medium transition-colors',
-              tab.match(location.pathname) ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+              tab.match(location.pathname) ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
             )}
           >
             {tab.label}

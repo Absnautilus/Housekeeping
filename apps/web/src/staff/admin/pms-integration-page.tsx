@@ -30,14 +30,14 @@ export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
   }, [isMaster])
 
   if (isMaster && !hotelId) {
-    return <p className="text-sm text-slate-500">Caricamento…</p>
+    return <p className="text-sm text-muted">Caricamento…</p>
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Integrazione PMS</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-foreground">Integrazione PMS</h1>
+        <p className="text-sm text-muted">
           Scegli se gestire camere e soggiorni manualmente oppure collegarli automaticamente a OperaCloud.
         </p>
       </div>
@@ -138,18 +138,18 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
   }
 
   if (loadError) {
-    return <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Non riusciamo a caricare la configurazione: {loadError}</div>
+    return <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">Non riusciamo a caricare la configurazione: {loadError}</div>
   }
   if (!status) {
-    return <p className="text-sm text-slate-500">Caricamento…</p>
+    return <p className="text-sm text-muted">Caricamento…</p>
   }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">Modalità gestione camere e soggiorni</h2>
-          <div className="flex gap-1 rounded-md bg-slate-100 p-1">
+          <h2 className="text-sm font-semibold text-foreground">Modalità gestione camere e soggiorni</h2>
+          <div className="flex gap-1 rounded-md bg-surface-2 p-1">
             <ModeButton active={mode === 'manual'} onClick={() => setMode('manual')}>
               Manuale
             </ModeButton>
@@ -161,7 +161,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       </CardHeader>
       <CardBody>
         {mode === 'manual' ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Camere e soggiorni si continuano a inserire a mano dalle pagine "Camere" e "Soggiorni", come oggi.
           </p>
         ) : (
@@ -226,7 +226,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
               </FieldGroup>
             </div>
             <FieldError>{error ?? undefined}</FieldError>
-            {saved && <p className="mb-2 text-sm text-emerald-700">Configurazione salvata.</p>}
+            {saved && <p className="mb-2 text-sm text-ok-ink">Configurazione salvata.</p>}
             <Button type="submit" disabled={pending}>
               {pending ? 'Salvataggio…' : 'Salva configurazione'}
             </Button>
@@ -234,23 +234,23 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
         )}
 
         {mode === 'opera' && status.has_credentials && (
-          <div className="mt-6 border-t border-slate-100 pt-4">
+          <div className="mt-6 border-t border-line pt-4">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Badge className={status.last_sync_status === 'success' ? 'bg-emerald-100 text-emerald-700' : status.last_sync_status === 'error' ? 'bg-red-100 text-red-700' : undefined}>
+              <Badge className={status.last_sync_status === 'success' ? 'bg-ok-bg text-ok-ink' : status.last_sync_status === 'error' ? 'bg-bad-bg text-bad-ink' : undefined}>
                 {status.last_sync_status === 'success' ? 'Ultima sincronizzazione riuscita' : status.last_sync_status === 'error' ? 'Ultima sincronizzazione fallita' : 'Non ancora sincronizzato'}
               </Badge>
               {status.last_sync_at && (
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted">
                   {new Date(status.last_sync_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
               )}
             </div>
-            {status.last_sync_error && <p className="mb-3 text-sm text-red-600">{status.last_sync_error}</p>}
+            {status.last_sync_error && <p className="mb-3 text-sm text-bad-ink">{status.last_sync_error}</p>}
             <Button type="button" variant="outline" disabled={syncing} onClick={onSync}>
               {syncing ? 'Sincronizzazione…' : 'Sincronizza ora'}
             </Button>
             {syncResult && (
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-muted">
                 {syncResult.ok
                   ? `Fatto: ${syncResult.created ?? 0} nuovi soggiorni, ${syncResult.updated ?? 0} aggiornati.`
                   : `Errore: ${syncResult.error}`}
@@ -270,7 +270,7 @@ function ModeButton({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={cn(
         'cursor-pointer rounded px-2.5 py-1 text-xs font-medium transition-colors',
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+        active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
       )}
     >
       {children}

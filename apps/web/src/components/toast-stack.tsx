@@ -1,4 +1,3 @@
-import { cn } from '@/lib/cn'
 import type { Toast } from '@/hooks/use-toasts'
 
 export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
@@ -9,13 +8,21 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
         <div
           key={toast.id}
           role="status"
-          className={cn(
-            'flex items-start gap-2 rounded-lg border px-3.5 py-3 text-sm shadow-lg',
-            toast.tone === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-purple-200 bg-white text-slate-800',
-          )}
+          className="flex items-start gap-2.5 rounded-full border border-line bg-surface px-4 py-3 text-sm text-foreground shadow-lg"
         >
+          {toast.tone === 'warning' ? (
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-wait-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4M12 17h.01" />
+              <path d="M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L14 3.9a2 2 0 0 0-3.4 0Z" />
+            </svg>
+          ) : (
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-prog-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+          )}
           <span className="flex-1">{toast.message}</span>
-          <button type="button" onClick={() => onDismiss(toast.id)} className="cursor-pointer text-xs text-slate-400 hover:text-slate-700">
+          <button type="button" onClick={() => onDismiss(toast.id)} className="cursor-pointer text-xs text-muted hover:text-foreground">
             ✕
           </button>
         </div>

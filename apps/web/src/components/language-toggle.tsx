@@ -25,12 +25,12 @@ export function LanguageToggle() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Lingua"
         aria-expanded={open}
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-slate-200 shadow-sm hover:border-purple-300"
+        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-line shadow-sm hover:border-accent-soft-line"
       >
         <FlagIcon code={locale} className="h-7 w-7" />
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-2 flex gap-1.5 rounded-full border border-slate-200 bg-white p-1.5 shadow-lg">
+        <div className="absolute right-0 z-10 mt-2 flex gap-1.5 rounded-full border border-line bg-white p-1.5 shadow-lg">
           {LOCALES.map((l) => (
             <button
               key={l.code}
@@ -43,7 +43,7 @@ export function LanguageToggle() {
               title={l.label}
               className={cn(
                 'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
-                l.code === locale && 'ring-2 ring-purple-500',
+                l.code === locale && 'ring-2 ring-accent',
               )}
             >
               <FlagIcon code={l.code} className="h-7 w-7" />

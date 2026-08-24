@@ -66,7 +66,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
   return (
     <Card className="mb-5">
       <CardHeader>
-        <h2 className="text-sm font-semibold text-slate-700">Nuova segnalazione</h2>
+        <h2 className="text-sm font-semibold text-foreground">Nuova segnalazione</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>

@@ -51,8 +51,8 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Staff</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-semibold text-foreground">Staff</h1>
+        <p className="text-sm text-muted">
           {isMaster
             ? "Crea account admin per un hotel (email e password), o operatore per housekeeping/reception (username e PIN)."
             : 'Crea account operatore per housekeeping o reception: scegli tu username e PIN.'}
@@ -61,11 +61,11 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
 
       <NewStaffForm isMaster={isMaster} onCreated={reload} />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-bad-ink">{error}</p>}
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-lg border border-line bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-400">
+          <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-2">Nome</th>
               <th className="px-4 py-2">Ruolo</th>
@@ -74,7 +74,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
               <th className="px-4 py-2" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {staff?.map((person) => {
               const roleLabel = person.role === 'operatore' ? DEPARTMENT_LABEL[person.department ?? 'reception'] : ROLE_LABEL[person.role]
               // an admin can only ever touch operatori; only master can deactivate an admin,
@@ -82,11 +82,11 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
               const canToggle = person.role === 'operatore' || (person.role === 'admin' && isMaster)
               return (
                 <tr key={person.id}>
-                  <td className="px-4 py-2 font-medium text-slate-900">{person.name}</td>
-                  <td className="px-4 py-2 text-slate-500">{roleLabel}</td>
-                  <td className="px-4 py-2 text-slate-500">{person.login_username ?? <span className="text-slate-300">email</span>}</td>
+                  <td className="px-4 py-2 font-medium text-foreground">{person.name}</td>
+                  <td className="px-4 py-2 text-muted">{roleLabel}</td>
+                  <td className="px-4 py-2 text-muted">{person.login_username ?? <span className="text-muted">email</span>}</td>
                   <td className="px-4 py-2">
-                    <Badge className={person.active ? 'bg-emerald-100 text-emerald-700' : undefined}>
+                    <Badge className={person.active ? 'bg-ok-bg text-ok-ink' : undefined}>
                       {person.active ? 'Attivo' : 'Disattivato'}
                     </Badge>
                   </td>
@@ -94,7 +94,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
                     {canToggle && (
                       <button
                         type="button"
-                        className="cursor-pointer text-xs text-slate-400 hover:text-slate-700"
+                        className="cursor-pointer text-xs text-muted hover:text-foreground"
                         onClick={() => setStaffActive(person.id, !person.active).then(reload)}
                       >
                         {person.active ? 'Disattiva' : 'Riattiva'}
@@ -175,7 +175,7 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-slate-700">{isMaster ? 'Nuovo account' : 'Nuovo operatore'}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{isMaster ? 'Nuovo account' : 'Nuovo operatore'}</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>

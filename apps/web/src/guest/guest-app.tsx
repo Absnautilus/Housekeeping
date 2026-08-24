@@ -81,12 +81,12 @@ export function GuestApp() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-10">
+    <div className="min-h-screen bg-surface-2 pb-10">
       <PublicHeader onLogout={onLogout} />
       <div className="mx-auto max-w-xl px-4 pt-4">
         {stay && <Greeting stay={stay} />}
 
-        <div className="mb-5 flex gap-1 rounded-md bg-slate-100 p-1">
+        <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1">
           <TabButton active={tab === 'new'} onClick={() => setTab('new')}>
             {t('tabs.new')}
           </TabButton>
@@ -119,7 +119,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       onClick={onClick}
       className={cn(
         'flex-1 cursor-pointer rounded px-3 py-1.5 text-sm font-medium transition-colors',
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+        active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
       )}
     >
       {children}

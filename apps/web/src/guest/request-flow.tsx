@@ -36,11 +36,11 @@ export function RequestFlow({
   }, [])
 
   if (menuError) {
-    return <p className="text-center text-sm text-red-600">{menuError}</p>
+    return <p className="text-center text-sm text-bad-ink">{menuError}</p>
   }
 
   if (!menu) {
-    return <p className="text-center text-sm text-slate-500">{t('flow.loading')}</p>
+    return <p className="text-center text-sm text-muted">{t('flow.loading')}</p>
   }
 
   if (step.name === 'categories') {
@@ -109,10 +109,10 @@ function CategoriesGrid({
           key={category.id}
           type="button"
           onClick={() => onSelect(category)}
-          className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white p-5 text-center shadow-sm transition-colors hover:border-purple-300 hover:bg-purple-50"
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-line bg-white p-5 text-center shadow-sm transition-colors hover:border-accent-soft-line hover:bg-accent-soft"
         >
-          <CategoryIcon icon={category.icon} className="h-7 w-7 text-purple-600" />
-          <span className="text-sm font-medium text-slate-800">
+          <CategoryIcon icon={category.icon} className="h-7 w-7 text-accent" />
+          <span className="text-sm font-medium text-foreground">
             <AutoText text={category.name} />
           </span>
         </button>
@@ -136,27 +136,27 @@ function TypesList({
   return (
     <Card>
       <CardHeader className="flex items-center gap-2">
-        <button type="button" onClick={onBack} className="cursor-pointer text-slate-400 hover:text-slate-700" aria-label={t('flow.back')}>
+        <button type="button" onClick={onBack} className="cursor-pointer text-muted hover:text-foreground" aria-label={t('flow.back')}>
           ←
         </button>
-        <h2 className="text-sm font-semibold text-slate-700">
+        <h2 className="text-sm font-semibold text-foreground">
           <AutoText text={category.name} />
         </h2>
       </CardHeader>
       <CardBody className="space-y-2">
-        {types.length === 0 && <p className="text-sm text-slate-500">{t('flow.noItems')}</p>}
+        {types.length === 0 && <p className="text-sm text-muted">{t('flow.noItems')}</p>}
         {types.map((type) => (
           <button
             key={type.id}
             type="button"
             onClick={() => onSelect(type)}
-            className="block w-full cursor-pointer rounded-md border border-slate-200 p-3 text-left text-sm hover:border-purple-300 hover:bg-purple-50"
+            className="block w-full cursor-pointer rounded-md border border-line p-3 text-left text-sm hover:border-accent-soft-line hover:bg-accent-soft"
           >
-            <span className="font-medium text-slate-900">
+            <span className="font-medium text-foreground">
               <AutoText text={type.name} />
             </span>
             {type.description && (
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-muted">
                 <AutoText text={type.description} />
               </p>
             )}
@@ -197,10 +197,10 @@ function ComposeForm({
   return (
     <Card>
       <CardHeader className="flex items-center gap-2">
-        <button type="button" onClick={onBack} className="cursor-pointer text-slate-400 hover:text-slate-700" aria-label={t('flow.back')}>
+        <button type="button" onClick={onBack} className="cursor-pointer text-muted hover:text-foreground" aria-label={t('flow.back')}>
           ←
         </button>
-        <h2 className="text-sm font-semibold text-slate-700">
+        <h2 className="text-sm font-semibold text-foreground">
           <AutoText text={type.name} />
         </h2>
       </CardHeader>
@@ -253,9 +253,9 @@ function ConfirmPanel({
     [request.created_at],
   )
   return (
-    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-6 text-center">
-      <p className="text-lg font-semibold text-emerald-800">{t('flow.confirmTitle')}</p>
-      <p className="mt-2 text-sm text-emerald-700">
+    <div className="rounded-lg border border-ok-ink/25 bg-ok-bg p-6 text-center">
+      <p className="text-lg font-semibold text-ok-ink">{t('flow.confirmTitle')}</p>
+      <p className="mt-2 text-sm text-ok-ink">
         <AutoText text={type.name} />
         {request.quantity ? ` · ${request.quantity}` : ''} — {t('flow.confirmAt', { time })}
       </p>

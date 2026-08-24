@@ -1,9 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
-import { Logo } from '@/components/logo'
 import { signIn, signInOperator } from '@/lib/staff-api'
 import { cn } from '@/lib/cn'
 
@@ -36,25 +34,32 @@ export function StaffLogin() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex justify-center">
-          <Logo />
-        </div>
-        <Card>
-          <CardHeader className="flex items-center justify-between">
-            <h1 className="text-sm font-semibold text-slate-700">Accesso staff</h1>
-            <div className="flex gap-1 rounded-md bg-slate-100 p-1">
-              <ModeButton active={mode === 'operator'} onClick={() => setMode('operator')}>
-                Operatore
-              </ModeButton>
-              <ModeButton active={mode === 'email'} onClick={() => setMode('email')}>
-                Email
-              </ModeButton>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <form onSubmit={onSubmit}>
+        <div className="rounded-lg border border-line bg-surface p-9 shadow-md">
+          <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="8" r="3" />
+              <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" />
+              <circle cx="17" cy="9" r="2.5" />
+              <path d="M15.5 14.2A5 5 0 0 1 21 19" />
+            </svg>
+          </div>
+          <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">Staff</div>
+          <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">Accedi</h1>
+          <p className="mx-auto mt-1.5 max-w-[230px] text-center text-xs leading-relaxed text-muted">Con la tua email o il tuo nome operatore</p>
+
+          <div className="mt-6 flex gap-0.5 rounded-full bg-surface-2 p-[3px]">
+            <ModeButton active={mode === 'operator'} onClick={() => setMode('operator')}>
+              Operatore
+            </ModeButton>
+            <ModeButton active={mode === 'email'} onClick={() => setMode('email')}>
+              Email
+            </ModeButton>
+          </div>
+
+          <div className="mt-5">
+            <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
               {mode === 'operator' ? (
                 <>
                   <FieldGroup>
@@ -104,14 +109,14 @@ export function StaffLogin() {
                 </>
               )}
               <FieldError>{error ?? undefined}</FieldError>
-              <Button type="submit" disabled={pending} className="mt-2 w-full">
+              <Button type="submit" disabled={pending} className="mt-1 w-full">
                 {pending ? 'Accesso in corso…' : 'Accedi'}
               </Button>
             </form>
-          </CardBody>
-        </Card>
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Sei un ospite? <Link to="/g" className="underline hover:text-slate-600">Accedi qui</Link>
+          </div>
+        </div>
+        <p className="mt-6 text-center text-[11.5px] text-muted">
+          Sei un ospite? <Link to="/g" className="font-semibold text-accent hover:underline">Accedi qui</Link>
         </p>
       </div>
     </div>
@@ -124,8 +129,8 @@ function ModeButton({ active, onClick, children }: { active: boolean; onClick: (
       type="button"
       onClick={onClick}
       className={cn(
-        'cursor-pointer rounded px-2.5 py-1 text-xs font-medium transition-colors',
-        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700',
+        'flex-1 cursor-pointer rounded-full px-3 py-1.5 text-[11.5px] font-bold transition-colors',
+        active ? 'bg-accent text-accent-ink' : 'text-muted hover:text-foreground',
       )}
     >
       {children}

@@ -18,7 +18,7 @@ export function PublicHeader({ onLogout }: { onLogout?: () => void }) {
             onClick={onLogout}
             aria-label={t('nav.logout')}
             title={t('nav.logout')}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:border-red-300 hover:text-red-600"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-muted shadow-sm hover:border-bad-ink/25 hover:text-bad-ink"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

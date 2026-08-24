@@ -55,9 +55,9 @@ export function StatusList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, refreshKey, onSessionExpired])
 
-  if (error) return <p className="text-center text-sm text-red-600">{error}</p>
-  if (!requests) return <p className="text-center text-sm text-slate-500">{t('flow.loading')}</p>
-  if (requests.length === 0) return <p className="text-center text-sm text-slate-500">{t('status.empty')}</p>
+  if (error) return <p className="text-center text-sm text-bad-ink">{error}</p>
+  if (!requests) return <p className="text-center text-sm text-muted">{t('flow.loading')}</p>
+  if (requests.length === 0) return <p className="text-center text-sm text-muted">{t('status.empty')}</p>
 
   return (
     <div className="space-y-3">
@@ -94,17 +94,17 @@ function RequestCard({ request, typeName, onCancel }: { request: GuestRequest; t
     <Card>
       <CardBody className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-slate-900">
+          <p className="text-sm font-medium text-foreground">
             {request.quantity ? `${request.quantity} × ` : ''}
             {typeName ? <AutoText text={typeName} /> : t('status.requestAt', { time })}
           </p>
-          <p className="mt-0.5 text-xs text-slate-400">{t('status.requestAt', { time })}</p>
-          {request.note && <p className="mt-0.5 text-xs text-slate-500">{request.note}</p>}
+          <p className="mt-0.5 text-xs text-muted">{t('status.requestAt', { time })}</p>
+          {request.note && <p className="mt-0.5 text-xs text-muted">{request.note}</p>}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <StatusBadge status={request.status} label={t(STATUS_LABEL_KEY[request.status])} />
           {request.status === 'requested' && (
-            <button type="button" onClick={onCancel} className="cursor-pointer text-xs text-slate-400 hover:text-red-600">
+            <button type="button" onClick={onCancel} className="cursor-pointer text-xs text-muted hover:text-bad-ink">
               {t('status.cancel')}
             </button>
           )}

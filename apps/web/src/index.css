@@ -1,14 +1,68 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #eaecf9;
+  --foreground: #16182b;
+  --muted: #767aa0;
+  --line: #e3e5f3;
+  --line-strong: #d3d6ec;
+  --surface: #ffffff;
+  --surface-2: #f4f5fc;
+
+  --accent: #9c4fc7;
+  --accent-ink: #ffffff;
+  --accent-soft: #f4e8fa;
+  --accent-soft-line: #e4c7f2;
+
+  --wait-bg: #fff1d6;
+  --wait-ink: #8a6416;
+  --prog-bg: #eaf1fe;
+  --prog-ink: #2a5fcc;
+  --ok-bg: #dff6e8;
+  --ok-ink: #1e7a46;
+  --done-bg: #c9eedb;
+  --done-ink: #146138;
+  --bad-bg: #fde8e8;
+  --bad-ink: #b23a3a;
+  --off-bg: #edeef6;
+  --off-ink: #6b6f8a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-line: var(--accent-soft-line);
+
+  --color-wait-bg: var(--wait-bg);
+  --color-wait-ink: var(--wait-ink);
+  --color-prog-bg: var(--prog-bg);
+  --color-prog-ink: var(--prog-ink);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-ink: var(--ok-ink);
+  --color-done-bg: var(--done-bg);
+  --color-done-ink: var(--done-ink);
+  --color-bad-bg: var(--bad-bg);
+  --color-bad-ink: var(--bad-ink);
+  --color-off-bg: var(--off-bg);
+  --color-off-ink: var(--off-ink);
+
+  --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-head: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
 }
 
 body {

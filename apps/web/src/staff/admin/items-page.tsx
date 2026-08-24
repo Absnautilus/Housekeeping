@@ -29,13 +29,13 @@ export function ItemsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Menu richieste</h1>
-        <p className="text-sm text-slate-500">Gli oggetti/servizi che l'ospite può richiedere, raggruppati per categoria.</p>
+        <h1 className="text-xl font-semibold text-foreground">Menu richieste</h1>
+        <p className="text-sm text-muted">Gli oggetti/servizi che l'ospite può richiedere, raggruppati per categoria.</p>
       </div>
 
       <NewItemForm categories={categories} onCreated={reload} />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-bad-ink">{error}</p>}
 
       <div className="space-y-6">
         {categories.map((category) => {
@@ -43,10 +43,10 @@ export function ItemsPage() {
           if (items.length === 0) return null
           return (
             <div key={category.id}>
-              <h2 className="mb-2 text-sm font-semibold text-slate-500">{category.name}</h2>
-              <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <h2 className="mb-2 text-sm font-semibold text-muted">{category.name}</h2>
+              <div className="overflow-hidden rounded-lg border border-line bg-white">
                 <table className="w-full text-sm">
-                  <thead className="bg-slate-50 text-left text-xs uppercase text-slate-400">
+                  <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
                     <tr>
                       <th className="px-4 py-2">Nome</th>
                       <th className="px-4 py-2">Descrizione</th>
@@ -55,21 +55,21 @@ export function ItemsPage() {
                       <th className="px-4 py-2" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-line">
                     {items.map((item) => (
                       <tr key={item.id}>
-                        <td className="px-4 py-2 font-medium text-slate-900">{item.name}</td>
-                        <td className="px-4 py-2 text-slate-500">{item.description || '—'}</td>
-                        <td className="px-4 py-2 tabular-nums text-slate-500">{item.available_quantity ?? '—'}</td>
+                        <td className="px-4 py-2 font-medium text-foreground">{item.name}</td>
+                        <td className="px-4 py-2 text-muted">{item.description || '—'}</td>
+                        <td className="px-4 py-2 tabular-nums text-muted">{item.available_quantity ?? '—'}</td>
                         <td className="px-4 py-2">
-                          <Badge className={item.active ? 'bg-emerald-100 text-emerald-700' : undefined}>
+                          <Badge className={item.active ? 'bg-ok-bg text-ok-ink' : undefined}>
                             {item.active ? 'Attivo' : 'Disattivato'}
                           </Badge>
                         </td>
                         <td className="px-4 py-2 text-right">
                           <button
                             type="button"
-                            className="cursor-pointer text-xs text-slate-400 hover:text-slate-700"
+                            className="cursor-pointer text-xs text-muted hover:text-foreground"
                             onClick={() => setRequestTypeActive(item.id, !item.active).then(reload)}
                           >
                             {item.active ? 'Disattiva' : 'Riattiva'}
@@ -128,7 +128,7 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-slate-700">Aggiungi elemento</h2>
+        <h2 className="text-sm font-semibold text-foreground">Aggiungi elemento</h2>
       </CardHeader>
       <CardBody>
         <form onSubmit={onSubmit}>
@@ -171,7 +171,7 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
               />
             </FieldGroup>
             <FieldGroup className="flex items-end pb-2.5">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-foreground">
                 <input type="checkbox" checked={allowsQuantity} onChange={(e) => setAllowsQuantity(e.target.checked)} />
                 L'ospite può scegliere quante unità richiedere
               </label>

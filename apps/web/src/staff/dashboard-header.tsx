@@ -18,17 +18,17 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
   const isAdminLike = profile.role === 'admin' || profile.role === 'master'
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b border-line bg-white">
       <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
         <Link to="/staff" className="shrink-0 hover:opacity-80">
           <Logo />
         </Link>
 
-        <div className="hidden h-8 w-px shrink-0 bg-slate-200 sm:block" />
+        <div className="hidden h-8 w-px shrink-0 bg-line-strong sm:block" />
 
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-wide text-slate-400">{roleLabel}</p>
-          <p className="truncate font-semibold text-slate-900">{profile.name}</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted">{roleLabel}</p>
+          <p className="truncate font-semibold text-foreground">{profile.name}</p>
         </div>
 
         <nav className="flex shrink-0 items-center gap-1">
@@ -46,7 +46,7 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
           onClick={() => void signOut()}
           title="Esci"
           aria-label="Esci"
-          className="flex shrink-0 cursor-pointer items-center justify-center rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-red-600"
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-md p-2 text-muted hover:bg-surface-2 hover:text-bad-ink"
         >
           <IconExit className="h-5 w-5" />
         </button>
@@ -71,8 +71,8 @@ function NavLink({
       to={to}
       title={label}
       className={cn(
-        'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium hover:bg-slate-100 sm:px-3',
-        active ? 'bg-purple-50 text-purple-700' : 'text-slate-600',
+        'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium hover:bg-surface-2 sm:px-3',
+        active ? 'bg-accent-soft text-accent' : 'text-muted',
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />

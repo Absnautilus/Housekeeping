@@ -15,7 +15,7 @@ export function Logo({ className, textClassName }: { className?: string; textCla
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ''}`}>
       <LogoMark className="h-6 w-6" />
-      <span className={textClassName ?? 'font-semibold text-slate-900'}>RoomCall</span>
+      <span className={textClassName ?? 'font-semibold text-foreground'}>RoomCall</span>
     </span>
   )
 }

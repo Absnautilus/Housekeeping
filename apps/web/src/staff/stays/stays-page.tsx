@@ -29,19 +29,19 @@ export function StaysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Soggiorni</h1>
-        <p className="text-sm text-slate-500">Attiva un soggiorno per abilitare l'accesso ospite alla camera.</p>
+        <h1 className="text-xl font-semibold text-foreground">Soggiorni</h1>
+        <p className="text-sm text-muted">Attiva un soggiorno per abilitare l'accesso ospite alla camera.</p>
       </div>
 
       <NewStayForm rooms={rooms} onCreated={reload} />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-bad-ink">{error}</p>}
 
       <div className="space-y-3">
         {stays === null ? (
-          <p className="text-sm text-slate-500">Caricamento…</p>
+          <p className="text-sm text-muted">Caricamento…</p>
         ) : stays.length === 0 ? (
-          <p className="text-sm text-slate-500">Nessun soggiorno attivo.</p>
+          <p className="text-sm text-muted">Nessun soggiorno attivo.</p>
         ) : (
           stays.map((stay) => <StayRow key={stay.id} stay={stay} onChanged={reload} />)
         )}
@@ -86,11 +86,11 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-semibold text-slate-700">Attiva soggiorno</h2>
+        <h2 className="text-sm font-semibold text-foreground">Attiva soggiorno</h2>
       </CardHeader>
       <CardBody>
         {createdPin && (
-          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          <div className="mb-4 rounded-lg border border-ok-ink/25 bg-ok-bg p-3 text-sm text-ok-ink">
             Soggiorno attivato — Camera {createdPin.roomNumber}, PIN ospite:{' '}
             <span className="font-mono text-base font-semibold tracking-widest">{createdPin.pin}</span>
             <br />
@@ -162,12 +162,12 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
     <Card>
       <CardBody className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-medium text-slate-900">
+          <p className="font-medium text-foreground">
             Camera {stay.rooms?.room_number} · {stay.guest_last_name}
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Check-out: {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} · PIN:{' '}
-            <span className="font-mono font-semibold tracking-widest text-slate-700">{stay.guest_pin}</span>
+            <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
           </p>
         </div>
         {editingCheckout ? (

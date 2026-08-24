@@ -1,4 +1,6 @@
-const PALETTE = ['bg-purple-600', 'bg-emerald-600', 'bg-amber-600', 'bg-sky-600', 'bg-rose-600', 'bg-indigo-600']
+// Tenui e desaturati apposta: devono distinguere le persone, non competere
+// con i colori di stato (attesa/in corso/confermato) nella stessa schermata.
+const PALETTE = ['#8A6A3A', '#6B5B78', '#2E6B78', '#5C7A5E', '#7A5C4A', '#4A6670', '#9A7B4E', '#5E6B4A', '#6B4E5E', '#2A2E3A']
 
 function colorFor(name: string): string {
   let hash = 0
@@ -17,7 +19,8 @@ export function Avatar({ name, className }: { name: string; className?: string }
   return (
     <span
       title={name}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${colorFor(name)} ${className ?? ''}`}
+      style={{ backgroundColor: colorFor(name) }}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${className ?? ''}`}
     >
       {initialsFor(name)}
     </span>

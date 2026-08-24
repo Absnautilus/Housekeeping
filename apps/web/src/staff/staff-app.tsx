@@ -48,7 +48,7 @@ export function StaffApp() {
   if (!profile) return <StaffLogin />
   if (!profile.active) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-center text-sm text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">
         Il tuo account è disattivato. Contatta l'amministratore dell'hotel.
       </div>
     )
@@ -57,7 +57,7 @@ export function StaffApp() {
   const isAdminLike = profile.role === 'admin' || profile.role === 'master'
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface-2">
       <DashboardHeader profile={profile} />
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <Routes>

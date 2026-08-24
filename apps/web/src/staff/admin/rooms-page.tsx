@@ -37,13 +37,13 @@ export function RoomsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Camere</h1>
-        <p className="text-sm text-slate-500">Le camere qui sotto sono selezionabili quando si attiva un soggiorno.</p>
+        <h1 className="text-xl font-semibold text-foreground">Camere</h1>
+        <p className="text-sm text-muted">Le camere qui sotto sono selezionabili quando si attiva un soggiorno.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <h2 className="text-sm font-semibold text-slate-700">Aggiungi camera</h2>
+          <h2 className="text-sm font-semibold text-foreground">Aggiungi camera</h2>
         </CardHeader>
         <CardBody>
           <form onSubmit={onSubmit} className="flex items-end gap-3">
@@ -61,28 +61,28 @@ export function RoomsPage() {
         </CardBody>
       </Card>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-lg border border-line bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-400">
+          <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-2">Camera</th>
               <th className="px-4 py-2">Stato</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {rooms?.map((room) => (
               <tr key={room.id}>
-                <td className="px-4 py-2 font-medium text-slate-900">{room.room_number}</td>
+                <td className="px-4 py-2 font-medium text-foreground">{room.room_number}</td>
                 <td className="px-4 py-2">
-                  <Badge className={room.active ? 'bg-emerald-100 text-emerald-700' : undefined}>
+                  <Badge className={room.active ? 'bg-ok-bg text-ok-ink' : undefined}>
                     {room.active ? 'Attiva' : 'Disattivata'}
                   </Badge>
                 </td>
                 <td className="px-4 py-2 text-right">
                   <button
                     type="button"
-                    className="cursor-pointer text-xs text-slate-400 hover:text-slate-700"
+                    className="cursor-pointer text-xs text-muted hover:text-foreground"
                     onClick={() => setRoomActive(room.id, !room.active).then(reload)}
                   >
                     {room.active ? 'Disattiva' : 'Riattiva'}

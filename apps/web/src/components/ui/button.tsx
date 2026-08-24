@@ -6,21 +6,21 @@ type Variant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outli
 type Size = 'sm' | 'md'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-purple-600 text-white hover:bg-purple-500 disabled:bg-purple-300',
-  secondary: 'bg-purple-100 text-purple-800 hover:bg-purple-200 disabled:bg-purple-50 disabled:text-purple-300',
-  success: 'bg-emerald-600 text-white hover:bg-emerald-500 disabled:bg-emerald-300',
-  danger: 'bg-red-600 text-white hover:bg-red-500 disabled:bg-red-300',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100',
-  outline: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50',
+  primary: 'bg-accent text-accent-ink hover:brightness-[1.06] disabled:opacity-40',
+  secondary: 'bg-accent-soft text-accent hover:bg-accent-soft-line disabled:opacity-40',
+  success: 'bg-ok-ink text-white hover:brightness-110 disabled:opacity-40',
+  danger: 'bg-bad-bg text-bad-ink border border-bad-ink/25 hover:bg-bad-ink/15 disabled:opacity-40',
+  ghost: 'bg-transparent text-foreground/70 hover:bg-surface-2',
+  outline: 'bg-surface text-foreground/70 border border-line-strong hover:bg-surface-2',
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'px-2.5 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
+  sm: 'px-3 py-1.5 text-xs',
+  md: 'px-4.5 py-2.5 text-sm',
 }
 
 const base =
-  'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors disabled:cursor-not-allowed cursor-pointer'
+  'inline-flex items-center justify-center gap-1.5 rounded-sm font-bold font-head transition-all disabled:cursor-not-allowed cursor-pointer'
 
 export function Button({
   variant = 'primary',

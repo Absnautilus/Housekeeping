@@ -58,11 +58,11 @@ export function RequestRow({
       <CardBody>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-semibold text-slate-900">
-              Camera {request.room_number} <span className="font-normal text-slate-400">·</span> {typeName}
+            <p className="font-semibold text-foreground">
+              Camera {request.room_number} <span className="font-normal text-muted">·</span> {typeName}
               {request.quantity ? ` × ${request.quantity}` : ''}
             </p>
-            <p className="mt-0.5 text-sm text-slate-500">
+            <p className="mt-0.5 text-sm text-muted">
               {formatTime(request.created_at)}
               {categoryName && ` · ${categoryName}`}
             </p>
@@ -74,9 +74,9 @@ export function RequestRow({
           </div>
         </div>
 
-        {request.note && <p className="mt-2 rounded-md bg-slate-50 p-2 text-sm text-slate-600">{request.note}</p>}
+        {request.note && <p className="mt-2 rounded-md bg-surface-2 p-2 text-sm text-muted">{request.note}</p>}
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
           <div className="flex items-center gap-2">
             {canReorder && mode === 'active' && request.status === 'in_progress' && (
               <div className="flex flex-col">
@@ -85,7 +85,7 @@ export function RequestRow({
                   disabled={!onMoveUp}
                   onClick={onMoveUp}
                   aria-label="Sposta su"
-                  className="cursor-pointer leading-none text-slate-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-30"
+                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   ▲
                 </button>
@@ -94,13 +94,13 @@ export function RequestRow({
                   disabled={!onMoveDown}
                   onClick={onMoveDown}
                   aria-label="Sposta giù"
-                  className="cursor-pointer leading-none text-slate-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-30"
+                  className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   ▼
                 </button>
               </div>
             )}
-            <p className="text-xs text-slate-400">{elapsedLabel}</p>
+            <p className="text-xs text-muted">{elapsedLabel}</p>
           </div>
 
           {mode === 'active' && (
@@ -133,7 +133,7 @@ export function RequestRow({
             </div>
           )}
         </div>
-        {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-xs text-bad-ink">{error}</p>}
       </CardBody>
     </Card>
   )

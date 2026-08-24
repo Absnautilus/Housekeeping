@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTML
 import { cn } from '@/lib/cn'
 
 const controlClass =
-  'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:bg-slate-100'
+  'w-full rounded-sm border border-line-strong bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-[border-color,box-shadow] focus:border-accent focus:ring-3 focus:ring-accent-soft disabled:bg-surface-2'
 
 export function Label({
   children,
@@ -14,9 +14,9 @@ export function Label({
   required?: boolean
 }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted">
       {children}
-      {required && <span className="text-red-500"> *</span>}
+      {required && <span className="text-bad-ink"> *</span>}
     </label>
   )
 }
@@ -35,7 +35,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
 
 export function FieldError({ children }: { children?: string }) {
   if (!children) return null
-  return <p className="mt-1 text-xs text-red-600">{children}</p>
+  return <p className="mt-1 text-[11px] font-semibold text-bad-ink">{children}</p>
 }
 
 export function FieldGroup({ children, className }: { children: ReactNode; className?: string }) {
