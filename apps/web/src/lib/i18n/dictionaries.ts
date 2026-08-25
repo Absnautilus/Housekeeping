@@ -105,7 +105,7 @@ export const dictionaries = {
     'staff.row.cancelConfirm': 'Annulla richiesta',
     'staff.row.claim': 'Prendi in carico',
     'staff.row.complete': 'Completa',
-    'staff.row.cancel': 'Annulla',
+    'staff.row.cancel': 'Cancella',
     'staff.row.moveUp': 'Sposta su',
     'staff.row.moveDown': 'Sposta giù',
     'staff.row.drag': 'Trascina per riordinare',
