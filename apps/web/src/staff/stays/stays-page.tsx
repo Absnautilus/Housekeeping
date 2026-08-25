@@ -3,6 +3,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { listRooms, type Room } from '@/lib/admin-api'
 import { cancelStay, createStay, fetchRequestsForStay, listStays, updateCheckout, type Stay, type StayRequest } from '@/lib/stays-api'
 import { AutoText } from '@/components/auto-text'
@@ -132,13 +133,13 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
               <Label htmlFor="checkIn" required>
                 {t('staff.stays.checkIn')}
               </Label>
-              <Input id="checkIn" type="datetime-local" required value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+              <DateTimePicker id="checkIn" required value={checkIn} onChange={setCheckIn} />
             </FieldGroup>
             <FieldGroup>
               <Label htmlFor="checkOut" required>
                 {t('staff.stays.checkOut')}
               </Label>
-              <Input id="checkOut" type="datetime-local" required value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+              <DateTimePicker id="checkOut" required value={checkOut} onChange={setCheckOut} />
             </FieldGroup>
           </div>
           <FieldError>{error ?? undefined}</FieldError>
@@ -207,7 +208,7 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
           </div>
           {editingCheckout ? (
             <div className="flex items-center gap-2">
-              <Input type="datetime-local" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="py-1" />
+              <DateTimePicker value={checkOut} onChange={setCheckOut} />
               <Button
                 size="sm"
                 disabled={pending}
