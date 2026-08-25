@@ -184,9 +184,10 @@ export interface ItemAvailability {
 }
 
 // "Remaining" for a trackable item (available_quantity set) = the total
-// minus however many are currently out on an unfinished request — there's
-// no separate "returned" step, so a request only stops counting against
-// availability once it's completed or cancelled.
+// minus whatever is either still an open request (reserved but not yet
+// delivered) or delivered-and-completed but not yet marked returned (see
+// 0016_item_return_tracking.sql — returned_at is set explicitly by staff,
+// or automatically when the guest's stay ends).
 export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
   const { data: types, error: typesError } = await supabase
     .from('request_types')
@@ -207,7 +208,7 @@ export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
     .from('guest_requests')
     .select('request_type_id, room_number')
     .in('request_type_id', ids)
-    .in('status', ['requested', 'in_progress'])
+    .or('status.in.(requested,in_progress),and(status.eq.completed,returned_at.is.null)')
   if (activeError) throw activeError
 
   const byType = new Map<string, string[]>()

@@ -4,7 +4,8 @@ import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 import { usernameToEmail } from '@/lib/operator-login'
 
-const QUEUE_SELECT = '*, request_types(name, allows_quantity, request_categories(name)), accepted_by_staff:staff_profiles!accepted_by(name)'
+const QUEUE_SELECT =
+  '*, request_types(name, allows_quantity, available_quantity, request_categories(name)), accepted_by_staff:staff_profiles!accepted_by(name)'
 
 export async function fetchMyProfile(): Promise<StaffProfile | null> {
   const {
@@ -99,9 +100,17 @@ export async function revertRequest(id: string, fromStatus: 'in_progress' | 'com
     fromStatus === 'in_progress'
       ? { status: 'requested' as const, accepted_by: null, accepted_at: null }
       : fromStatus === 'completed'
-        ? { status: 'in_progress' as const, completed_at: null }
+        ? { status: 'in_progress' as const, completed_at: null, returned_at: null }
         : { status: 'requested' as const }
   const { error } = await supabase.from('guest_requests').update(patch).eq('id', id)
+  if (error) throw error
+}
+
+// Only meaningful for a completed request on a trackable item (available_quantity
+// set on its request_type) — marks the physical item as back in inventory so
+// fetchItemAvailability stops counting it against the room it was delivered to.
+export async function markItemReturned(id: string) {
+  const { error } = await supabase.from('guest_requests').update({ returned_at: new Date().toISOString() }).eq('id', id)
   if (error) throw error
 }
 

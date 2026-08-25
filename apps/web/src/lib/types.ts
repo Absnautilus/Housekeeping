@@ -44,4 +44,6 @@ export interface GuestRequest {
   accepted_at: string | null
   completed_at: string | null
   priority: number
+  archived_at: string | null
+  returned_at: string | null
 }

@@ -9,7 +9,7 @@ import { DEPARTMENTS } from '@/lib/constants'
 import { cn } from '@/lib/cn'
 import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
-import { cancelRequest, claimRequest, completeRequest, deleteRequest, reassignRequest, revertRequest } from '@/lib/staff-api'
+import { cancelRequest, claimRequest, completeRequest, deleteRequest, markItemReturned, reassignRequest, revertRequest } from '@/lib/staff-api'
 import type { QueuedRequest } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -51,6 +51,7 @@ export function RequestRow({
   const [confirmDialog, confirm] = useConfirm()
   const typeName = request.request_types?.name ?? t('staff.row.defaultTypeName')
   const categoryName = request.request_types?.request_categories?.name
+  const trackable = request.request_types?.available_quantity != null
 
   async function run(action: () => Promise<void>) {
     setPending(true)
@@ -162,6 +163,11 @@ export function RequestRow({
               </div>
             )}
             <p className="text-xs text-muted">{elapsedLabel}</p>
+            {mode === 'done' && trackable && request.status === 'completed' && (
+              <Badge className={request.returned_at ? 'bg-ok-bg text-ok-ink' : 'bg-wait-bg text-wait-ink'}>
+                {request.returned_at ? t('staff.row.returned') : t('staff.row.notReturned')}
+              </Badge>
+            )}
           </div>
 
           {mode === 'active' && (
@@ -201,6 +207,11 @@ export function RequestRow({
 
           {mode === 'done' && (
             <div className="flex flex-wrap items-center gap-2">
+              {trackable && request.status === 'completed' && !request.returned_at && (
+                <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => markItemReturned(request.id))}>
+                  {t('staff.row.markReturned')}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"

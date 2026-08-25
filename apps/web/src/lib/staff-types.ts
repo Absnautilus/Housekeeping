@@ -15,6 +15,7 @@ export interface QueuedRequest extends GuestRequest {
   request_types: {
     name: string
     allows_quantity: boolean
+    available_quantity: number | null
     request_categories: { name: string } | null
   } | null
   accepted_by_staff: { name: string } | null
