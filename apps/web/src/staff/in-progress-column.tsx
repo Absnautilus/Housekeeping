@@ -46,6 +46,18 @@ export function InProgressColumn({
   const draggingIdRef = useRef<string | null>(null)
   const latestClientYRef = useRef(0)
   const rafRef = useRef<number | null>(null)
+  // Snapshot of every row's resting position, taken once at drag start —
+  // reorderAround compares the pointer against these fixed numbers, never
+  // against a live getBoundingClientRect(). Reading live rects mid-drag was
+  // the actual cause of the flicker: rows mid-FLIP-transition report their
+  // current *animated* position, not their resting one, so the target-index
+  // decision was being made against numbers that were themselves still
+  // moving — two animations feeding back into each other. Since dragging
+  // only ever moves one item, the relative order of every other row stays
+  // fixed for the whole gesture, so a static snapshot is exactly as correct
+  // as a live read, just stable.
+  const initialTopsRef = useRef(new Map<string, number>())
+  const initialHeightsRef = useRef(new Map<string, number>())
 
   useEffect(() => {
     if (!draggingId) setOrder(items)
@@ -88,10 +100,10 @@ export function InProgressColumn({
       for (let i = 0; i < others.length; i++) {
         const other = others[i]
         if (!other) continue
-        const el = rowRefs.current.get(other.id)
-        if (!el) continue
-        const rect = el.getBoundingClientRect()
-        if (pointerY < rect.top + rect.height / 2) {
+        const top = initialTopsRef.current.get(other.id)
+        const height = initialHeightsRef.current.get(other.id)
+        if (top === undefined || height === undefined) continue
+        if (pointerY < top + height / 2) {
           targetIndex = i
           break
         }
@@ -120,6 +132,17 @@ export function InProgressColumn({
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     originalOrderRef.current = order
+
+    const tops = new Map<string, number>()
+    const heights = new Map<string, number>()
+    rowRefs.current.forEach((el, rowId) => {
+      const rect = el.getBoundingClientRect()
+      tops.set(rowId, rect.top)
+      heights.set(rowId, rect.height)
+    })
+    initialTopsRef.current = tops
+    initialHeightsRef.current = heights
+
     dragStartYRef.current = e.clientY
     latestClientYRef.current = e.clientY
     draggingIdRef.current = id
