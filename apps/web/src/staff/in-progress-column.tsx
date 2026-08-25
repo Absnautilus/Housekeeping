@@ -37,10 +37,26 @@ export function InProgressColumn({
   const originalOrderRef = useRef<QueuedRequest[]>(items)
   const dragStartYRef = useRef(0)
   const prevRectsRef = useRef(new Map<string, DOMRect>())
+  // Raw pointermove fires far more often than a frame (every few pixels on
+  // a trackpad/high-poll-rate mouse) — driving a setState + a
+  // getBoundingClientRect per other row from every single event is what
+  // made this stutter and then lurch forward. The native handler now just
+  // records where the pointer is; a rAF loop applies that position once
+  // per frame, which is as often as anything could actually repaint anyway.
+  const draggingIdRef = useRef<string | null>(null)
+  const latestClientYRef = useRef(0)
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!draggingId) setOrder(items)
   }, [items, draggingId])
+
+  useEffect(() => {
+    return () => {
+      draggingIdRef.current = null
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
 
   useLayoutEffect(() => {
     const newRects = new Map<string, DOMRect>()
@@ -87,25 +103,40 @@ export function InProgressColumn({
     })
   }
 
+  function tick() {
+    const id = draggingIdRef.current
+    if (!id) {
+      rafRef.current = null
+      return
+    }
+    const clientY = latestClientYRef.current
+    setDragOffsetY(clientY - dragStartYRef.current)
+    reorderAround(clientY, id)
+    rafRef.current = requestAnimationFrame(tick)
+  }
+
   function onHandlePointerDown(e: ReactPointerEvent<HTMLDivElement>, id: string) {
     if (!canReorder) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     originalOrderRef.current = order
     dragStartYRef.current = e.clientY
+    latestClientYRef.current = e.clientY
+    draggingIdRef.current = id
     setDragOffsetY(0)
     setDraggingId(id)
+    if (rafRef.current === null) rafRef.current = requestAnimationFrame(tick)
   }
 
   function onHandlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
-    if (!draggingId) return
-    setDragOffsetY(e.clientY - dragStartYRef.current)
-    reorderAround(e.clientY, draggingId)
+    if (!draggingIdRef.current) return
+    latestClientYRef.current = e.clientY
   }
 
   async function onHandlePointerUp() {
     if (!draggingId) return
     const finalOrder = order
+    draggingIdRef.current = null
     setDragOffsetY(0)
     setDraggingId(null)
 
