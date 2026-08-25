@@ -34,7 +34,7 @@ export async function signOut() {
 }
 
 export async function fetchQueue(): Promise<QueuedRequest[]> {
-  const { data, error } = await supabase.from('guest_requests').select(QUEUE_SELECT).order('priority')
+  const { data, error } = await supabase.from('guest_requests').select(QUEUE_SELECT).is('archived_at', null).order('priority')
   if (error) throw error
   return (data ?? []) as unknown as QueuedRequest[]
 }
@@ -70,6 +70,26 @@ export async function completeRequest(id: string) {
 
 export async function cancelRequest(id: string) {
   const { error } = await supabase.from('guest_requests').update({ status: 'cancelled' }).eq('id', id)
+  if (error) throw error
+}
+
+// Steps a request back one stage instead of forward: an accepted job goes
+// back to unclaimed, a completed one reopens as in-progress, a cancelled
+// one is put back in the active queue. Distinct from deleteRequest, which
+// is permanent — this only ever moves within the existing statuses.
+export async function revertRequest(id: string, fromStatus: 'in_progress' | 'completed' | 'cancelled') {
+  const patch =
+    fromStatus === 'in_progress'
+      ? { status: 'requested' as const, accepted_by: null, accepted_at: null }
+      : fromStatus === 'completed'
+        ? { status: 'in_progress' as const, completed_at: null }
+        : { status: 'requested' as const }
+  const { error } = await supabase.from('guest_requests').update(patch).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteRequest(id: string) {
+  const { error } = await supabase.from('guest_requests').delete().eq('id', id)
   if (error) throw error
 }
 

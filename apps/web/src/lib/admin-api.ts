@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { StaffDepartment, StaffRole } from '@/lib/types'
+import type { Department, StaffDepartment, StaffRole } from '@/lib/types'
 
 export interface Room {
   id: string
@@ -80,16 +80,28 @@ export interface RequestTypeAdmin {
 export interface RequestCategoryAdmin {
   id: string
   name: string
+  department: Department
+  active: boolean
 }
 
 export async function listMenu(): Promise<{ categories: RequestCategoryAdmin[]; types: RequestTypeAdmin[] }> {
   const [categoriesRes, typesRes] = await Promise.all([
-    supabase.from('request_categories').select('id, name').order('sort_order'),
+    supabase.from('request_categories').select('id, name, department, active').order('sort_order'),
     supabase.from('request_types').select('*').order('sort_order'),
   ])
   if (categoriesRes.error) throw categoriesRes.error
   if (typesRes.error) throw typesRes.error
   return { categories: categoriesRes.data ?? [], types: typesRes.data ?? [] }
+}
+
+export async function createRequestCategory(input: { name: string; department: Department }): Promise<void> {
+  const { error } = await supabase.from('request_categories').insert({ name: input.name, department: input.department })
+  if (error) throw error
+}
+
+export async function setRequestCategoryActive(id: string, active: boolean): Promise<void> {
+  const { error } = await supabase.from('request_categories').update({ active }).eq('id', id)
+  if (error) throw error
 }
 
 export async function createRequestType(input: {

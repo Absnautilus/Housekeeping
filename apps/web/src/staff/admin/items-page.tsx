@@ -5,14 +5,18 @@ import { Badge } from '@/components/ui/badge'
 import { FieldError, FieldGroup, Input, Label, Select, Textarea } from '@/components/ui/field'
 import { AutoText } from '@/components/auto-text'
 import {
+  createRequestCategory,
   createRequestType,
   listMenu,
+  setRequestCategoryActive,
   setRequestTypeActive,
   type RequestCategoryAdmin,
   type RequestTypeAdmin,
 } from '@/lib/admin-api'
+import { DEPARTMENTS } from '@/lib/constants'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
+import type { Department } from '@/lib/types'
 
 export function ItemsPage() {
   const { t } = useLocale()
@@ -32,7 +36,20 @@ export function ItemsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function onToggle(item: RequestTypeAdmin) {
+  async function onToggleCategory(category: RequestCategoryAdmin) {
+    if (category.active) {
+      const ok = await confirm({
+        title: t('staff.items.categoryDeactivateTitle'),
+        description: t('staff.items.categoryDeactivateDesc', { name: category.name }),
+        confirmLabel: t('staff.items.categoryDeactivateConfirm'),
+      })
+      if (!ok) return
+    }
+    await setRequestCategoryActive(category.id, !category.active)
+    await reload()
+  }
+
+  async function onToggleItem(item: RequestTypeAdmin) {
     if (item.active) {
       const ok = await confirm({
         title: t('staff.items.deactivateTitle'),
@@ -45,6 +62,8 @@ export function ItemsPage() {
     await reload()
   }
 
+  const activeCategories = categories.filter((c) => c.active)
+
   return (
     <div className="space-y-6">
       {confirmDialog}
@@ -53,9 +72,44 @@ export function ItemsPage() {
         <p className="text-sm text-muted">{t('staff.items.subtitle')}</p>
       </div>
 
-      <NewItemForm categories={categories} onCreated={reload} />
-
       {error && <p className="text-sm text-bad-ink">{error}</p>}
+
+      <NewCategoryForm onCreated={reload} />
+
+      <div className="overflow-hidden rounded-lg border border-line bg-white">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
+            <tr>
+              <th className="px-4 py-2">{t('staff.items.colName')}</th>
+              <th className="px-4 py-2">{t('staff.items.colDepartment')}</th>
+              <th className="px-4 py-2">{t('staff.items.colStatus')}</th>
+              <th className="px-4 py-2" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td className="px-4 py-2 font-medium text-foreground">
+                  <AutoText text={category.name} />
+                </td>
+                <td className="px-4 py-2 text-muted">{t(`department.${category.department}`)}</td>
+                <td className="px-4 py-2">
+                  <Badge className={category.active ? 'bg-ok-bg text-ok-ink' : undefined}>
+                    {category.active ? t('staff.items.statusActive') : t('staff.items.statusInactive')}
+                  </Badge>
+                </td>
+                <td className="px-4 py-2 text-right">
+                  <button type="button" className="cursor-pointer text-xs text-muted hover:text-foreground" onClick={() => onToggleCategory(category)}>
+                    {category.active ? t('staff.items.deactivate') : t('staff.items.reactivate')}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <NewItemForm categories={activeCategories} onCreated={reload} />
 
       <div className="space-y-6">
         {categories.map((category) => {
@@ -94,7 +148,7 @@ export function ItemsPage() {
                           <button
                             type="button"
                             className="cursor-pointer text-xs text-muted hover:text-foreground"
-                            onClick={() => onToggle(item)}
+                            onClick={() => onToggleItem(item)}
                           >
                             {item.active ? t('staff.items.deactivate') : t('staff.items.reactivate')}
                           </button>
@@ -112,6 +166,63 @@ export function ItemsPage() {
   )
 }
 
+function NewCategoryForm({ onCreated }: { onCreated: () => Promise<void> }) {
+  const { t } = useLocale()
+  const [name, setName] = useState('')
+  const [department, setDepartment] = useState<Department>('housekeeping')
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPending(true)
+    setError(null)
+    try {
+      await createRequestCategory({ name: name.trim(), department })
+      setName('')
+      await onCreated()
+    } catch {
+      setError(t('staff.items.addCategoryError'))
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-sm font-semibold text-foreground">{t('staff.items.addCategoryTitle')}</h2>
+      </CardHeader>
+      <CardBody>
+        <form onSubmit={onSubmit} className="grid grid-cols-1 items-end gap-x-4 sm:grid-cols-[1fr_1fr_auto]">
+          <FieldGroup className="mb-0">
+            <Label htmlFor="categoryName" required>
+              {t('staff.items.categoryName')}
+            </Label>
+            <Input id="categoryName" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t('staff.items.categoryNamePlaceholder')} />
+          </FieldGroup>
+          <FieldGroup className="mb-0">
+            <Label htmlFor="categoryDepartment" required>
+              {t('staff.items.categoryDepartment')}
+            </Label>
+            <Select id="categoryDepartment" value={department} onChange={(e) => setDepartment(e.target.value as Department)}>
+              {DEPARTMENTS.map((d) => (
+                <option key={d} value={d}>
+                  {t(`department.${d}`)}
+                </option>
+              ))}
+            </Select>
+          </FieldGroup>
+          <Button type="submit" disabled={pending} className="mb-4">
+            {pending ? t('staff.items.addCategorySubmitPending') : t('staff.items.addCategorySubmit')}
+          </Button>
+        </form>
+        <FieldError>{error ?? undefined}</FieldError>
+      </CardBody>
+    </Card>
+  )
+}
+
 function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdmin[]; onCreated: () => Promise<void> }) {
   const { t } = useLocale()
   const [categoryId, setCategoryId] = useState('')
@@ -123,7 +234,7 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setCategoryId((current) => current || (categories[0]?.id ?? ''))
+    setCategoryId((current) => (current && categories.some((c) => c.id === current) ? current : (categories[0]?.id ?? '')))
   }, [categories])
 
   async function onSubmit(e: React.FormEvent) {
@@ -204,7 +315,7 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
           </div>
 
           <FieldError>{error ?? undefined}</FieldError>
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !categoryId}>
             {pending ? t('staff.items.submitPending') : t('staff.items.submit')}
           </Button>
         </form>

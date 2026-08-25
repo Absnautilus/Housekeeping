@@ -18,12 +18,15 @@ import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 type Tab = 'active' | 'done'
 type DepartmentFilter = 'all' | Department
 
+const DONE_PAGE_SIZE = 15
+
 export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const { t } = useLocale()
   const [queue, setQueue] = useState<QueuedRequest[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('active')
   const [department, setDepartment] = useState<DepartmentFilter>('all')
+  const [donePage, setDonePage] = useState(0)
   const [now, setNow] = useState(() => new Date())
   const { toasts, push, dismiss } = useToasts()
   const knownIds = useRef<Set<string> | null>(null)
@@ -66,6 +69,10 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    setDonePage(0)
+  }, [department])
+
   const filtered = useMemo(
     () => (department === 'all' ? (queue ?? []) : (queue ?? []).filter((r) => r.assigned_department === department)),
     [queue, department],
@@ -74,7 +81,17 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const pending = filtered.filter((r) => r.status === 'requested')
   const inProgress = filtered.filter((r) => r.status === 'in_progress')
   const active = [...pending, ...inProgress]
-  const done = filtered.filter((r) => r.status === 'completed' || r.status === 'cancelled')
+  const done = useMemo(
+    () =>
+      filtered
+        .filter((r) => r.status === 'completed' || r.status === 'cancelled')
+        .sort((a, b) => new Date(b.completed_at ?? b.created_at).getTime() - new Date(a.completed_at ?? a.created_at).getTime()),
+    [filtered],
+  )
+
+  const doneTotalPages = Math.max(1, Math.ceil(done.length / DONE_PAGE_SIZE))
+  const clampedDonePage = Math.min(donePage, doneTotalPages - 1)
+  const donePageItems = done.slice(clampedDonePage * DONE_PAGE_SIZE, clampedDonePage * DONE_PAGE_SIZE + DONE_PAGE_SIZE)
 
   const onAlert = useCallback((message: string, tone: 'info' | 'warning') => push(message, tone), [push])
   useRequestAlerts(active, onAlert)
@@ -149,9 +166,30 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         <EmptyState icon={<IconInboxEmpty className="h-6 w-6" />} title={t('staff.queue.emptyDoneTitle')} description={t('staff.queue.emptyDoneDesc')} />
       ) : (
         <div className="space-y-3">
-          {done.map((request) => (
+          {donePageItems.map((request) => (
             <RequestRow key={request.id} request={request} now={now} staffId={profile.id} mode="done" />
           ))}
+          {doneTotalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={clampedDonePage === 0}
+                onClick={() => setDonePage((p) => Math.max(0, p - 1))}
+                className="cursor-pointer rounded-md border border-line bg-white px-3 py-1.5 text-sm text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {t('staff.queue.donePagePrev')}
+              </button>
+              <span className="text-xs text-muted">{t('staff.queue.donePageLabel', { page: clampedDonePage + 1, total: doneTotalPages })}</span>
+              <button
+                type="button"
+                disabled={clampedDonePage >= doneTotalPages - 1}
+                onClick={() => setDonePage((p) => Math.min(doneTotalPages - 1, p + 1))}
+                className="cursor-pointer rounded-md border border-line bg-white px-3 py-1.5 text-sm text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {t('staff.queue.donePageNext')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

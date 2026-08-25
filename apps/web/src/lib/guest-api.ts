@@ -17,13 +17,19 @@ export async function guestLogin(roomNumber: string, pin: string): Promise<strin
 }
 
 export async function fetchMenu(): Promise<{ categories: RequestCategory[]; types: RequestType[] }> {
-  const [categoriesRes, typesRes] = await Promise.all([
-    supabase.from('request_categories').select('*').order('sort_order'),
-    supabase.from('request_types').select('*').order('sort_order'),
-  ])
+  // request_categories/request_types RLS only checks `active`, not
+  // hotel_id (a guest session has no per-hotel scope to enforce it with) —
+  // this filter is what actually keeps another hotel's menu out of view.
+  const categoriesRes = await supabase.from('request_categories').select('*').eq('hotel_id', HOTEL_ID).order('sort_order')
   if (categoriesRes.error) throw categoriesRes.error
+  const categories = categoriesRes.data ?? []
+
+  const categoryIds = categories.map((c) => c.id)
+  if (categoryIds.length === 0) return { categories, types: [] }
+
+  const typesRes = await supabase.from('request_types').select('*').in('category_id', categoryIds).order('sort_order')
   if (typesRes.error) throw typesRes.error
-  return { categories: categoriesRes.data ?? [], types: typesRes.data ?? [] }
+  return { categories, types: typesRes.data ?? [] }
 }
 
 export async function createGuestRequest(

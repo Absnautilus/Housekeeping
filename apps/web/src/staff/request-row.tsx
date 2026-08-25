@@ -9,7 +9,7 @@ import { DEPARTMENTS } from '@/lib/constants'
 import { cn } from '@/lib/cn'
 import type { Department } from '@/lib/types'
 import { formatElapsed, formatTime } from '@/lib/format'
-import { cancelRequest, claimRequest, completeRequest, reassignRequest } from '@/lib/staff-api'
+import { cancelRequest, claimRequest, completeRequest, deleteRequest, reassignRequest, revertRequest } from '@/lib/staff-api'
 import type { QueuedRequest } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -71,6 +71,15 @@ export function RequestRow({
       confirmLabel: t('staff.row.cancelConfirm'),
     })
     if (ok) run(() => cancelRequest(request.id))
+  }
+
+  async function onDelete() {
+    const ok = await confirm({
+      title: t('staff.row.deleteTitle'),
+      description: t('staff.row.deleteDesc', { room: request.room_number, type: typeName }),
+      confirmLabel: t('staff.row.deleteConfirm'),
+    })
+    if (ok) run(() => deleteRequest(request.id))
   }
 
   const elapsedLabel =
@@ -175,12 +184,33 @@ export function RequestRow({
                 </Button>
               )}
               {request.status === 'in_progress' && (
+                <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))}>
+                  {t('staff.row.revert')}
+                </Button>
+              )}
+              {request.status === 'in_progress' && (
                 <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
                   {t('staff.row.complete')}
                 </Button>
               )}
               <Button size="sm" variant="danger" disabled={pending} onClick={onCancel}>
                 {t('staff.row.cancel')}
+              </Button>
+            </div>
+          )}
+
+          {mode === 'done' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={pending}
+                onClick={() => run(() => revertRequest(request.id, request.status === 'completed' ? 'completed' : 'cancelled'))}
+              >
+                {t('staff.row.revert')}
+              </Button>
+              <Button size="sm" variant="danger" disabled={pending} onClick={onDelete}>
+                {t('staff.row.delete')}
               </Button>
             </div>
           )}
