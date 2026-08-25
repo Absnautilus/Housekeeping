@@ -17,6 +17,12 @@ const INTL_LOCALE: Record<Locale, string> = {
   de: 'de-DE',
   es: 'es-ES',
   pt: 'pt-PT',
+  ja: 'ja-JP',
+  bn: 'bn-BD',
+  hi: 'hi-IN',
+  ar: 'ar-SA',
+  zh: 'zh-CN',
+  ru: 'ru-RU',
 }
 
 function pad(n: number): string {

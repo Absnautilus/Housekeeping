@@ -35,7 +35,7 @@ export function LanguageToggle({ dark = false, align = 'center' }: { dark?: bool
       {open && (
         <div
           className={cn(
-            'absolute z-10 mt-2 flex gap-1.5 rounded-full border border-line bg-white p-1.5 shadow-lg',
+            'absolute z-10 mt-2 flex w-56 flex-wrap gap-1.5 rounded-2xl border border-line bg-white p-2 shadow-lg',
             align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2',
           )}
         >
