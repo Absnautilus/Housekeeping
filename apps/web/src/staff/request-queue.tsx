@@ -31,7 +31,8 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const { toasts, push, dismiss } = useToasts()
   const knownIds = useRef<Set<string> | null>(null)
 
-  const canReorder = profile.role === 'admin' || profile.role === 'master' || (profile.role === 'operatore' && profile.department === 'reception')
+  const managesFrontDesk = profile.role === 'admin' || profile.role === 'master' || (profile.role === 'operatore' && profile.department === 'reception')
+  const canReorder = managesFrontDesk
 
   const reload = useCallback(async () => {
     try {
@@ -101,9 +102,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{t('staff.queue.title')}</h1>
-          <p className="text-sm text-muted">{t('staff.queue.subtitle')}</p>
+          <p className="text-sm text-muted">
+            {managesFrontDesk || !profile.department
+              ? t('staff.queue.subtitle')
+              : t('staff.queue.subtitleOwnDept', { department: t(`department.${profile.department}`) })}
+          </p>
         </div>
-        <DepartmentFilterBar value={department} onChange={setDepartment} />
+        {managesFrontDesk && <DepartmentFilterBar value={department} onChange={setDepartment} />}
       </div>
 
       <div className="mb-5">

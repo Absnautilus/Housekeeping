@@ -55,7 +55,7 @@ export function useConfirm(): [ReactNode, (options: ConfirmOptions) => Promise<b
             </svg>
           )}
         </div>
-        <p className="font-head text-[15px] font-extrabold text-foreground">{pending.title}</p>
+        <p className="font-head text-[0.9375rem] font-extrabold text-foreground">{pending.title}</p>
         <p className="mt-2 text-xs leading-relaxed text-muted">{pending.description}</p>
         <div className="mt-5 flex gap-2">
           <button

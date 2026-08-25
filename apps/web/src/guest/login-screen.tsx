@@ -40,8 +40,8 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
             <LogoMark className="h-6 w-6" mouthColor="#fff" />
           </div>
-          <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">RoomCall</div>
-          <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">{t('login.title')}</h1>
+          <div className="text-center text-[0.625rem] font-extrabold uppercase tracking-wider text-accent">RoomCall</div>
+          <h1 className="text-center font-head text-[1.1875rem] font-extrabold text-foreground">{t('login.title')}</h1>
           <p className="mx-auto mt-1.5 max-w-[230px] text-center text-xs leading-relaxed text-muted">{t('login.subtitle')}</p>
 
           <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-3.5">
@@ -80,7 +80,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: (token: string) => void 
             </Button>
           </form>
         </div>
-        <p className="mt-6 text-center text-[11.5px] text-muted">
+        <p className="mt-6 text-center text-[0.71875rem] text-muted">
           {t('login.staffPrompt')} <Link to="/staff" className="font-semibold text-accent hover:underline">{t('login.staffLink')}</Link>
         </p>
         <div className="mt-4 flex justify-center gap-2">

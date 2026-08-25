@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { Room } from '@/lib/admin-api'
+import type { Department } from '@/lib/types'
 
 export interface Stay {
   id: string
@@ -50,4 +51,23 @@ export async function updateCheckout(id: string, checkOutAt: string): Promise<vo
 export async function cancelStay(id: string): Promise<void> {
   const { error } = await supabase.from('stays').update({ status: 'cancelled' }).eq('id', id)
   if (error) throw error
+}
+
+export interface StayRequest {
+  id: string
+  status: 'requested' | 'in_progress' | 'completed' | 'cancelled'
+  created_at: string
+  completed_at: string | null
+  assigned_department: Department
+  request_types: { name: string } | null
+}
+
+export async function fetchRequestsForStay(stayId: string): Promise<StayRequest[]> {
+  const { data, error } = await supabase
+    .from('guest_requests')
+    .select('id, status, created_at, completed_at, assigned_department, request_types(name)')
+    .eq('stay_id', stayId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as unknown as StayRequest[]
 }

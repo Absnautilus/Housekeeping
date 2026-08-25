@@ -126,6 +126,111 @@ export async function setRequestTypeActive(id: string, active: boolean): Promise
   if (error) throw error
 }
 
+export interface DepartmentStat {
+  department: Department
+  count: number
+  avgMinutes: number
+}
+
+export interface StatsSummary {
+  overallCount: number
+  overallAvgMinutes: number | null
+  byDepartment: DepartmentStat[]
+}
+
+// All-time, computed client-side over every completed row — small enough at
+// hotel scale that a dedicated aggregate query/materialized view isn't
+// worth the added moving part yet.
+export async function fetchCompletionStats(): Promise<StatsSummary> {
+  const { data, error } = await supabase
+    .from('guest_requests')
+    .select('assigned_department, created_at, completed_at')
+    .eq('status', 'completed')
+    .not('completed_at', 'is', null)
+  if (error) throw error
+  const rows = (data ?? []) as { assigned_department: Department; created_at: string; completed_at: string }[]
+  if (rows.length === 0) return { overallCount: 0, overallAvgMinutes: null, byDepartment: [] }
+
+  const minutesFor = (r: { created_at: string; completed_at: string }) =>
+    (new Date(r.completed_at).getTime() - new Date(r.created_at).getTime()) / 60_000
+
+  const overallAvgMinutes = rows.reduce((sum, r) => sum + minutesFor(r), 0) / rows.length
+
+  const grouped = new Map<Department, number[]>()
+  for (const r of rows) {
+    const list = grouped.get(r.assigned_department) ?? []
+    list.push(minutesFor(r))
+    grouped.set(r.assigned_department, list)
+  }
+  const byDepartment = Array.from(grouped.entries())
+    .map(([department, minutes]) => ({
+      department,
+      count: minutes.length,
+      avgMinutes: minutes.reduce((a, b) => a + b, 0) / minutes.length,
+    }))
+    .sort((a, b) => b.avgMinutes - a.avgMinutes)
+
+  return { overallCount: rows.length, overallAvgMinutes, byDepartment }
+}
+
+export interface ItemAvailability {
+  requestTypeId: string
+  name: string
+  categoryName: string
+  totalQuantity: number
+  activeCount: number
+  remaining: number
+  rooms: string[]
+}
+
+// "Remaining" for a trackable item (available_quantity set) = the total
+// minus however many are currently out on an unfinished request — there's
+// no separate "returned" step, so a request only stops counting against
+// availability once it's completed or cancelled.
+export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
+  const { data: types, error: typesError } = await supabase
+    .from('request_types')
+    .select('id, name, available_quantity, request_categories(name)')
+    .not('available_quantity', 'is', null)
+    .eq('active', true)
+  if (typesError) throw typesError
+  const typeList = (types ?? []) as unknown as {
+    id: string
+    name: string
+    available_quantity: number
+    request_categories: { name: string } | null
+  }[]
+  if (typeList.length === 0) return []
+
+  const ids = typeList.map((t) => t.id)
+  const { data: active, error: activeError } = await supabase
+    .from('guest_requests')
+    .select('request_type_id, room_number')
+    .in('request_type_id', ids)
+    .in('status', ['requested', 'in_progress'])
+  if (activeError) throw activeError
+
+  const byType = new Map<string, string[]>()
+  for (const r of active ?? []) {
+    const list = byType.get(r.request_type_id) ?? []
+    list.push(r.room_number)
+    byType.set(r.request_type_id, list)
+  }
+
+  return typeList.map((t) => {
+    const rooms = byType.get(t.id) ?? []
+    return {
+      requestTypeId: t.id,
+      name: t.name,
+      categoryName: t.request_categories?.name ?? '',
+      totalQuantity: t.available_quantity,
+      activeCount: rooms.length,
+      remaining: Math.max(0, t.available_quantity - rooms.length),
+      rooms,
+    }
+  })
+}
+
 export type PmsMode = 'manual' | 'opera'
 
 export interface PmsIntegrationStatus {

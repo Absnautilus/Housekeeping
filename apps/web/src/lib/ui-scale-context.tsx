@@ -5,13 +5,13 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 // size, and since every Tailwind spacing/text utility here is rem-based,
 // that scales padding and tap targets right along with the text — a
 // bigger font alone wouldn't help someone who also needs bigger buttons.
-export const UI_SCALES = ['normal', 'large', 'xlarge'] as const
+export const UI_SCALES = ['small', 'normal', 'large'] as const
 export type UiScale = (typeof UI_SCALES)[number]
 
 const SCALE_FACTOR: Record<UiScale, number> = {
+  small: 0.9,
   normal: 1,
-  large: 1.15,
-  xlarge: 1.3,
+  large: 1.3,
 }
 
 const STORAGE_KEY = 'roomcall_ui_scale'

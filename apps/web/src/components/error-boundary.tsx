@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
               <path d="M12 9v4M12 17h.01" />
             </svg>
           </div>
-          <p className="font-head text-[15.5px] font-extrabold text-foreground">Qualcosa non ha funzionato</p>
+          <p className="font-head text-[0.96875rem] font-extrabold text-foreground">Qualcosa non ha funzionato</p>
           <p className="mt-2 text-xs leading-relaxed text-muted">
             {this.state.error.message || 'Errore imprevisto.'} Ricarica la pagina; se continua, segnalalo così com'è.
           </p>

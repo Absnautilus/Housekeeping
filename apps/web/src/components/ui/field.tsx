@@ -27,7 +27,7 @@ export function Label({
   required?: boolean
 }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-[0.625rem] font-bold uppercase tracking-wider text-muted">
       {children}
       {required && <span className="text-bad-ink"> *</span>}
     </label>
@@ -167,7 +167,7 @@ function ChevronDownIcon(props: { className?: string }) {
 
 export function FieldError({ children }: { children?: string }) {
   if (!children) return null
-  return <p className="mt-1 text-[11px] font-semibold text-bad-ink">{children}</p>
+  return <p className="mt-1 text-[0.6875rem] font-semibold text-bad-ink">{children}</p>
 }
 
 export function FieldGroup({ children, className }: { children: ReactNode; className?: string }) {

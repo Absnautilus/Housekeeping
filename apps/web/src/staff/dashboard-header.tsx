@@ -58,11 +58,11 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
         <div className="hidden items-center gap-2 rounded-full bg-white/10 py-1 pr-3 pl-1 sm:flex">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-bold text-accent">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[0.625rem] font-bold text-accent">
             {initials}
           </span>
           <div className="leading-tight">
-            <p className="text-[9px] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p>
+            <p className="text-[0.5625rem] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p>
             <p className="truncate text-xs font-semibold">{profile.name}</p>
           </div>
         </div>

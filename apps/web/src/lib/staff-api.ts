@@ -39,6 +39,23 @@ export async function fetchQueue(): Promise<QueuedRequest[]> {
   return (data ?? []) as unknown as QueuedRequest[]
 }
 
+const ARCHIVE_PAGE_SIZE = 15
+
+// The 72h auto-archive job (0012) only hides rows from fetchQueue — RLS
+// already lets admin/master read them, this just exposes that in the UI.
+export async function fetchArchivedRequests(page: number): Promise<{ items: QueuedRequest[]; total: number }> {
+  const from = page * ARCHIVE_PAGE_SIZE
+  const to = from + ARCHIVE_PAGE_SIZE - 1
+  const { data, error, count } = await supabase
+    .from('guest_requests')
+    .select(QUEUE_SELECT, { count: 'exact' })
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false })
+    .range(from, to)
+  if (error) throw error
+  return { items: (data ?? []) as unknown as QueuedRequest[], total: count ?? 0 }
+}
+
 export function subscribeToQueue(
   onChange: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
 ) {

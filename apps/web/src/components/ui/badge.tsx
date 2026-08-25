@@ -12,7 +12,7 @@ const colors: Record<RequestStatus, string> = {
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
   const key = (status in colors ? status : REQUEST_STATUS.REQUESTED) as RequestStatus
   return (
-    <span className={cn('inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide', colors[key])}>
+    <span className={cn('inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[0.65625rem] font-bold uppercase tracking-wide', colors[key])}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label ?? REQUEST_STATUS_LABEL[key]}
     </span>

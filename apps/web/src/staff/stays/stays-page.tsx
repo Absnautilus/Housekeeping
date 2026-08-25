@@ -4,7 +4,9 @@ import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { listRooms, type Room } from '@/lib/admin-api'
-import { cancelStay, createStay, listStays, updateCheckout, type Stay } from '@/lib/stays-api'
+import { cancelStay, createStay, fetchRequestsForStay, listStays, updateCheckout, type Stay, type StayRequest } from '@/lib/stays-api'
+import { AutoText } from '@/components/auto-text'
+import { formatElapsed, formatTime } from '@/lib/format'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
 
@@ -155,6 +157,20 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
   const [checkOut, setCheckOut] = useState(toLocalInputValue(stay.check_out_at))
   const [pending, setPending] = useState(false)
   const [confirmDialog, confirm] = useConfirm()
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [history, setHistory] = useState<StayRequest[] | null>(null)
+
+  async function toggleHistory() {
+    if (historyOpen) {
+      setHistoryOpen(false)
+      return
+    }
+    setHistoryOpen(true)
+    if (history === null) {
+      const items = await fetchRequestsForStay(stay.id).catch(() => [])
+      setHistory(items)
+    }
+  }
 
   async function run(action: () => Promise<void>) {
     setPending(true)
@@ -178,41 +194,70 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
   return (
     <Card>
       {confirmDialog}
-      <CardBody className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="font-medium text-foreground">
-            {t('staff.stays.room')} {stay.rooms?.room_number} · {stay.guest_last_name}
-          </p>
-          <p className="text-sm text-muted">
-            {t('staff.stays.checkoutLabel')} {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} ·{' '}
-            {t('staff.stays.pinLabel')} <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
-          </p>
-        </div>
-        {editingCheckout ? (
-          <div className="flex items-center gap-2">
-            <Input type="datetime-local" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="py-1" />
-            <Button
-              size="sm"
-              disabled={pending}
-              onClick={() => run(() => updateCheckout(stay.id, new Date(checkOut).toISOString())).then(() => setEditingCheckout(false))}
-            >
-              {t('staff.stays.save')}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditingCheckout(false)}>
-              {t('staff.stays.cancel')}
-            </Button>
+      <CardBody>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">
+              {t('staff.stays.room')} {stay.rooms?.room_number} · {stay.guest_last_name}
+            </p>
+            <p className="text-sm text-muted">
+              {t('staff.stays.checkoutLabel')} {new Date(stay.check_out_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })} ·{' '}
+              {t('staff.stays.pinLabel')} <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
+            </p>
           </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}>
-              {t('staff.stays.checkoutNow')}
-            </Button>
-            <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
-              {t('staff.stays.extend')}
-            </Button>
-            <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
-              {t('staff.stays.deactivate')}
-            </Button>
+          {editingCheckout ? (
+            <div className="flex items-center gap-2">
+              <Input type="datetime-local" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="py-1" />
+              <Button
+                size="sm"
+                disabled={pending}
+                onClick={() => run(() => updateCheckout(stay.id, new Date(checkOut).toISOString())).then(() => setEditingCheckout(false))}
+              >
+                {t('staff.stays.save')}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setEditingCheckout(false)}>
+                {t('staff.stays.cancel')}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" disabled={pending} onClick={toggleHistory}>
+                {historyOpen ? t('staff.stays.hideHistory') : t('staff.stays.showHistory')}
+              </Button>
+              <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}>
+                {t('staff.stays.checkoutNow')}
+              </Button>
+              <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
+                {t('staff.stays.extend')}
+              </Button>
+              <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
+                {t('staff.stays.deactivate')}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {historyOpen && (
+          <div className="mt-3 border-t border-line pt-3">
+            {history === null ? (
+              <p className="text-sm text-muted">{t('staff.stays.historyLoading')}</p>
+            ) : history.length === 0 ? (
+              <p className="text-sm text-muted">{t('staff.stays.historyEmpty')}</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {history.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <span className="text-foreground">
+                      <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} /> · <span className="text-muted">{t(`department.${r.assigned_department}` as const)}</span>
+                    </span>
+                    <span className="text-xs text-muted">
+                      {formatTime(r.created_at)} · {t(`statusLabel.${r.status}` as const)}
+                      {r.status === 'completed' && r.completed_at ? ` · ${formatElapsed(r.created_at, new Date(r.completed_at))}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </CardBody>

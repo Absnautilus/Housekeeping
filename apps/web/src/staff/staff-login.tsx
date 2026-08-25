@@ -45,8 +45,8 @@ export function StaffLogin() {
           <div className="mx-auto mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-md bg-accent text-accent-ink shadow-[0_8px_20px_-6px_var(--accent)]">
             <LogoMark className="h-6 w-6" mouthColor="#fff" />
           </div>
-          <div className="text-center text-[10px] font-extrabold uppercase tracking-wider text-accent">{t('staff.login.badge')}</div>
-          <h1 className="text-center font-head text-[19px] font-extrabold text-foreground">{t('staff.login.title')}</h1>
+          <div className="text-center text-[0.625rem] font-extrabold uppercase tracking-wider text-accent">{t('staff.login.badge')}</div>
+          <h1 className="text-center font-head text-[1.1875rem] font-extrabold text-foreground">{t('staff.login.title')}</h1>
           <p className="mx-auto mt-1.5 max-w-[230px] text-center text-xs leading-relaxed text-muted">{t('staff.login.subtitle')}</p>
 
           <div className="mt-6 flex gap-0.5 rounded-full bg-surface-2 p-[3px]">
@@ -115,7 +115,7 @@ export function StaffLogin() {
             </form>
           </div>
         </div>
-        <p className="mt-6 text-center text-[11.5px] text-muted">
+        <p className="mt-6 text-center text-[0.71875rem] text-muted">
           {t('staff.login.guestPrompt')} <Link to="/g" className="font-semibold text-accent hover:underline">{t('staff.login.guestLink')}</Link>
         </p>
         <div className="mt-4 flex justify-center gap-2">
@@ -133,7 +133,7 @@ function ModeButton({ active, onClick, children }: { active: boolean; onClick: (
       type="button"
       onClick={onClick}
       className={cn(
-        'flex-1 cursor-pointer rounded-full px-3 py-1.5 text-[11.5px] font-bold transition-colors',
+        'flex-1 cursor-pointer rounded-full px-3 py-1.5 text-[0.71875rem] font-bold transition-colors',
         active ? 'bg-accent text-accent-ink' : 'text-muted hover:text-foreground',
       )}
     >

@@ -20,7 +20,7 @@ export function Avatar({ name, className }: { name: string; className?: string }
     <span
       title={name}
       style={{ backgroundColor: colorFor(name) }}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${className ?? ''}`}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-semibold text-white ${className ?? ''}`}
     >
       {initialsFor(name)}
     </span>

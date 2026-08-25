@@ -3,16 +3,16 @@ import { UI_SCALES, useUiScale, type UiScale } from '@/lib/ui-scale-context'
 import { useLocale } from '@/lib/i18n/locale-context'
 import { cn } from '@/lib/cn'
 
-const SCALE_KEY: Record<UiScale, 'uiScale.normal' | 'uiScale.large' | 'uiScale.xlarge'> = {
+const SCALE_KEY: Record<UiScale, 'uiScale.small' | 'uiScale.normal' | 'uiScale.large'> = {
+  small: 'uiScale.small',
   normal: 'uiScale.normal',
   large: 'uiScale.large',
-  xlarge: 'uiScale.xlarge',
 }
 
 const SAMPLE_SIZE: Record<UiScale, string> = {
-  normal: 'text-sm',
-  large: 'text-base',
-  xlarge: 'text-lg',
+  small: 'text-xs',
+  normal: 'text-base',
+  large: 'text-xl',
 }
 
 export function TextSizeToggle({ dark = false, align = 'center' }: { dark?: boolean; align?: 'center' | 'right' } = {}) {
@@ -43,7 +43,7 @@ export function TextSizeToggle({ dark = false, align = 'center' }: { dark?: bool
           dark ? 'hover:bg-white/10' : 'border border-line shadow-sm hover:border-accent-soft-line',
         )}
       >
-        <GearIcon className="h-4.5 w-4.5" />
+        <TextSizeIcon className="h-4.5 w-4.5" />
       </button>
       {open && (
         <div
@@ -77,11 +77,18 @@ export function TextSizeToggle({ dark = false, align = 'center' }: { dark?: bool
   )
 }
 
-function GearIcon({ className }: { className?: string }) {
+// A big "A" next to a small "a" — the conventional "text size" glyph (same
+// idea as the font-size control in Word/Docs), so it doesn't get mistaken
+// for a general settings/gear icon.
+function TextSizeIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <text x="1" y="18" fontSize="16" fontWeight="800" fill="currentColor">
+        A
+      </text>
+      <text x="13" y="18" fontSize="9" fontWeight="800" fill="currentColor">
+        A
+      </text>
     </svg>
   )
 }
