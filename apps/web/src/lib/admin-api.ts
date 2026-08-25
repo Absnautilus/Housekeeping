@@ -148,10 +148,28 @@ export interface DepartmentStat {
   avgMinutes: number
 }
 
+export interface OperatorStat {
+  staffId: string
+  name: string
+  count: number
+  avgExecMinutes: number
+}
+
 export interface StatsSummary {
   overallCount: number
   overallAvgMinutes: number | null
+  // "resolution time" (created -> completed) splits into two very
+  // different things: how long a request sat waiting for someone to claim
+  // it (created -> accepted, nobody's fault in particular — it's a
+  // staffing/coverage question) versus how fast the person who claimed it
+  // actually finished (accepted -> completed, an individual execution-speed
+  // question). Rows with no accepted_at (e.g. completed via a path that
+  // skipped claiming) are excluded from these two and from byOperator, but
+  // still count toward overallCount/overallAvgMinutes.
+  overallAvgWaitMinutes: number | null
+  overallAvgExecMinutes: number | null
   byDepartment: DepartmentStat[]
+  byOperator: OperatorStat[]
 }
 
 // All-time, computed client-side over every completed row — small enough at
@@ -160,33 +178,54 @@ export interface StatsSummary {
 export async function fetchCompletionStats(): Promise<StatsSummary> {
   const { data, error } = await supabase
     .from('guest_requests')
-    .select('assigned_department, created_at, completed_at')
+    .select('assigned_department, created_at, accepted_at, completed_at, accepted_by, accepted_by_staff:staff_profiles!accepted_by(name)')
     .eq('status', 'completed')
     .not('completed_at', 'is', null)
   if (error) throw error
-  const rows = (data ?? []) as { assigned_department: Department; created_at: string; completed_at: string }[]
-  if (rows.length === 0) return { overallCount: 0, overallAvgMinutes: null, byDepartment: [] }
-
-  const minutesFor = (r: { created_at: string; completed_at: string }) =>
-    (new Date(r.completed_at).getTime() - new Date(r.created_at).getTime()) / 60_000
-
-  const overallAvgMinutes = rows.reduce((sum, r) => sum + minutesFor(r), 0) / rows.length
-
-  const grouped = new Map<Department, number[]>()
-  for (const r of rows) {
-    const list = grouped.get(r.assigned_department) ?? []
-    list.push(minutesFor(r))
-    grouped.set(r.assigned_department, list)
+  const rows = (data ?? []) as unknown as {
+    assigned_department: Department
+    created_at: string
+    accepted_at: string | null
+    completed_at: string
+    accepted_by: string | null
+    accepted_by_staff: { name: string } | null
+  }[]
+  if (rows.length === 0) {
+    return { overallCount: 0, overallAvgMinutes: null, overallAvgWaitMinutes: null, overallAvgExecMinutes: null, byDepartment: [], byOperator: [] }
   }
-  const byDepartment = Array.from(grouped.entries())
-    .map(([department, minutes]) => ({
-      department,
-      count: minutes.length,
-      avgMinutes: minutes.reduce((a, b) => a + b, 0) / minutes.length,
-    }))
+
+  const minutesBetween = (from: string, to: string) => (new Date(to).getTime() - new Date(from).getTime()) / 60_000
+  const totalMinutesFor = (r: (typeof rows)[number]) => minutesBetween(r.created_at, r.completed_at)
+  const avg = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length
+
+  const overallAvgMinutes = avg(rows.map(totalMinutesFor))
+
+  const withAcceptance = rows.filter((r): r is typeof r & { accepted_at: string } => r.accepted_at !== null)
+  const overallAvgWaitMinutes = withAcceptance.length > 0 ? avg(withAcceptance.map((r) => minutesBetween(r.created_at, r.accepted_at))) : null
+  const overallAvgExecMinutes = withAcceptance.length > 0 ? avg(withAcceptance.map((r) => minutesBetween(r.accepted_at, r.completed_at))) : null
+
+  const byDeptGroups = new Map<Department, number[]>()
+  for (const r of rows) {
+    const list = byDeptGroups.get(r.assigned_department) ?? []
+    list.push(totalMinutesFor(r))
+    byDeptGroups.set(r.assigned_department, list)
+  }
+  const byDepartment = Array.from(byDeptGroups.entries())
+    .map(([department, minutes]) => ({ department, count: minutes.length, avgMinutes: avg(minutes) }))
     .sort((a, b) => b.avgMinutes - a.avgMinutes)
 
-  return { overallCount: rows.length, overallAvgMinutes, byDepartment }
+  const byOperatorGroups = new Map<string, { name: string; minutes: number[] }>()
+  for (const r of withAcceptance) {
+    if (!r.accepted_by) continue
+    const entry = byOperatorGroups.get(r.accepted_by) ?? { name: r.accepted_by_staff?.name ?? '—', minutes: [] }
+    entry.minutes.push(minutesBetween(r.accepted_at, r.completed_at))
+    byOperatorGroups.set(r.accepted_by, entry)
+  }
+  const byOperator = Array.from(byOperatorGroups.entries())
+    .map(([staffId, { name, minutes }]) => ({ staffId, name, count: minutes.length, avgExecMinutes: avg(minutes) }))
+    .sort((a, b) => a.avgExecMinutes - b.avgExecMinutes)
+
+  return { overallCount: rows.length, overallAvgMinutes, overallAvgWaitMinutes, overallAvgExecMinutes, byDepartment, byOperator }
 }
 
 export interface ItemAvailability {
