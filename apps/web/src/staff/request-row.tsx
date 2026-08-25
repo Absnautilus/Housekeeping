@@ -1,6 +1,6 @@
 import { useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { Card, CardBody } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/field'
 import { IconCheck, IconClaim, IconReturn, IconTrash, IconUndo, IconX } from '@/components/ui/action-icons'
@@ -188,51 +188,31 @@ export function RequestRow({
                 ))}
               </Select>
               {request.status === 'requested' && (
-                <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))}>
-                  <IconClaim className="h-3.5 w-3.5" />
-                  {t('staff.row.claim')}
-                </Button>
+                <IconButton tone="accent" icon={IconClaim} label={t('staff.row.claim')} disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))} />
               )}
               {request.status === 'in_progress' && (
-                <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))}>
-                  <IconUndo className="h-3.5 w-3.5" />
-                  {t('staff.row.revert')}
-                </Button>
+                <IconButton tone="neutral" icon={IconUndo} label={t('staff.row.revert')} disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))} />
               )}
               {request.status === 'in_progress' && (
-                <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
-                  <IconCheck className="h-3.5 w-3.5" />
-                  {t('staff.row.complete')}
-                </Button>
+                <IconButton tone="ok" icon={IconCheck} label={t('staff.row.complete')} disabled={pending} onClick={() => run(() => completeRequest(request.id))} />
               )}
-              <Button size="sm" variant="warning" disabled={pending} onClick={onCancel}>
-                <IconX className="h-3.5 w-3.5" />
-                {t('staff.row.cancel')}
-              </Button>
+              <IconButton tone="warning" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
             </div>
           )}
 
           {mode === 'done' && (
             <div className="flex flex-wrap items-center gap-2">
               {trackable && request.status === 'completed' && !request.returned_at && (
-                <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => markItemReturned(request.id))}>
-                  <IconReturn className="h-3.5 w-3.5" />
-                  {t('staff.row.markReturned')}
-                </Button>
+                <IconButton tone="ok" icon={IconReturn} label={t('staff.row.markReturned')} disabled={pending} onClick={() => run(() => markItemReturned(request.id))} />
               )}
-              <Button
-                size="sm"
-                variant="outline"
+              <IconButton
+                tone="neutral"
+                icon={IconUndo}
+                label={t('staff.row.revert')}
                 disabled={pending}
                 onClick={() => run(() => revertRequest(request.id, request.status === 'completed' ? 'completed' : 'cancelled'))}
-              >
-                <IconUndo className="h-3.5 w-3.5" />
-                {t('staff.row.revert')}
-              </Button>
-              <Button size="sm" variant="danger" disabled={pending} onClick={onDelete}>
-                <IconTrash className="h-3.5 w-3.5" />
-                {t('staff.row.delete')}
-              </Button>
+              />
+              <IconButton tone="danger" icon={IconTrash} label={t('staff.row.delete')} disabled={pending} onClick={onDelete} />
             </div>
           )}
         </div>
