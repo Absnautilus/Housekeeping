@@ -8,6 +8,7 @@ export interface StaffProfile {
   role: StaffRole
   department: StaffDepartment | null
   active: boolean
+  on_duty: boolean
 }
 
 export interface QueuedRequest extends GuestRequest {

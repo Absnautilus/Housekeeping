@@ -3,6 +3,7 @@ import type { SVGProps } from 'react'
 import { LogoMark } from '@/components/logo'
 import { LanguageToggle } from '@/components/language-toggle'
 import { TextSizeToggle } from '@/components/text-size-toggle'
+import { OnDutyToggle } from '@/staff/on-duty-toggle'
 import { cn } from '@/lib/cn'
 import { signOut } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -50,6 +51,7 @@ export function DashboardHeader({ profile }: { profile: StaffProfile }) {
 
         <div className="flex-1" />
 
+        <OnDutyToggle profile={profile} />
         <TextSizeToggle dark align="right" />
         <LanguageToggle dark align="right" />
 

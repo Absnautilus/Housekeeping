@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { fetchMyProfile } from '@/lib/staff-api'
+import { claimRequest, fetchMyProfile } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 import { StaffLogin } from '@/staff/staff-login'
@@ -14,6 +14,7 @@ export function StaffApp() {
   const { t } = useLocale()
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<StaffProfile | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     let cancelled = false
@@ -45,6 +46,21 @@ export function StaffApp() {
       sub.subscription.unsubscribe()
     }
   }, [])
+
+  // A tap on the "Accetta richiesta" push notification action opens
+  // /staff?claim=<id> — claim it on the caller's behalf, then drop the param
+  // so a page refresh doesn't try to re-claim (or un-claim someone else's
+  // pickup) an already-handled request.
+  useEffect(() => {
+    const claimId = searchParams.get('claim')
+    if (!claimId || !profile) return
+    claimRequest(claimId, profile.id).finally(() => {
+      const next = new URLSearchParams(searchParams)
+      next.delete('claim')
+      setSearchParams(next, { replace: true })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, profile])
 
   if (loading) {
     return (

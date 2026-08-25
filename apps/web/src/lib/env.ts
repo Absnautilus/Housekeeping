@@ -11,3 +11,7 @@ export const SUPABASE_ANON_KEY = required('VITE_SUPABASE_ANON_KEY', import.meta.
 // carries hotel_id, so a future multi-hotel rollout is a routing change,
 // not a schema migration.
 export const HOTEL_ID = required('VITE_HOTEL_ID', import.meta.env.VITE_HOTEL_ID)
+// Optional: push notifications are simply unavailable (the on-duty toggle
+// hides itself) when this isn't set, rather than throwing like the required
+// vars above — lets the app run without it during local setup.
+export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? null

@@ -93,6 +93,22 @@ export async function deleteRequest(id: string) {
   if (error) throw error
 }
 
+export async function setOnDuty(onDuty: boolean) {
+  const { error } = await supabase.rpc('set_on_duty', { p_on_duty: onDuty })
+  if (error) throw error
+}
+
+// Upserts on endpoint (unique across the table) rather than inserting, so a
+// browser that already has a subscription from a previous login just gets
+// re-pointed at the current staff row instead of erroring on the unique
+// constraint.
+export async function savePushSubscription(staffId: string, sub: { endpoint: string; p256dh: string; auth: string }) {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .upsert({ staff_id: staffId, endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth }, { onConflict: 'endpoint' })
+  if (error) throw error
+}
+
 export async function reassignRequest(id: string, department: Department) {
   const { error } = await supabase.from('guest_requests').update({ assigned_department: department }).eq('id', id)
   if (error) throw error
