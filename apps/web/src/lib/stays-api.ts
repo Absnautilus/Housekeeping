@@ -59,13 +59,13 @@ export interface StayRequest {
   created_at: string
   completed_at: string | null
   assigned_department: Department
-  request_types: { name: string } | null
+  request_types: { name: string; name_i18n: Record<string, string> } | null
 }
 
 export async function fetchRequestsForStay(stayId: string): Promise<StayRequest[]> {
   const { data, error } = await supabase
     .from('guest_requests')
-    .select('id, status, created_at, completed_at, assigned_department, request_types(name)')
+    .select('id, status, created_at, completed_at, assigned_department, request_types(name, name_i18n)')
     .eq('stay_id', stayId)
     .order('created_at', { ascending: false })
   if (error) throw error

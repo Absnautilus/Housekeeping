@@ -249,7 +249,8 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
                 {history.map((r) => (
                   <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-foreground">
-                      <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} /> · <span className="text-muted">{t(`department.${r.assigned_department}` as const)}</span>
+                      <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} translations={r.request_types?.name_i18n} /> ·{' '}
+                      <span className="text-muted">{t(`department.${r.assigned_department}` as const)}</span>
                     </span>
                     <span className="text-xs text-muted">
                       {formatTime(r.created_at)} · {t(`statusLabel.${r.status}` as const)}

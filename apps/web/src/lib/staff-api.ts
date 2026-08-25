@@ -5,7 +5,7 @@ import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 import { usernameToEmail } from '@/lib/operator-login'
 
 const QUEUE_SELECT =
-  '*, request_types(name, allows_quantity, available_quantity, request_categories(name)), accepted_by_staff:staff_profiles!accepted_by(name)'
+  '*, request_types(name, name_i18n, allows_quantity, available_quantity, request_categories(name, name_i18n)), accepted_by_staff:staff_profiles!accepted_by(name)'
 
 export async function fetchMyProfile(): Promise<StaffProfile | null> {
   const {

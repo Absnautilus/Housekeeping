@@ -70,7 +70,9 @@ export interface RequestTypeAdmin {
   id: string
   category_id: string
   name: string
+  name_i18n: Record<string, string>
   description: string | null
+  description_i18n: Record<string, string>
   allows_quantity: boolean
   available_quantity: number | null
   active: boolean
@@ -80,13 +82,14 @@ export interface RequestTypeAdmin {
 export interface RequestCategoryAdmin {
   id: string
   name: string
+  name_i18n: Record<string, string>
   department: Department
   active: boolean
 }
 
 export async function listMenu(): Promise<{ categories: RequestCategoryAdmin[]; types: RequestTypeAdmin[] }> {
   const [categoriesRes, typesRes] = await Promise.all([
-    supabase.from('request_categories').select('id, name, department, active').order('sort_order'),
+    supabase.from('request_categories').select('id, name, name_i18n, department, active').order('sort_order'),
     supabase.from('request_types').select('*').order('sort_order'),
   ])
   if (categoriesRes.error) throw categoriesRes.error
@@ -101,6 +104,19 @@ export async function createRequestCategory(input: { name: string; department: D
 
 export async function setRequestCategoryActive(id: string, active: boolean): Promise<void> {
   const { error } = await supabase.from('request_categories').update({ active }).eq('id', id)
+  if (error) throw error
+}
+
+export async function updateRequestCategoryTranslations(id: string, name_i18n: Record<string, string>): Promise<void> {
+  const { error } = await supabase.from('request_categories').update({ name_i18n }).eq('id', id)
+  if (error) throw error
+}
+
+export async function updateRequestTypeTranslations(
+  id: string,
+  translations: { name_i18n: Record<string, string>; description_i18n: Record<string, string> },
+): Promise<void> {
+  const { error } = await supabase.from('request_types').update(translations).eq('id', id)
   if (error) throw error
 }
 
@@ -176,7 +192,9 @@ export async function fetchCompletionStats(): Promise<StatsSummary> {
 export interface ItemAvailability {
   requestTypeId: string
   name: string
+  name_i18n: Record<string, string>
   categoryName: string
+  categoryName_i18n: Record<string, string>
   totalQuantity: number
   activeCount: number
   remaining: number
@@ -191,15 +209,16 @@ export interface ItemAvailability {
 export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
   const { data: types, error: typesError } = await supabase
     .from('request_types')
-    .select('id, name, available_quantity, request_categories(name)')
+    .select('id, name, name_i18n, available_quantity, request_categories(name, name_i18n)')
     .not('available_quantity', 'is', null)
     .eq('active', true)
   if (typesError) throw typesError
   const typeList = (types ?? []) as unknown as {
     id: string
     name: string
+    name_i18n: Record<string, string>
     available_quantity: number
-    request_categories: { name: string } | null
+    request_categories: { name: string; name_i18n: Record<string, string> } | null
   }[]
   if (typeList.length === 0) return []
 
@@ -223,7 +242,9 @@ export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
     return {
       requestTypeId: t.id,
       name: t.name,
+      name_i18n: t.name_i18n,
       categoryName: t.request_categories?.name ?? '',
+      categoryName_i18n: t.request_categories?.name_i18n ?? {},
       totalQuantity: t.available_quantity,
       activeCount: rooms.length,
       remaining: Math.max(0, t.available_quantity - rooms.length),

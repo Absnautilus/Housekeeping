@@ -14,9 +14,10 @@ export interface StaffProfile {
 export interface QueuedRequest extends GuestRequest {
   request_types: {
     name: string
+    name_i18n: Record<string, string>
     allows_quantity: boolean
     available_quantity: number | null
-    request_categories: { name: string } | null
+    request_categories: { name: string; name_i18n: Record<string, string> } | null
   } | null
   accepted_by_staff: { name: string } | null
 }

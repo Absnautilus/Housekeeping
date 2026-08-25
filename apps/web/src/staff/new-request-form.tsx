@@ -95,7 +95,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
               <Select id="sr-category" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    <AutoText text={c.name} />
+                    <AutoText text={c.name} translations={c.name_i18n} />
                   </option>
                 ))}
               </Select>
@@ -107,7 +107,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
               <Select id="sr-type" required value={typeId} onChange={(e) => setTypeId(e.target.value)}>
                 {typesForCategory.map((rt) => (
                   <option key={rt.id} value={rt.id}>
-                    <AutoText text={rt.name} />
+                    <AutoText text={rt.name} translations={rt.name_i18n} />
                   </option>
                 ))}
               </Select>

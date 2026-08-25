@@ -51,7 +51,9 @@ export function RequestRow({
   const [error, setError] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
   const typeName = request.request_types?.name ?? t('staff.row.defaultTypeName')
+  const typeNameI18n = request.request_types?.name_i18n
   const categoryName = request.request_types?.request_categories?.name
+  const categoryNameI18n = request.request_types?.request_categories?.name_i18n
   const trackable = request.request_types?.available_quantity != null
 
   async function run(action: () => Promise<void>) {
@@ -117,7 +119,7 @@ export function RequestRow({
           <div>
             <p className="font-semibold text-foreground">
               {t('staff.newRequest.room')} {request.room_number} <span className="font-normal text-muted">·</span>{' '}
-              <AutoText text={typeName} />
+              <AutoText text={typeName} translations={typeNameI18n} />
               {request.quantity ? ` × ${request.quantity}` : ''}
             </p>
             <p className="mt-0.5 text-sm text-muted">
@@ -125,7 +127,7 @@ export function RequestRow({
               {categoryName && (
                 <>
                   {' · '}
-                  <AutoText text={categoryName} />
+                  <AutoText text={categoryName} translations={categoryNameI18n} />
                 </>
               )}
             </p>

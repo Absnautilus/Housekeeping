@@ -19,12 +19,12 @@ export function StatusList({
 }) {
   const { t } = useLocale()
   const [requests, setRequests] = useState<GuestRequest[] | null>(null)
-  const [typeNames, setTypeNames] = useState<Record<string, string>>({})
+  const [typeInfo, setTypeInfo] = useState<Record<string, { name: string; name_i18n: Record<string, string> }>>({})
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMenu()
-      .then(({ types }) => setTypeNames(Object.fromEntries(types.map((rt) => [rt.id, rt.name]))))
+      .then(({ types }) => setTypeInfo(Object.fromEntries(types.map((rt) => [rt.id, { name: rt.name, name_i18n: rt.name_i18n }]))))
       .catch(() => {
         // the request cards still work without the item name, just less useful
       })
@@ -65,7 +65,7 @@ export function StatusList({
         <RequestCard
           key={request.id}
           request={request}
-          typeName={typeNames[request.request_type_id]}
+          typeInfo={typeInfo[request.request_type_id]}
           onCancel={async () => {
             try {
               const updated = await cancelMyRequest(token, request.id)
@@ -87,7 +87,15 @@ const STATUS_LABEL_KEY: Record<RequestStatus, `statusLabel.${RequestStatus}`> = 
   cancelled: 'statusLabel.cancelled',
 }
 
-function RequestCard({ request, typeName, onCancel }: { request: GuestRequest; typeName: string | undefined; onCancel: () => void }) {
+function RequestCard({
+  request,
+  typeInfo,
+  onCancel,
+}: {
+  request: GuestRequest
+  typeInfo: { name: string; name_i18n: Record<string, string> } | undefined
+  onCancel: () => void
+}) {
   const { t } = useLocale()
   const time = new Date(request.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
   return (
@@ -96,7 +104,7 @@ function RequestCard({ request, typeName, onCancel }: { request: GuestRequest; t
         <div>
           <p className="text-sm font-medium text-foreground">
             {request.quantity ? `${request.quantity} × ` : ''}
-            {typeName ? <AutoText text={typeName} /> : t('status.requestAt', { time })}
+            {typeInfo ? <AutoText text={typeInfo.name} translations={typeInfo.name_i18n} /> : t('status.requestAt', { time })}
           </p>
           <p className="mt-0.5 text-xs text-muted">{t('status.requestAt', { time })}</p>
           {request.note && <p className="mt-0.5 text-xs text-muted">{request.note}</p>}

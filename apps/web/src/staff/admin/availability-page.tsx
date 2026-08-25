@@ -44,8 +44,12 @@ export function AvailabilityPage() {
               {items.map((it) => (
                 <tr key={it.requestTypeId}>
                   <td className="px-4 py-2 font-medium text-foreground">
-                    <AutoText text={it.name} />
-                    {it.categoryName && <span className="ml-1.5 text-xs text-muted">· <AutoText text={it.categoryName} /></span>}
+                    <AutoText text={it.name} translations={it.name_i18n} />
+                    {it.categoryName && (
+                      <span className="ml-1.5 text-xs text-muted">
+                        · <AutoText text={it.categoryName} translations={it.categoryName_i18n} />
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-2 tabular-nums text-muted">{it.totalQuantity}</td>
                   <td className="px-4 py-2">

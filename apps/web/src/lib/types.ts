@@ -11,6 +11,7 @@ export interface RequestCategory {
   id: string
   hotel_id: string
   name: string
+  name_i18n: Record<string, string>
   department: Department
   icon: string | null
   active: boolean
@@ -21,7 +22,9 @@ export interface RequestType {
   id: string
   category_id: string
   name: string
+  name_i18n: Record<string, string>
   description: string | null
+  description_i18n: Record<string, string>
   allows_quantity: boolean
   // how many the hotel actually has on hand; null = not tracked
   available_quantity: number | null

@@ -63,7 +63,7 @@ export function ArchivePage() {
                   <tr key={r.id}>
                     <td className="px-4 py-2 font-medium text-foreground">{r.room_number}</td>
                     <td className="px-4 py-2 text-muted">
-                      <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} />
+                      <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} translations={r.request_types?.name_i18n} />
                     </td>
                     <td className="px-4 py-2 text-muted">{t(`department.${r.assigned_department}` as const)}</td>
                     <td className="px-4 py-2">

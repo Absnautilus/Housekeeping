@@ -113,7 +113,7 @@ function CategoriesGrid({
         >
           <CategoryIcon icon={category.icon} className="h-7 w-7 text-accent" />
           <span className="text-sm font-medium text-foreground">
-            <AutoText text={category.name} />
+            <AutoText text={category.name} translations={category.name_i18n} />
           </span>
         </button>
       ))}
@@ -140,7 +140,7 @@ function TypesList({
           ←
         </button>
         <h2 className="text-sm font-semibold text-foreground">
-          <AutoText text={category.name} />
+          <AutoText text={category.name} translations={category.name_i18n} />
         </h2>
       </CardHeader>
       <CardBody className="space-y-2">
@@ -153,11 +153,11 @@ function TypesList({
             className="block w-full cursor-pointer rounded-md border border-line p-3 text-left text-sm hover:border-accent-soft-line hover:bg-accent-soft"
           >
             <span className="font-medium text-foreground">
-              <AutoText text={type.name} />
+              <AutoText text={type.name} translations={type.name_i18n} />
             </span>
             {type.description && (
               <p className="mt-0.5 text-xs text-muted">
-                <AutoText text={type.description} />
+                <AutoText text={type.description} translations={type.description_i18n} />
               </p>
             )}
           </button>
@@ -201,7 +201,7 @@ function ComposeForm({
           ←
         </button>
         <h2 className="text-sm font-semibold text-foreground">
-          <AutoText text={type.name} />
+          <AutoText text={type.name} translations={type.name_i18n} />
         </h2>
       </CardHeader>
       <CardBody>
@@ -256,7 +256,7 @@ function ConfirmPanel({
     <div className="rounded-lg border border-ok-ink/25 bg-ok-bg p-6 text-center">
       <p className="text-lg font-semibold text-ok-ink">{t('flow.confirmTitle')}</p>
       <p className="mt-2 text-sm text-ok-ink">
-        <AutoText text={type.name} />
+        <AutoText text={type.name} translations={type.name_i18n} />
         {request.quantity ? ` · ${request.quantity}` : ''} — {t('flow.confirmAt', { time })}
       </p>
       <Button variant="outline" className="mt-4 bg-white" onClick={onNewRequest}>
