@@ -61,6 +61,23 @@ export function PmsIntegrationPage({ profile }: { profile: StaffProfile }) {
   )
 }
 
+// Used only when the status load fails, so the mode toggle / credential
+// fields / Save button below still render instead of the whole page being
+// replaced by a bare error box — a broken load (e.g. a migration that
+// hasn't been run yet) shouldn't also block someone from just typing in
+// their OHIP credentials and saving.
+const FALLBACK_STATUS: PmsIntegrationStatus = {
+  hotel_id: '',
+  mode: 'manual',
+  ohip_hotel_code: null,
+  ohip_enterprise_id: null,
+  ohip_gateway_url: null,
+  has_credentials: false,
+  last_sync_at: null,
+  last_sync_status: null,
+  last_sync_error: null,
+}
+
 function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
   const { t } = useLocale()
   const [status, setStatus] = useState<PmsIntegrationStatus | null>(null)
@@ -89,6 +106,7 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
       setLoadError(null)
     } catch (err) {
       setLoadError(getErrorMessage(err))
+      setStatus((current) => current ?? FALLBACK_STATUS)
     }
   }
 
@@ -139,15 +157,16 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
     }
   }
 
-  if (loadError) {
-    return <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">{t('staff.pms.loadError', { error: loadError })}</div>
-  }
   if (!status) {
     return <p className="text-sm text-muted">{t('staff.pms.loading')}</p>
   }
 
   return (
-    <Card>
+    <div className="space-y-4">
+      {loadError && (
+        <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">{t('staff.pms.loadError', { error: loadError })}</div>
+      )}
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">{t('staff.pms.modeTitle')}</h2>
@@ -259,7 +278,8 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
           </div>
         )}
       </CardBody>
-    </Card>
+      </Card>
+    </div>
   )
 }
 
