@@ -169,7 +169,15 @@ export function InProgressColumn({
     // Walk `working` from the original order to finalOrder one adjacent
     // swap at a time, persisting each step — the same operation the
     // up/down arrows perform, just repeated until the order matches.
-    const working = [...original]
+    //
+    // Clone every entry first: swapPriority(a, b) only updates the
+    // database, not the a/b objects handed to it, so a multi-step move
+    // (dragging something across 3+ positions) needs each object's local
+    // .priority kept in sync after every swap — otherwise the next swap in
+    // the same walk reads a stale pre-drag priority instead of what was
+    // actually just written, and the database ends up with duplicate/wrong
+    // priorities that don't match what was shown on screen.
+    const working = original.map((r) => ({ ...r }))
     for (let i = 0; i < finalOrder.length; i++) {
       const target = finalOrder[i]
       if (!target || working[i]?.id === target.id) continue
@@ -178,6 +186,9 @@ export function InProgressColumn({
         const a = working[k]!
         const b = working[k - 1]!
         await swapPriority(a, b)
+        const aPriority = a.priority
+        a.priority = b.priority
+        b.priority = aPriority
         working[k] = b
         working[k - 1] = a
       }
