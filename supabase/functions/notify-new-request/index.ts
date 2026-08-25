@@ -27,7 +27,17 @@ interface WebhookPayload {
     room_number: string
     request_type_id: string
     created_by_staff: string | null
+    quantity: number | null
+    note: string | null
+    assigned_department: string
   }
+}
+
+const DEPARTMENT_LABEL: Record<string, string> = {
+  housekeeping: 'Housekeeping',
+  reception: 'Reception',
+  maintenance: 'Manutenzione',
+  porter: 'Portineria',
 }
 
 Deno.serve(async (req: Request) => {
@@ -45,8 +55,13 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const admin = createClient(supabaseUrl, serviceRoleKey)
 
-    const { data: requestType } = await admin.from('request_types').select('name').eq('id', record.request_type_id).maybeSingle()
+    const { data: requestType } = await admin
+      .from('request_types')
+      .select('name, request_categories(name)')
+      .eq('id', record.request_type_id)
+      .maybeSingle()
     const itemName = requestType?.name ?? 'richiesta'
+    const categoryName = (requestType?.request_categories as { name: string } | null)?.name ?? null
 
     const { data: staff, error: staffError } = await admin
       .from('staff_profiles')
@@ -62,8 +77,12 @@ Deno.serve(async (req: Request) => {
     if (subsError) throw subsError
     if (!subs || subs.length === 0) return json({ sent: 0, reason: 'no_subscriptions' }, 200)
 
-    const title = `Camera ${record.room_number}`
-    const body = itemName
+    const departmentLabel = DEPARTMENT_LABEL[record.assigned_department] ?? record.assigned_department
+    const title = `Camera ${record.room_number} · ${departmentLabel}`
+    const bodyLines = [itemName + (record.quantity ? ` × ${record.quantity}` : '')]
+    if (categoryName) bodyLines.push(categoryName)
+    if (record.note) bodyLines.push(record.note)
+    const body = bodyLines.join('\n')
     const notificationPayload = JSON.stringify({
       title,
       body,
