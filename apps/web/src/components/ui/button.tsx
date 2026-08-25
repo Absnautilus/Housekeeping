@@ -2,13 +2,18 @@ import { Link } from 'react-router-dom'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
-type Variant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline'
+type Variant = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'ghost' | 'outline'
 type Size = 'sm' | 'md'
 
+// Severity scale for negative-outcome actions, matching the design suite:
+// outline/neutral (no consequence) -> warning/amber (negative but
+// reversible, the data stays) -> danger/red (irreversible). Not just
+// "red = bad" for everything — see request-row.tsx's cancel vs delete.
 const variants: Record<Variant, string> = {
   primary: 'bg-accent text-accent-ink hover:brightness-[1.06] disabled:opacity-40',
   secondary: 'bg-accent-soft text-accent hover:bg-accent-soft-line disabled:opacity-40',
   success: 'bg-ok-ink text-white hover:brightness-110 disabled:opacity-40',
+  warning: 'bg-wait-ink text-white hover:brightness-110 disabled:opacity-40',
   danger: 'bg-bad-bg text-bad-ink border border-bad-ink/25 hover:bg-bad-ink/15 disabled:opacity-40',
   ghost: 'bg-transparent text-foreground/70 hover:bg-surface-2',
   outline: 'bg-surface text-foreground/70 border border-line-strong hover:bg-surface-2',

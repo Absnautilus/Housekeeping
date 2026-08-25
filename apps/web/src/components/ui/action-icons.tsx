@@ -15,11 +15,14 @@ export function IconClaim(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+// The suite's "Annulla" glyph — a plain left arrow, not a curved undo — used
+// here for "Indietro" too since both are the same "no consequence, step
+// back" action.
 export function IconUndo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...shared} {...props}>
-      <path d="M3 10h11a5 5 0 0 1 5 5v1" />
-      <path d="M8 5 3 10l5 5" />
+      <path d="M19 12H5" />
+      <path d="M11 6l-6 6 6 6" />
     </svg>
   )
 }

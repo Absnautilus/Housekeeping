@@ -203,7 +203,7 @@ export function RequestRow({
                   {t('staff.row.complete')}
                 </Button>
               )}
-              <Button size="sm" variant="danger" disabled={pending} onClick={onCancel}>
+              <Button size="sm" variant="warning" disabled={pending} onClick={onCancel}>
                 <IconX className="h-3.5 w-3.5" />
                 {t('staff.row.cancel')}
               </Button>
