@@ -3,6 +3,7 @@ import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/field'
+import { IconCheck, IconClaim, IconReturn, IconTrash, IconUndo, IconX } from '@/components/ui/action-icons'
 import { Avatar } from '@/components/avatar'
 import { AutoText } from '@/components/auto-text'
 import { DEPARTMENTS } from '@/lib/constants'
@@ -107,7 +108,7 @@ export function RequestRow({
       onPointerMove={draggable ? onDragPointerMove : undefined}
       onPointerUp={draggable ? onDragPointerUp : undefined}
       onPointerCancel={draggable ? onDragPointerUp : undefined}
-      className={cn(draggable && 'touch-none cursor-grab select-none active:cursor-grabbing')}
+      className={cn(draggable && 'touch-none cursor-grab select-none transition-shadow hover:shadow-md active:cursor-grabbing')}
       aria-roledescription={draggable ? t('staff.row.drag') : undefined}
     >
       {confirmDialog}
@@ -186,20 +187,24 @@ export function RequestRow({
               </Select>
               {request.status === 'requested' && (
                 <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))}>
+                  <IconClaim className="h-3.5 w-3.5" />
                   {t('staff.row.claim')}
                 </Button>
               )}
               {request.status === 'in_progress' && (
                 <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))}>
+                  <IconUndo className="h-3.5 w-3.5" />
                   {t('staff.row.revert')}
                 </Button>
               )}
               {request.status === 'in_progress' && (
                 <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => completeRequest(request.id))}>
+                  <IconCheck className="h-3.5 w-3.5" />
                   {t('staff.row.complete')}
                 </Button>
               )}
               <Button size="sm" variant="danger" disabled={pending} onClick={onCancel}>
+                <IconX className="h-3.5 w-3.5" />
                 {t('staff.row.cancel')}
               </Button>
             </div>
@@ -209,6 +214,7 @@ export function RequestRow({
             <div className="flex flex-wrap items-center gap-2">
               {trackable && request.status === 'completed' && !request.returned_at && (
                 <Button size="sm" variant="success" disabled={pending} onClick={() => run(() => markItemReturned(request.id))}>
+                  <IconReturn className="h-3.5 w-3.5" />
                   {t('staff.row.markReturned')}
                 </Button>
               )}
@@ -218,9 +224,11 @@ export function RequestRow({
                 disabled={pending}
                 onClick={() => run(() => revertRequest(request.id, request.status === 'completed' ? 'completed' : 'cancelled'))}
               >
+                <IconUndo className="h-3.5 w-3.5" />
                 {t('staff.row.revert')}
               </Button>
               <Button size="sm" variant="danger" disabled={pending} onClick={onDelete}>
+                <IconTrash className="h-3.5 w-3.5" />
                 {t('staff.row.delete')}
               </Button>
             </div>

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { RequestRow } from '@/staff/request-row'
 import { swapPriority } from '@/lib/staff-api'
+import { cn } from '@/lib/cn'
 import type { QueuedRequest } from '@/lib/staff-types'
 
 // The up/down arrows already let anyone bump one request at a time; this
@@ -9,6 +10,13 @@ import type { QueuedRequest } from '@/lib/staff-types'
 // per adjacent step needed to walk the item from its old slot to its new
 // one, so there's no new backend surface, just a different way to produce
 // the same sequence of swaps the arrows already make.
+//
+// The dragged card follows the pointer 1:1 via a live translateY (no
+// transition while dragging, so it never lags), lifts with a shadow/scale,
+// and sits above everything else. Every other card animates into its new
+// slot with a FLIP transform whenever the live order changes underneath
+// it, instead of jumping there instantly — that's what makes the reorder
+// read as "cards sliding" rather than "list re-rendered".
 export function InProgressColumn({
   items,
   now,
@@ -24,12 +32,38 @@ export function InProgressColumn({
 }) {
   const [order, setOrder] = useState(items)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOffsetY, setDragOffsetY] = useState(0)
   const rowRefs = useRef(new Map<string, HTMLDivElement>())
   const originalOrderRef = useRef<QueuedRequest[]>(items)
+  const dragStartYRef = useRef(0)
+  const prevRectsRef = useRef(new Map<string, DOMRect>())
 
   useEffect(() => {
     if (!draggingId) setOrder(items)
   }, [items, draggingId])
+
+  useLayoutEffect(() => {
+    const newRects = new Map<string, DOMRect>()
+    rowRefs.current.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()))
+
+    rowRefs.current.forEach((el, id) => {
+      if (id === draggingId) return
+      const prev = prevRectsRef.current.get(id)
+      const next = newRects.get(id)
+      if (!prev || !next) return
+      const deltaY = prev.top - next.top
+      if (deltaY === 0) return
+      el.style.transition = 'none'
+      el.style.transform = `translateY(${deltaY}px)`
+      requestAnimationFrame(() => {
+        el.style.transition = 'transform 220ms cubic-bezier(0.2,0.8,0.2,1)'
+        el.style.transform = ''
+      })
+    })
+
+    prevRectsRef.current = newRects
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order])
 
   function reorderAround(pointerY: number, id: string) {
     setOrder((current) => {
@@ -58,17 +92,21 @@ export function InProgressColumn({
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     originalOrderRef.current = order
+    dragStartYRef.current = e.clientY
+    setDragOffsetY(0)
     setDraggingId(id)
   }
 
   function onHandlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     if (!draggingId) return
+    setDragOffsetY(e.clientY - dragStartYRef.current)
     reorderAround(e.clientY, draggingId)
   }
 
   async function onHandlePointerUp() {
     if (!draggingId) return
     const finalOrder = order
+    setDragOffsetY(0)
     setDraggingId(null)
 
     const original = originalOrderRef.current
@@ -95,29 +133,37 @@ export function InProgressColumn({
 
   return (
     <div className="space-y-3">
-      {order.map((request, i) => (
-        <div
-          key={request.id}
-          ref={(el) => {
-            if (el) rowRefs.current.set(request.id, el)
-            else rowRefs.current.delete(request.id)
-          }}
-          className={draggingId === request.id ? 'opacity-60' : undefined}
-        >
-          <RequestRow
-            request={request}
-            now={now}
-            staffId={staffId}
-            mode="active"
-            canReorder={canReorder}
-            onMoveUp={i > 0 ? () => moveAdjacent(order, i, -1, onReordered) : undefined}
-            onMoveDown={i < order.length - 1 ? () => moveAdjacent(order, i, 1, onReordered) : undefined}
-            onDragPointerDown={canReorder ? (e) => onHandlePointerDown(e, request.id) : undefined}
-            onDragPointerMove={canReorder ? onHandlePointerMove : undefined}
-            onDragPointerUp={canReorder ? onHandlePointerUp : undefined}
-          />
-        </div>
-      ))}
+      {order.map((request, i) => {
+        const dragging = draggingId === request.id
+        return (
+          <div
+            key={request.id}
+            ref={(el) => {
+              if (el) rowRefs.current.set(request.id, el)
+              else rowRefs.current.delete(request.id)
+            }}
+            className={cn('rounded-xl', dragging && 'relative z-20 transition-none')}
+            style={
+              dragging
+                ? { transform: `translateY(${dragOffsetY}px) scale(1.025)`, filter: 'drop-shadow(0 12px 20px rgb(0 0 0 / 0.18))' }
+                : undefined
+            }
+          >
+            <RequestRow
+              request={request}
+              now={now}
+              staffId={staffId}
+              mode="active"
+              canReorder={canReorder}
+              onMoveUp={i > 0 ? () => moveAdjacent(order, i, -1, onReordered) : undefined}
+              onMoveDown={i < order.length - 1 ? () => moveAdjacent(order, i, 1, onReordered) : undefined}
+              onDragPointerDown={canReorder ? (e) => onHandlePointerDown(e, request.id) : undefined}
+              onDragPointerMove={canReorder ? onHandlePointerMove : undefined}
+              onDragPointerUp={canReorder ? onHandlePointerUp : undefined}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
