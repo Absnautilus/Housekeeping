@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { RequestRow } from '@/staff/request-row'
 import { swapPriority } from '@/lib/staff-api'
 import { cn } from '@/lib/cn'
@@ -11,12 +11,13 @@ import type { QueuedRequest } from '@/lib/staff-types'
 // one, so there's no new backend surface, just a different way to produce
 // the same sequence of swaps the arrows already make.
 //
-// The dragged card follows the pointer 1:1 via a live translateY (no
-// transition while dragging, so it never lags), lifts with a shadow/scale,
-// and sits above everything else. Every other card animates into its new
-// slot with a FLIP transform whenever the live order changes underneath
-// it, instead of jumping there instantly — that's what makes the reorder
-// read as "cards sliding" rather than "list re-rendered".
+// Deliberately not animated: every past attempt at a "make room" slide
+// animation for the other cards (measure-before/after, FLIP transforms,
+// transition timing) turned out fragile under a fast real-world drag —
+// stale rects, races between overlapping settle animations, cards left
+// with a stuck offset. The dragged card still follows the pointer 1:1 via
+// a live translateY; every other card just snaps to its new slot the
+// instant the target index changes. Less flashy, but nothing to race.
 export function InProgressColumn({
   items,
   now,
@@ -35,38 +36,20 @@ export function InProgressColumn({
   const rowRefs = useRef(new Map<string, HTMLDivElement>())
   const originalOrderRef = useRef<QueuedRequest[]>(items)
   const dragStartYRef = useRef(0)
-  const prevRectsRef = useRef(new Map<string, DOMRect>())
   // Raw pointermove fires far more often than a frame (every few pixels on
-  // a trackpad/high-poll-rate mouse) — driving a setState + a
-  // getBoundingClientRect per other row from every single event is what
-  // made this stutter and then lurch forward. The native handler now just
-  // records where the pointer is; a rAF loop applies that position once
-  // per frame, which is as often as anything could actually repaint anyway.
+  // a trackpad/high-poll-rate mouse) — driving a setState from every single
+  // event is what made this stutter. The native handler now just records
+  // where the pointer is; a rAF loop applies that position once per frame.
   const draggingIdRef = useRef<string | null>(null)
   const latestClientYRef = useRef(0)
   const rafRef = useRef<number | null>(null)
   // Snapshot of every row's resting position, taken once at drag start —
   // reorderAround compares the pointer against these fixed numbers, never
-  // against a live getBoundingClientRect(). Reading live rects mid-drag was
-  // the actual cause of the flicker: rows mid-FLIP-transition report their
-  // current *animated* position, not their resting one, so the target-index
-  // decision was being made against numbers that were themselves still
-  // moving — two animations feeding back into each other. Since dragging
-  // only ever moves one item, the relative order of every other row stays
-  // fixed for the whole gesture, so a static snapshot is exactly as correct
-  // as a live read, just stable.
+  // against a live getBoundingClientRect(). Since dragging only ever moves
+  // one item, every other row's relative order stays fixed for the whole
+  // gesture, so a static snapshot is exactly as correct as a live read.
   const initialTopsRef = useRef(new Map<string, number>())
   const initialHeightsRef = useRef(new Map<string, number>())
-  // rAF ids for each row's pending "settle back to identity" step below.
-  // A fast drag can trigger several order changes within one transition's
-  // 220ms window; without this, a later invocation would read that row's
-  // rect *while still mid-transform* from the earlier one (getBoundingClientRect
-  // includes the transform), computing its delta against a moving target
-  // instead of the row's true resting position — the actual cause of the
-  // jerkiness during a quick drag, and of rows ending up stuck with a
-  // leftover offset. Any still-pending settle is now cancelled and applied
-  // instantly before this effect measures anything.
-  const pendingResetRafRef = useRef(new Map<string, number>())
 
   useEffect(() => {
     if (!draggingId) setOrder(items)
@@ -76,48 +59,8 @@ export function InProgressColumn({
     return () => {
       draggingIdRef.current = null
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
-      pendingResetRafRef.current.forEach((rafId) => cancelAnimationFrame(rafId))
-      pendingResetRafRef.current.clear()
     }
   }, [])
-
-  useLayoutEffect(() => {
-    // Instantly finish (don't just cancel) any row's still-running settle
-    // from a previous invocation, before measuring anything below — see the
-    // comment on pendingResetRafRef above.
-    pendingResetRafRef.current.forEach((rafId, id) => {
-      cancelAnimationFrame(rafId)
-      const el = rowRefs.current.get(id)
-      if (el) {
-        el.style.transition = 'none'
-        el.style.transform = ''
-      }
-    })
-    pendingResetRafRef.current.clear()
-
-    const newRects = new Map<string, DOMRect>()
-    rowRefs.current.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()))
-
-    rowRefs.current.forEach((el, id) => {
-      if (id === draggingId) return
-      const prev = prevRectsRef.current.get(id)
-      const next = newRects.get(id)
-      if (!prev || !next) return
-      const deltaY = prev.top - next.top
-      if (deltaY === 0) return
-      el.style.transition = 'none'
-      el.style.transform = `translateY(${deltaY}px)`
-      const rafId = requestAnimationFrame(() => {
-        el.style.transition = 'transform 220ms cubic-bezier(0.2,0.8,0.2,1)'
-        el.style.transform = ''
-        pendingResetRafRef.current.delete(id)
-      })
-      pendingResetRafRef.current.set(id, rafId)
-    })
-
-    prevRectsRef.current = newRects
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order])
 
   function reorderAround(pointerY: number, id: string) {
     setOrder((current) => {
@@ -141,16 +84,15 @@ export function InProgressColumn({
     })
   }
 
-  // The dragged card's position is written straight to the DOM here, not
-  // through setState — driving a re-render of the whole column (every
-  // Select/IconButton in every card) 60 times a second was the actual
-  // cause of the drag feeling laggy. reorderAround below still goes
-  // through setState, but only actually re-renders when the target index
-  // changes (a handful of times per drag), not every frame.
+  // Written straight to the DOM, not through setState — a re-render of the
+  // whole column (every Select/IconButton in every card) on every one of
+  // the ~60 pointer positions per second is what made this laggy.
+  // reorderAround above still goes through setState, but only actually
+  // re-renders when the target index changes, not every frame.
   function applyDragOffset(id: string, clientY: number) {
     const el = rowRefs.current.get(id)
     if (!el) return
-    el.style.transform = `translateY(${clientY - dragStartYRef.current}px) scale(1.025)`
+    el.style.transform = `translateY(${clientY - dragStartYRef.current}px) scale(1.02)`
   }
 
   function tick() {
@@ -245,7 +187,7 @@ export function InProgressColumn({
               if (el) rowRefs.current.set(request.id, el)
               else rowRefs.current.delete(request.id)
             }}
-            className={cn('rounded-xl', dragging && 'relative z-20 shadow-2xl transition-none')}
+            className={cn('rounded-xl', dragging && 'relative z-20 shadow-2xl')}
           >
             <RequestRow
               request={request}
