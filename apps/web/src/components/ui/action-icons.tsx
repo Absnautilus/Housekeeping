@@ -35,6 +35,23 @@ export function IconCheck(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+// Deliberately not part of `shared` (fill: none / stroke line-icons) —
+// a dot-grid drag handle reads better filled, and this exact 2x3 pattern
+// is the conventional grip affordance, distinct enough from the action
+// icons around it that it doesn't need to match their stroke style.
+export function IconGrip(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <circle cx="9" cy="6" r="1.5" />
+      <circle cx="15" cy="6" r="1.5" />
+      <circle cx="9" cy="12" r="1.5" />
+      <circle cx="15" cy="12" r="1.5" />
+      <circle cx="9" cy="18" r="1.5" />
+      <circle cx="15" cy="18" r="1.5" />
+    </svg>
+  )
+}
+
 export function IconX(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...shared} {...props}>

@@ -127,7 +127,7 @@ export function InProgressColumn({
     rafRef.current = requestAnimationFrame(tick)
   }
 
-  function onHandlePointerDown(e: ReactPointerEvent<HTMLDivElement>, id: string) {
+  function onHandlePointerDown(e: ReactPointerEvent<HTMLButtonElement>, id: string) {
     if (!canReorder) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -151,7 +151,7 @@ export function InProgressColumn({
     if (rafRef.current === null) rafRef.current = requestAnimationFrame(tick)
   }
 
-  function onHandlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+  function onHandlePointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
     if (!draggingIdRef.current) return
     latestClientYRef.current = e.clientY
   }
