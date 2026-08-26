@@ -143,9 +143,11 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
             </FieldGroup>
           </div>
           <FieldError>{error ?? undefined}</FieldError>
-          <Button type="submit" disabled={pending}>
-            {pending ? t('staff.stays.submitPending') : t('staff.stays.submit')}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={pending}>
+              {pending ? t('staff.stays.submitPending') : t('staff.stays.submit')}
+            </Button>
+          </div>
         </form>
       </CardBody>
     </Card>

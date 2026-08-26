@@ -246,9 +246,11 @@ function PmsIntegrationForm({ hotelId }: { hotelId?: string }) {
             </div>
             <FieldError>{error ?? undefined}</FieldError>
             {saved && <p className="mb-2 text-sm text-ok-ink">{t('staff.pms.saved')}</p>}
-            <Button type="submit" disabled={pending}>
-              {pending ? t('staff.pms.saving') : t('staff.pms.save')}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={pending}>
+                {pending ? t('staff.pms.saving') : t('staff.pms.save')}
+              </Button>
+            </div>
           </form>
         )}
 

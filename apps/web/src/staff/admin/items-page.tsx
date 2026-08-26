@@ -459,9 +459,11 @@ function NewItemForm({ categories, onCreated }: { categories: RequestCategoryAdm
           </div>
 
           <FieldError>{error ?? undefined}</FieldError>
-          <Button type="submit" disabled={pending || !categoryId}>
-            {pending ? t('staff.items.submitPending') : t('staff.items.submit')}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={pending || !categoryId}>
+              {pending ? t('staff.items.submitPending') : t('staff.items.submit')}
+            </Button>
+          </div>
         </form>
       </CardBody>
     </Card>

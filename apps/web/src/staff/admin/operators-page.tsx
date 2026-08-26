@@ -280,9 +280,11 @@ function NewStaffForm({ isMaster, onCreated }: { isMaster: boolean; onCreated: (
             )}
           </div>
           <FieldError>{error ?? undefined}</FieldError>
-          <Button type="submit" disabled={pending || (isMaster && !hotelId)}>
-            {pending ? t('staff.operators.submitPending') : t('staff.operators.submit')}
-          </Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={pending || (isMaster && !hotelId)}>
+              {pending ? t('staff.operators.submitPending') : t('staff.operators.submit')}
+            </Button>
+          </div>
         </form>
       </CardBody>
     </Card>

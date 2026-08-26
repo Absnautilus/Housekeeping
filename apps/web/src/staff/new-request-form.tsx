@@ -118,12 +118,12 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
             <Textarea id="sr-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('staff.newRequest.notesPlaceholder')} />
           </FieldGroup>
           <FieldError>{error ?? undefined}</FieldError>
-          <div className="flex gap-2">
-            <Button type="submit" disabled={pending || !roomId || !typeId}>
-              {pending ? t('staff.newRequest.submitPending') : t('staff.newRequest.submit')}
-            </Button>
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               {t('staff.newRequest.cancel')}
+            </Button>
+            <Button type="submit" disabled={pending || !roomId || !typeId}>
+              {pending ? t('staff.newRequest.submitPending') : t('staff.newRequest.submit')}
             </Button>
           </div>
         </form>
