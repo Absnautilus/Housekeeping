@@ -1,4 +1,5 @@
 import type { Toast } from '@/hooks/use-toasts'
+import { IconX } from '@/components/ui/action-icons'
 
 export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
   if (toasts.length === 0) return null
@@ -8,7 +9,7 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
         <div
           key={toast.id}
           role="status"
-          className="flex items-start gap-2.5 rounded-full border border-line bg-surface px-4 py-3 text-sm text-foreground shadow-lg"
+          className="flex items-start gap-2.5 rounded-xl border border-line bg-surface py-2.5 pl-3.5 pr-2 text-sm text-foreground shadow-sm"
         >
           {toast.tone === 'warning' ? (
             <svg className="mt-0.5 h-4 w-4 shrink-0 text-wait-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
@@ -21,9 +22,13 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
             </svg>
           )}
-          <span className="flex-1">{toast.message}</span>
-          <button type="button" onClick={() => onDismiss(toast.id)} className="cursor-pointer text-xs text-muted hover:text-foreground">
-            ✕
+          <span className="flex-1 py-0.5">{toast.message}</span>
+          <button
+            type="button"
+            onClick={() => onDismiss(toast.id)}
+            className="shrink-0 cursor-pointer rounded-full p-1.5 text-muted hover:bg-surface-2 hover:text-foreground"
+          >
+            <IconX className="h-3.5 w-3.5" />
           </button>
         </div>
       ))}
