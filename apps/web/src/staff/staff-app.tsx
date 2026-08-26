@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { claimRequest, fetchMyProfile } from '@/lib/staff-api'
+import { cancelRequest, claimRequest, fetchMyProfile } from '@/lib/staff-api'
 import { unlockAudio } from '@/lib/beep'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
@@ -71,6 +71,18 @@ export function StaffApp() {
     claimRequest(claimId, profile.id).finally(() => {
       const next = new URLSearchParams(searchParams)
       next.delete('claim')
+      setSearchParams(next, { replace: true })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, profile])
+
+  // Same idea for "Rifiuta richiesta" — opens /staff?reject=<id>.
+  useEffect(() => {
+    const rejectId = searchParams.get('reject')
+    if (!rejectId || !profile) return
+    cancelRequest(rejectId).finally(() => {
+      const next = new URLSearchParams(searchParams)
+      next.delete('reject')
       setSearchParams(next, { replace: true })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

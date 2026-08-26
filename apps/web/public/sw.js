@@ -1,7 +1,8 @@
 // Web Push service worker: shows the notification and handles the
-// "Accetta richiesta" action / a tap on the notification body by opening (or
-// focusing) the staff dashboard with ?claim=<id>, which staff-app.tsx reads
-// to auto-claim the request.
+// "Accetta richiesta" / "Rifiuta richiesta" actions, or a tap on the
+// notification body, by opening (or focusing) the staff dashboard with
+// ?claim=<id> or ?reject=<id>, which staff-app.tsx reads to auto-claim or
+// auto-reject the request.
 self.addEventListener('push', (event) => {
   let data = { title: 'RoomCall', body: 'Nuova richiesta', data: {} }
   try {
@@ -16,7 +17,10 @@ self.addEventListener('push', (event) => {
       icon: '/favicon.svg',
       badge: '/favicon.svg',
       data: data.data,
-      actions: [{ action: 'accept', title: 'Accetta richiesta' }],
+      actions: [
+        { action: 'accept', title: 'Accetta richiesta' },
+        { action: 'reject', title: 'Rifiuta richiesta' },
+      ],
       requireInteraction: true,
     }),
   )
@@ -24,7 +28,13 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const url = event.notification.data?.url ?? '/staff'
+  const requestId = event.notification.data?.requestId
+  const url =
+    event.action === 'reject' && requestId
+      ? `/staff?reject=${requestId}`
+      : event.action === 'accept' && requestId
+        ? `/staff?claim=${requestId}`
+        : (event.notification.data?.url ?? '/staff')
 
   event.waitUntil(
     (async () => {

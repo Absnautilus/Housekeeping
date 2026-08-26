@@ -49,6 +49,9 @@ export const dictionaries = {
     'role.operatore': 'Operatore',
 
     'uiScale.label': 'Dimensione testo',
+    'staff.notifSettings.label': 'Notifiche audio',
+    'staff.notifSettings.volume': 'Volume',
+    'staff.notifSettings.test': 'Prova suono',
     'uiScale.small': 'Piccolo',
     'uiScale.normal': 'Medio',
     'uiScale.large': 'Grande',
@@ -397,6 +400,9 @@ export const dictionaries = {
     'role.operatore': 'Operator',
 
     'uiScale.label': 'Text size',
+    'staff.notifSettings.label': 'Sound notifications',
+    'staff.notifSettings.volume': 'Volume',
+    'staff.notifSettings.test': 'Test sound',
     'uiScale.small': 'Small',
     'uiScale.normal': 'Medium',
     'uiScale.large': 'Large',
@@ -744,6 +750,9 @@ export const dictionaries = {
     'role.operatore': 'Opérateur',
 
     'uiScale.label': 'Taille du texte',
+    'staff.notifSettings.label': 'Notifications sonores',
+    'staff.notifSettings.volume': 'Volume',
+    'staff.notifSettings.test': 'Tester le son',
     'uiScale.small': 'Petite',
     'uiScale.normal': 'Moyenne',
     'uiScale.large': 'Grande',
@@ -1093,6 +1102,9 @@ export const dictionaries = {
     'role.operatore': 'Mitarbeiter',
 
     'uiScale.label': 'Textgröße',
+    'staff.notifSettings.label': 'Ton-Benachrichtigungen',
+    'staff.notifSettings.volume': 'Lautstärke',
+    'staff.notifSettings.test': 'Ton testen',
     'uiScale.small': 'Klein',
     'uiScale.normal': 'Mittel',
     'uiScale.large': 'Groß',
@@ -1441,6 +1453,9 @@ export const dictionaries = {
     'role.operatore': 'Operador',
 
     'uiScale.label': 'Tamaño del texto',
+    'staff.notifSettings.label': 'Notificaciones de sonido',
+    'staff.notifSettings.volume': 'Volumen',
+    'staff.notifSettings.test': 'Probar sonido',
     'uiScale.small': 'Pequeño',
     'uiScale.normal': 'Mediano',
     'uiScale.large': 'Grande',
@@ -1790,6 +1805,9 @@ export const dictionaries = {
     'role.operatore': 'Operador',
 
     'uiScale.label': 'Tamanho do texto',
+    'staff.notifSettings.label': 'Notificações sonoras',
+    'staff.notifSettings.volume': 'Volume',
+    'staff.notifSettings.test': 'Testar som',
     'uiScale.small': 'Pequeno',
     'uiScale.normal': 'Médio',
     'uiScale.large': 'Grande',
@@ -2138,6 +2156,9 @@ export const dictionaries = {
     'role.operatore': 'オペレーター',
 
     'uiScale.label': '文字サイズ',
+    'staff.notifSettings.label': '通知音',
+    'staff.notifSettings.volume': '音量',
+    'staff.notifSettings.test': '音をテスト',
     'uiScale.small': '小',
     'uiScale.normal': '中',
     'uiScale.large': '大',
@@ -2485,6 +2506,9 @@ export const dictionaries = {
     'role.operatore': 'অপারেটর',
 
     'uiScale.label': 'লেখার আকার',
+    'staff.notifSettings.label': 'শব্দ বিজ্ঞপ্তি',
+    'staff.notifSettings.volume': 'ভলিউম',
+    'staff.notifSettings.test': 'শব্দ পরীক্ষা করুন',
     'uiScale.small': 'ছোট',
     'uiScale.normal': 'মাঝারি',
     'uiScale.large': 'বড়',
@@ -2832,6 +2856,9 @@ export const dictionaries = {
     'role.operatore': 'ऑपरेटर',
 
     'uiScale.label': 'टेक्स्ट आकार',
+    'staff.notifSettings.label': 'ध्वनि सूचनाएं',
+    'staff.notifSettings.volume': 'वॉल्यूम',
+    'staff.notifSettings.test': 'ध्वनि जांचें',
     'uiScale.small': 'छोटा',
     'uiScale.normal': 'मध्यम',
     'uiScale.large': 'बड़ा',
@@ -3179,6 +3206,9 @@ export const dictionaries = {
     'role.operatore': 'موظف تشغيل',
 
     'uiScale.label': 'حجم النص',
+    'staff.notifSettings.label': 'إشعارات صوتية',
+    'staff.notifSettings.volume': 'مستوى الصوت',
+    'staff.notifSettings.test': 'اختبار الصوت',
     'uiScale.small': 'صغير',
     'uiScale.normal': 'متوسط',
     'uiScale.large': 'كبير',
@@ -3526,6 +3556,9 @@ export const dictionaries = {
     'role.operatore': '操作员',
 
     'uiScale.label': '文字大小',
+    'staff.notifSettings.label': '声音通知',
+    'staff.notifSettings.volume': '音量',
+    'staff.notifSettings.test': '测试声音',
     'uiScale.small': '小',
     'uiScale.normal': '中',
     'uiScale.large': '大',
@@ -3873,6 +3906,9 @@ export const dictionaries = {
     'role.operatore': 'Оператор',
 
     'uiScale.label': 'Размер текста',
+    'staff.notifSettings.label': 'Звуковые уведомления',
+    'staff.notifSettings.volume': 'Громкость',
+    'staff.notifSettings.test': 'Проверить звук',
     'uiScale.small': 'Маленький',
     'uiScale.normal': 'Средний',
     'uiScale.large': 'Крупный',

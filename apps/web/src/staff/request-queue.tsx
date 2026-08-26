@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { ToastStack } from '@/components/toast-stack'
 import { EmptyState, IconInboxEmpty } from '@/components/empty-state'
 import { cn } from '@/lib/cn'
-import { fetchQueue, subscribeToQueue } from '@/lib/staff-api'
+import { cancelRequest, claimRequest, fetchQueue, subscribeToQueue } from '@/lib/staff-api'
 import { useToasts } from '@/hooks/use-toasts'
 import { useRequestAlerts } from '@/hooks/use-request-alerts'
 import { playAlertSound } from '@/lib/beep'
@@ -28,7 +28,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
   const [department, setDepartment] = useState<DepartmentFilter>('all')
   const [donePage, setDonePage] = useState(0)
   const [now, setNow] = useState(() => new Date())
-  const { toasts, push, dismiss } = useToasts()
+  const { toasts, push, pushCard, dismiss } = useToasts()
   const knownIds = useRef<Set<string> | null>(null)
 
   const managesFrontDesk = profile.role === 'admin' || profile.role === 'master' || (profile.role === 'operatore' && profile.department === 'reception')
@@ -47,7 +47,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       for (const request of data) {
         if (!knownIds.current.has(request.id)) {
           knownIds.current.add(request.id)
-          push(t('staff.queue.newRequestToast', { room: request.room_number, item: request.request_types?.name ?? t('staff.queue.newRequestFallbackItem') }), 'info')
+          const itemName = request.request_types?.name ?? t('staff.queue.newRequestFallbackItem')
+          const title = `${t('staff.newRequest.room')} ${request.room_number} · ${itemName}${request.quantity ? ` × ${request.quantity}` : ''}`
+          pushCard({
+            title,
+            onAccept: () => void claimRequest(request.id, profile.id),
+            onReject: () => void cancelRequest(request.id),
+          })
           playAlertSound()
         }
       }
@@ -55,7 +61,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       setLoadError(getErrorMessage(err))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [push])
+  }, [pushCard, profile.id])
 
   useEffect(() => {
     reload()
