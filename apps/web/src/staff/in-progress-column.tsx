@@ -32,7 +32,6 @@ export function InProgressColumn({
 }) {
   const [order, setOrder] = useState(items)
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOffsetY, setDragOffsetY] = useState(0)
   const rowRefs = useRef(new Map<string, HTMLDivElement>())
   const originalOrderRef = useRef<QueuedRequest[]>(items)
   const dragStartYRef = useRef(0)
@@ -115,6 +114,18 @@ export function InProgressColumn({
     })
   }
 
+  // The dragged card's position is written straight to the DOM here, not
+  // through setState — driving a re-render of the whole column (every
+  // Select/IconButton in every card) 60 times a second was the actual
+  // cause of the drag feeling laggy. reorderAround below still goes
+  // through setState, but only actually re-renders when the target index
+  // changes (a handful of times per drag), not every frame.
+  function applyDragOffset(id: string, clientY: number) {
+    const el = rowRefs.current.get(id)
+    if (!el) return
+    el.style.transform = `translateY(${clientY - dragStartYRef.current}px) scale(1.025)`
+  }
+
   function tick() {
     const id = draggingIdRef.current
     if (!id) {
@@ -122,7 +133,7 @@ export function InProgressColumn({
       return
     }
     const clientY = latestClientYRef.current
-    setDragOffsetY(clientY - dragStartYRef.current)
+    applyDragOffset(id, clientY)
     reorderAround(clientY, id)
     rafRef.current = requestAnimationFrame(tick)
   }
@@ -146,7 +157,6 @@ export function InProgressColumn({
     dragStartYRef.current = e.clientY
     latestClientYRef.current = e.clientY
     draggingIdRef.current = id
-    setDragOffsetY(0)
     setDraggingId(id)
     if (rafRef.current === null) rafRef.current = requestAnimationFrame(tick)
   }
@@ -159,8 +169,9 @@ export function InProgressColumn({
   async function onHandlePointerUp() {
     if (!draggingId) return
     const finalOrder = order
+    const el = rowRefs.current.get(draggingId)
+    if (el) el.style.transform = ''
     draggingIdRef.current = null
-    setDragOffsetY(0)
     setDraggingId(null)
 
     const original = originalOrderRef.current
@@ -207,12 +218,7 @@ export function InProgressColumn({
               if (el) rowRefs.current.set(request.id, el)
               else rowRefs.current.delete(request.id)
             }}
-            className={cn('rounded-xl', dragging && 'relative z-20 transition-none')}
-            style={
-              dragging
-                ? { transform: `translateY(${dragOffsetY}px) scale(1.025)`, filter: 'drop-shadow(0 12px 20px rgb(0 0 0 / 0.18))' }
-                : undefined
-            }
+            className={cn('rounded-xl', dragging && 'relative z-20 shadow-2xl transition-none')}
           >
             <RequestRow
               request={request}

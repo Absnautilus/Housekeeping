@@ -110,6 +110,9 @@ export function RequestRow({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {request.accepted_by_staff && <Avatar name={request.accepted_by_staff.name} />}
+            <StatusBadge status={request.status} label={t(`statusLabel.${request.status}` as const)} />
+            <Badge>{t(`department.${request.assigned_department}`)}</Badge>
             {draggable && (
               <div className="flex items-center gap-1">
                 <div className="flex flex-col">
@@ -147,9 +150,6 @@ export function RequestRow({
                 </button>
               </div>
             )}
-            {request.accepted_by_staff && <Avatar name={request.accepted_by_staff.name} />}
-            <StatusBadge status={request.status} label={t(`statusLabel.${request.status}` as const)} />
-            <Badge>{t(`department.${request.assigned_department}`)}</Badge>
           </div>
         </div>
 
