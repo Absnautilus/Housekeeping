@@ -189,7 +189,11 @@ export function RequestRow({
               {request.status === 'in_progress' && (
                 <IconButton tone="ok" icon={IconCheck} label={t('staff.row.complete')} disabled={pending} onClick={() => run(() => completeRequest(request.id))} />
               )}
-              <IconButton tone="danger" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
+              {request.status === 'requested' ? (
+                <IconButton tone="dangerSoft" icon={IconX} label={t('staff.row.reject')} disabled={pending} onClick={onCancel} />
+              ) : (
+                <IconButton tone="danger" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
+              )}
             </div>
           )}
 
