@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 // severity, no visible label — just aria-label/title, for compact rows
 // where a labeled button wouldn't fit (or, per the suite's own reasoning,
 // wouldn't need to: an icon this consistent reads on its own).
-type Tone = 'neutral' | 'accent' | 'ok' | 'warning' | 'danger' | 'dangerSoft'
+type Tone = 'neutral' | 'accent' | 'accentSoft' | 'ok' | 'warning' | 'danger'
 
 const toneClass: Record<Tone, string> = {
   neutral: 'bg-surface-2 text-foreground/70 hover:bg-line-strong',
@@ -14,13 +14,13 @@ const toneClass: Record<Tone, string> = {
   // affirmative action, not a soft/muted one like the plain accent color
   // used elsewhere for less committal actions.
   accent: 'bg-accent text-accent-ink hover:brightness-110',
+  // Same hue as accent but lighter weight — rejecting a request that was
+  // never accepted stays in the same violet family as accepting it, just
+  // less emphatic, rather than switching to a red/danger color.
+  accentSoft: 'bg-accent-soft text-accent hover:bg-accent-soft-line',
   ok: 'bg-ok-ink text-white hover:brightness-110',
   warning: 'bg-wait-ink text-white hover:brightness-110',
   danger: 'bg-bad-ink text-white hover:brightness-110',
-  // Same severity as danger but lighter weight — rejecting a request that
-  // was never accepted is a smaller/less consequential action than
-  // cancelling one already in progress, so it shouldn't read as heavy.
-  dangerSoft: 'bg-bad-bg text-bad-ink border border-bad-ink/25 hover:bg-bad-ink/15',
 }
 
 export function IconButton({

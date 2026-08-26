@@ -180,19 +180,20 @@ export function RequestRow({
                   </option>
                 ))}
               </Select>
-              {request.status === 'requested' && (
-                <IconButton tone="accent" icon={IconClaim} label={t('staff.row.claim')} disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))} />
+              {/* Negatives (reject/cancel) on the left, positives (accept/complete) on the right. */}
+              {request.status === 'requested' ? (
+                <IconButton tone="accentSoft" icon={IconX} label={t('staff.row.reject')} disabled={pending} onClick={onCancel} />
+              ) : (
+                <IconButton tone="danger" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
               )}
               {request.status === 'in_progress' && (
                 <IconButton tone="neutral" icon={IconUndo} label={t('staff.row.revert')} disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))} />
               )}
+              {request.status === 'requested' && (
+                <IconButton tone="accent" icon={IconClaim} label={t('staff.row.claim')} disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))} />
+              )}
               {request.status === 'in_progress' && (
                 <IconButton tone="ok" icon={IconCheck} label={t('staff.row.complete')} disabled={pending} onClick={() => run(() => completeRequest(request.id))} />
-              )}
-              {request.status === 'requested' ? (
-                <IconButton tone="dangerSoft" icon={IconX} label={t('staff.row.reject')} disabled={pending} onClick={onCancel} />
-              ) : (
-                <IconButton tone="danger" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
               )}
             </div>
           )}
