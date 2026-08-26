@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { claimRequest, fetchMyProfile } from '@/lib/staff-api'
+import { unlockAudio } from '@/lib/beep'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
 import { StaffLogin } from '@/staff/staff-login'
@@ -45,6 +46,19 @@ export function StaffApp() {
       cancelled = true
       sub.subscription.unsubscribe()
     }
+  }, [])
+
+  // New-request alerts fire from a realtime callback, not a tap, so on
+  // iOS/Safari the alert sound would otherwise stay silently suspended for
+  // the whole session (see beep.ts) — this unlocks it from the very first
+  // real tap anywhere in the dashboard.
+  useEffect(() => {
+    function onFirstPointer() {
+      unlockAudio()
+      document.removeEventListener('pointerdown', onFirstPointer)
+    }
+    document.addEventListener('pointerdown', onFirstPointer)
+    return () => document.removeEventListener('pointerdown', onFirstPointer)
   }, [])
 
   // A tap on the "Accetta richiesta" push notification action opens
