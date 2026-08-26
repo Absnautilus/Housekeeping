@@ -92,6 +92,43 @@ export function RequestRow({
     <Card>
       {confirmDialog}
       <CardBody>
+        {draggable && (
+          <div className="mb-2 flex justify-end gap-1">
+            <div className="flex flex-col">
+              <button
+                type="button"
+                disabled={!onMoveUp}
+                onClick={onMoveUp}
+                aria-label={t('staff.row.moveUp')}
+                className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                disabled={!onMoveDown}
+                onClick={onMoveDown}
+                aria-label={t('staff.row.moveDown')}
+                className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                ▼
+              </button>
+            </div>
+            <button
+              type="button"
+              aria-label={t('staff.row.drag')}
+              title={t('staff.row.drag')}
+              aria-roledescription={t('staff.row.drag')}
+              onPointerDown={onDragPointerDown}
+              onPointerMove={onDragPointerMove}
+              onPointerUp={onDragPointerUp}
+              onPointerCancel={onDragPointerUp}
+              className="flex h-9 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-muted transition-colors select-none hover:bg-surface-2 hover:text-foreground active:cursor-grabbing"
+            >
+              <IconGrip className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="font-semibold text-foreground">
@@ -113,43 +150,6 @@ export function RequestRow({
             {request.accepted_by_staff && <Avatar name={request.accepted_by_staff.name} />}
             <StatusBadge status={request.status} label={t(`statusLabel.${request.status}` as const)} />
             <Badge>{t(`department.${request.assigned_department}`)}</Badge>
-            {draggable && (
-              <div className="flex items-center gap-1">
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    disabled={!onMoveUp}
-                    onClick={onMoveUp}
-                    aria-label={t('staff.row.moveUp')}
-                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!onMoveDown}
-                    onClick={onMoveDown}
-                    aria-label={t('staff.row.moveDown')}
-                    className="cursor-pointer leading-none text-muted hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ▼
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  aria-label={t('staff.row.drag')}
-                  title={t('staff.row.drag')}
-                  aria-roledescription={t('staff.row.drag')}
-                  onPointerDown={onDragPointerDown}
-                  onPointerMove={onDragPointerMove}
-                  onPointerUp={onDragPointerUp}
-                  onPointerCancel={onDragPointerUp}
-                  className="flex h-9 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-muted transition-colors select-none hover:bg-surface-2 hover:text-foreground active:cursor-grabbing"
-                >
-                  <IconGrip className="h-4 w-4" />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 

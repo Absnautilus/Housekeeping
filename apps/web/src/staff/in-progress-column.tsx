@@ -57,6 +57,16 @@ export function InProgressColumn({
   // as a live read, just stable.
   const initialTopsRef = useRef(new Map<string, number>())
   const initialHeightsRef = useRef(new Map<string, number>())
+  // rAF ids for each row's pending "settle back to identity" step below.
+  // A fast drag can trigger several order changes within one transition's
+  // 220ms window; without this, a later invocation would read that row's
+  // rect *while still mid-transform* from the earlier one (getBoundingClientRect
+  // includes the transform), computing its delta against a moving target
+  // instead of the row's true resting position — the actual cause of the
+  // jerkiness during a quick drag, and of rows ending up stuck with a
+  // leftover offset. Any still-pending settle is now cancelled and applied
+  // instantly before this effect measures anything.
+  const pendingResetRafRef = useRef(new Map<string, number>())
 
   useEffect(() => {
     if (!draggingId) setOrder(items)
@@ -66,10 +76,25 @@ export function InProgressColumn({
     return () => {
       draggingIdRef.current = null
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+      pendingResetRafRef.current.forEach((rafId) => cancelAnimationFrame(rafId))
+      pendingResetRafRef.current.clear()
     }
   }, [])
 
   useLayoutEffect(() => {
+    // Instantly finish (don't just cancel) any row's still-running settle
+    // from a previous invocation, before measuring anything below — see the
+    // comment on pendingResetRafRef above.
+    pendingResetRafRef.current.forEach((rafId, id) => {
+      cancelAnimationFrame(rafId)
+      const el = rowRefs.current.get(id)
+      if (el) {
+        el.style.transition = 'none'
+        el.style.transform = ''
+      }
+    })
+    pendingResetRafRef.current.clear()
+
     const newRects = new Map<string, DOMRect>()
     rowRefs.current.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()))
 
@@ -82,10 +107,12 @@ export function InProgressColumn({
       if (deltaY === 0) return
       el.style.transition = 'none'
       el.style.transform = `translateY(${deltaY}px)`
-      requestAnimationFrame(() => {
+      const rafId = requestAnimationFrame(() => {
         el.style.transition = 'transform 220ms cubic-bezier(0.2,0.8,0.2,1)'
         el.style.transform = ''
+        pendingResetRafRef.current.delete(id)
       })
+      pendingResetRafRef.current.set(id, rafId)
     })
 
     prevRectsRef.current = newRects
