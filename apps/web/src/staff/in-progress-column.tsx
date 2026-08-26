@@ -11,13 +11,16 @@ import type { QueuedRequest } from '@/lib/staff-types'
 // one, so there's no new backend surface, just a different way to produce
 // the same sequence of swaps the arrows already make.
 //
-// Deliberately not animated: every past attempt at a "make room" slide
-// animation for the other cards (measure-before/after, FLIP transforms,
-// transition timing) turned out fragile under a fast real-world drag —
-// stale rects, races between overlapping settle animations, cards left
-// with a stuck offset. The dragged card still follows the pointer 1:1 via
-// a live translateY; every other card just snaps to its new slot the
-// instant the target index changes. Less flashy, but nothing to race.
+// Deliberately minimal: every past attempt at moving the other cards
+// during the drag itself — a "make room" slide animation, then an instant
+// snap — still read as stuttery, because it meant a real DOM reorder (and
+// the reflow that comes with it) on every target-index change mid-gesture,
+// competing with the dragged card's own frame-by-frame movement for the
+// same 16ms budget. Now nothing else moves while dragging: the dragged
+// card follows the pointer via a single transform write per frame, full
+// stop. The actual reorder is computed once, at drop, and applied as one
+// state update — so during the gesture there's only ever one thing
+// changing on screen.
 export function InProgressColumn({
   items,
   now,
@@ -34,7 +37,6 @@ export function InProgressColumn({
   const [order, setOrder] = useState(items)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const rowRefs = useRef(new Map<string, HTMLDivElement>())
-  const originalOrderRef = useRef<QueuedRequest[]>(items)
   const dragStartYRef = useRef(0)
   // Raw pointermove fires far more often than a frame (every few pixels on
   // a trackpad/high-poll-rate mouse) — driving a setState from every single
@@ -43,11 +45,11 @@ export function InProgressColumn({
   const draggingIdRef = useRef<string | null>(null)
   const latestClientYRef = useRef(0)
   const rafRef = useRef<number | null>(null)
-  // Snapshot of every row's resting position, taken once at drag start —
-  // reorderAround compares the pointer against these fixed numbers, never
-  // against a live getBoundingClientRect(). Since dragging only ever moves
-  // one item, every other row's relative order stays fixed for the whole
-  // gesture, so a static snapshot is exactly as correct as a live read.
+  // Snapshot of every row's resting position, taken once at drag start.
+  // Nothing else moves during the drag now, so this stays valid for the
+  // whole gesture and is also exactly what's needed to compute the target
+  // index once, at drop.
+  const initialOrderRef = useRef<QueuedRequest[]>(items)
   const initialTopsRef = useRef(new Map<string, number>())
   const initialHeightsRef = useRef(new Map<string, number>())
 
@@ -62,33 +64,10 @@ export function InProgressColumn({
     }
   }, [])
 
-  function reorderAround(pointerY: number, id: string) {
-    setOrder((current) => {
-      const others = current.filter((r) => r.id !== id)
-      let targetIndex = others.length
-      for (let i = 0; i < others.length; i++) {
-        const other = others[i]
-        if (!other) continue
-        const top = initialTopsRef.current.get(other.id)
-        const height = initialHeightsRef.current.get(other.id)
-        if (top === undefined || height === undefined) continue
-        if (pointerY < top + height / 2) {
-          targetIndex = i
-          break
-        }
-      }
-      const dragged = current.find((r) => r.id === id)
-      if (!dragged) return current
-      const next = [...others.slice(0, targetIndex), dragged, ...others.slice(targetIndex)]
-      return next.length === current.length && next.every((r, i) => r.id === current[i]?.id) ? current : next
-    })
-  }
-
   // Written straight to the DOM, not through setState — a re-render of the
   // whole column (every Select/IconButton in every card) on every one of
-  // the ~60 pointer positions per second is what made this laggy.
-  // reorderAround above still goes through setState, but only actually
-  // re-renders when the target index changes, not every frame.
+  // the ~60 pointer positions per second is what made this laggy. Nothing
+  // else needs to happen per frame anymore.
   function applyDragOffset(id: string, clientY: number) {
     const el = rowRefs.current.get(id)
     if (!el) return
@@ -101,17 +80,27 @@ export function InProgressColumn({
       rafRef.current = null
       return
     }
-    const clientY = latestClientYRef.current
-    applyDragOffset(id, clientY)
-    reorderAround(clientY, id)
+    applyDragOffset(id, latestClientYRef.current)
     rafRef.current = requestAnimationFrame(tick)
+  }
+
+  function targetIndexFor(pointerY: number, others: QueuedRequest[]): number {
+    for (let i = 0; i < others.length; i++) {
+      const other = others[i]
+      if (!other) continue
+      const top = initialTopsRef.current.get(other.id)
+      const height = initialHeightsRef.current.get(other.id)
+      if (top === undefined || height === undefined) continue
+      if (pointerY < top + height / 2) return i
+    }
+    return others.length
   }
 
   function onHandlePointerDown(e: ReactPointerEvent<HTMLButtonElement>, id: string) {
     if (!canReorder) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
-    originalOrderRef.current = order
+    initialOrderRef.current = order
 
     const tops = new Map<string, number>()
     const heights = new Map<string, number>()
@@ -136,14 +125,22 @@ export function InProgressColumn({
   }
 
   async function onHandlePointerUp() {
-    if (!draggingId) return
-    const finalOrder = order
-    const el = rowRefs.current.get(draggingId)
+    const id = draggingIdRef.current
+    if (!id) return
+    const el = rowRefs.current.get(id)
     if (el) el.style.transform = ''
     draggingIdRef.current = null
     setDraggingId(null)
 
-    const original = originalOrderRef.current
+    const original = initialOrderRef.current
+    const others = original.filter((r) => r.id !== id)
+    const dragged = original.find((r) => r.id === id)
+    if (!dragged) return
+
+    const targetIndex = targetIndexFor(latestClientYRef.current, others)
+    const finalOrder = [...others.slice(0, targetIndex), dragged, ...others.slice(targetIndex)]
+    setOrder(finalOrder)
+
     if (original.map((r) => r.id).join() === finalOrder.map((r) => r.id).join()) return
 
     // Walk `working` from the original order to finalOrder one adjacent
