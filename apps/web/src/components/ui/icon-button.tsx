@@ -9,7 +9,11 @@ type Tone = 'neutral' | 'accent' | 'ok' | 'warning' | 'danger'
 
 const toneClass: Record<Tone, string> = {
   neutral: 'bg-surface-2 text-foreground/70 hover:bg-line-strong',
-  accent: 'bg-accent-soft text-accent hover:bg-accent-soft-line',
+  // Solid, same visual weight as ok/warning/danger below — the accept
+  // action on a not-yet-claimed request should read as a filled "primary"
+  // affirmative action, not a soft/muted one like the plain accent color
+  // used elsewhere for less committal actions.
+  accent: 'bg-accent text-accent-ink hover:brightness-110',
   ok: 'bg-ok-ink text-white hover:brightness-110',
   warning: 'bg-wait-ink text-white hover:brightness-110',
   danger: 'bg-bad-ink text-white hover:brightness-110',
