@@ -182,7 +182,7 @@ export function RequestRow({
               </Select>
               {/* Negatives (reject/cancel) on the left, positives (accept/complete) on the right. */}
               {request.status === 'requested' ? (
-                <IconButton tone="accentSoft" icon={IconX} label={t('staff.row.reject')} disabled={pending} onClick={onCancel} />
+                <IconButton tone="hintCaution" icon={IconX} label={t('staff.row.reject')} disabled={pending} onClick={onCancel} />
               ) : (
                 <IconButton tone="danger" icon={IconX} label={t('staff.row.cancel')} disabled={pending} onClick={onCancel} />
               )}
@@ -190,7 +190,7 @@ export function RequestRow({
                 <IconButton tone="neutral" icon={IconUndo} label={t('staff.row.revert')} disabled={pending} onClick={() => run(() => revertRequest(request.id, 'in_progress'))} />
               )}
               {request.status === 'requested' && (
-                <IconButton tone="accent" icon={IconClaim} label={t('staff.row.claim')} disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))} />
+                <IconButton tone="hintPositive" icon={IconClaim} label={t('staff.row.claim')} disabled={pending} onClick={() => run(() => claimRequest(request.id, staffId))} />
               )}
               {request.status === 'in_progress' && (
                 <IconButton tone="ok" icon={IconCheck} label={t('staff.row.complete')} disabled={pending} onClick={() => run(() => completeRequest(request.id))} />

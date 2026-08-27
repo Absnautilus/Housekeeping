@@ -14,7 +14,7 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
             <p className="pr-1 font-semibold text-foreground">{toast.card.title}</p>
             <div className="mt-2 flex justify-end gap-2">
               <IconButton
-                tone="accentSoft"
+                tone="hintCaution"
                 icon={IconX}
                 label={t('staff.row.reject')}
                 onClick={() => {
@@ -23,7 +23,7 @@ export function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: 
                 }}
               />
               <IconButton
-                tone="accent"
+                tone="hintPositive"
                 icon={IconCheck}
                 label={t('staff.row.claim')}
                 onClick={() => {
