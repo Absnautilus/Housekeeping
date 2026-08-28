@@ -1,0 +1,46 @@
+name: Deploy Edge Functions to shared Supabase project
+
+# Manual only, on purpose — same guard pattern as hotsflow-core's
+# deploy-migrations.yml. Deploys this repo's supabase/functions/* to the
+# real hosted project. Never triggers automatically on push.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_project_ref:
+        description: "Type the target Supabase project ref to confirm (must match the SUPABASE_PROJECT_REF repo variable exactly)"
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify target project ref matches expectation
+        run: |
+          if [ "${{ inputs.confirm_project_ref }}" != "${{ vars.SUPABASE_PROJECT_REF }}" ]; then
+            echo "::error::confirm_project_ref ('${{ inputs.confirm_project_ref }}') does not match the configured SUPABASE_PROJECT_REF repo variable — refusing to proceed."
+            exit 1
+          fi
+          echo "Target project ref confirmed: ${{ vars.SUPABASE_PROJECT_REF }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy create-staff-account
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy create-staff-account --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+
+      - name: Deploy notify-new-request
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy notify-new-request --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+
+      - name: Deploy sync-pms-stays
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy sync-pms-stays --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
