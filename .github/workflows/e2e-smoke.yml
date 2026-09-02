@@ -1,4 +1,4 @@
-name: E2E smoke test - admin login (shared Supabase project)
+name: E2E smoke tests (shared Supabase project)
 
 # Manual only. The sandbox that develops this app cannot reach
 # *.supabase.co directly (organization network policy on that dev
@@ -62,14 +62,23 @@ jobs:
           done
           curl -sf -o /dev/null http://localhost:5173/ || (echo "::error::dev server never came up" && exit 1)
 
-      - name: Run admin login E2E test
+      - name: Run E2E tests
         working-directory: apps/web
         env:
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_GUEST_PIN: ${{ secrets.E2E_GUEST_PIN }}
+          E2E_ROOM: ${{ vars.E2E_ROOM }}
         run: |
           mkdir -p e2e-results
-          node e2e/admin-login.mjs
+          set +e
+          node e2e/admin-login.mjs; admin_exit=$?
+          node e2e/guest-flow.mjs; guest_exit=$?
+          set -e
+          if [ $admin_exit -ne 0 ] || [ $guest_exit -ne 0 ]; then
+            echo "::error::admin-login exit=$admin_exit guest-flow exit=$guest_exit"
+            exit 1
+          fi
 
       - name: Upload screenshot
         if: always()
