@@ -45,12 +45,14 @@ const results = [];
   console.log('suspended-staff profile fetch:', profileResp.status, profileResp.body);
 
   // The actual security property required: a suspended staff member must
-  // NOT end up with a working dashboard session, regardless of exactly
-  // which screen/message they see. Two legitimate ways this can happen:
-  //  (a) profile fetch comes back empty -> app bounces back to the login
-  //      screen (formGone stays false, no visible error);
-  //  (b) profile fetch comes back with active:false -> app shows the
-  //      explicit "account disabled" message (formGone true, but no queue).
+  // NOT end up with a working dashboard session. The network response from
+  // the profile self-select IS that ground truth (RLS either returns the
+  // row or it doesn't) — the DOM's `formGone` signal is unreliable here:
+  // StaffLogin can legitimately unmount-then-remount (loading state, then
+  // StaffApp deciding !profile and rendering a FRESH StaffLogin instance
+  // with the same #username id), which a one-shot "did #username detach"
+  // check can't tell apart from "logged in and stayed logged in". So this
+  // check reads profileResp directly rather than trusting formGone.
   let deniedCorrectly = false;
   let mechanism = 'unknown';
   if (auth.status === 200) {
@@ -60,16 +62,14 @@ const results = [];
     } catch {
       rows = null;
     }
-    if (!formGone) {
-      mechanism = 'bounced back to login screen (profile fetch returned empty — RLS denies self-select while suspended)';
-      deniedCorrectly = Array.isArray(rows) && rows.length === 0;
+    const profileEmpty = profileResp.status === 200 && Array.isArray(rows) && rows.length === 0;
+    if (profileEmpty) {
+      mechanism = `profile self-select returned empty (RLS denies it while suspended) — formGone was ${formGone} (unreliable signal, see comment)`;
+      deniedCorrectly = true;
     } else {
       const bodyText = await page.locator('body').innerText();
-      const showsDisabledMessage = /disabilitat|disabled|sospes/i.test(bodyText);
-      mechanism = showsDisabledMessage
-        ? 'explicit "account disabled" message shown'
-        : `form unmounted but no disabled message found — page text: ${bodyText.slice(0, 200)}`;
-      deniedCorrectly = showsDisabledMessage;
+      mechanism = `profile fetch did NOT come back empty (status=${profileResp.status} body=${profileResp.body}) — page text: ${bodyText.slice(0, 200)}`;
+      deniedCorrectly = false;
     }
   } else {
     mechanism = `auth itself failed (status ${auth.status}) — not the scenario under test`;

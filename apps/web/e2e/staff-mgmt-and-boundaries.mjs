@@ -1,5 +1,5 @@
 // Step 8 extended E2E — items 3 (admin side), 5, 9 (admin side).
-import { newPage, loginEmail, restGet, BASE_URL, report } from './lib.mjs';
+import { newPage, loginEmail, restGet, captureResponse, BASE_URL, report } from './lib.mjs';
 
 const BAIT_ID = '00000000-0000-0000-0000-0000000baa02';
 const HOTEL1_ID = '00000000-0000-0000-0000-000000000001';
@@ -43,6 +43,7 @@ if (formGone) {
   const suffix = Date.now().toString().slice(-8);
   const testName = `E2E Temp Staff ${suffix}`;
   const testUsername = `e2etemp${suffix}`;
+  const getFnResp = captureResponse(page, '/functions/v1/create-staff-account');
   await page.fill('#name', testName);
   await page.fill('#username', testUsername);
   await page.fill('#pin', '135790');
@@ -55,7 +56,11 @@ if (formGone) {
   } catch {
     created = false;
   }
+  const fnResp = getFnResp();
+  const visibleError = await page.locator('p.text-bad-ink, p[class*="bad"]').allTextContents().catch(() => []);
   console.log('staff creation via UI:', created ? 'row appeared' : 'row never appeared');
+  console.log('create-staff-account function response:', fnResp.status, fnResp.body);
+  console.log('visible error banner:', JSON.stringify(visibleError));
 
   let createdActive = null;
   if (created) {
