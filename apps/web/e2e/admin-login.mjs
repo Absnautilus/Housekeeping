@@ -18,10 +18,20 @@ const page = await browser.newPage();
 
 let authRequestSeen = false;
 let authStatus = null;
-page.on('response', (res) => {
+let profileStatus = null;
+let profileBody = null;
+page.on('response', async (res) => {
   if (res.url().includes('/auth/v1/token')) {
     authRequestSeen = true;
     authStatus = res.status();
+  }
+  if (res.url().includes('/rest/v1/staff_profiles')) {
+    profileStatus = res.status();
+    try {
+      profileBody = await res.text();
+    } catch {
+      profileBody = '(could not read body)';
+    }
   }
 });
 
@@ -30,7 +40,7 @@ await page.click('button:has-text("Email")');
 await page.fill('#email', email);
 await page.fill('#password', password);
 await page.click('button[type="submit"]');
-await page.waitForTimeout(3000);
+await page.waitForTimeout(5000);
 
 await page.screenshot({ path: 'e2e-results/admin-login.png', fullPage: true });
 
@@ -38,6 +48,7 @@ const url = page.url();
 const loggedIn = url.includes('/staff') && !url.includes('/staff/login');
 
 console.log('Auth request reached the server:', authRequestSeen, 'status:', authStatus);
+console.log('staff_profiles request status:', profileStatus, 'body:', profileBody);
 console.log('URL after login:', url);
 console.log('RESULT:', loggedIn ? 'PASS - admin login succeeded' : 'FAIL - still on login screen');
 
