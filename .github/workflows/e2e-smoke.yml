@@ -65,20 +65,32 @@ jobs:
       - name: Run E2E tests
         working-directory: apps/web
         env:
+          E2E_SUPABASE_URL: https://${{ vars.SUPABASE_PROJECT_REF }}.supabase.co
+          E2E_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
           E2E_GUEST_PIN: ${{ secrets.E2E_GUEST_PIN }}
           E2E_ROOM: ${{ vars.E2E_ROOM }}
+          E2E_OPERATOR_USERNAME: ${{ vars.E2E_OPERATOR_USERNAME }}
+          E2E_OPERATOR_PIN: ${{ secrets.E2E_OPERATOR_PIN }}
+          E2E_MASTER_EMAIL: ${{ vars.E2E_MASTER_EMAIL }}
+          E2E_MASTER_PASSWORD: ${{ secrets.E2E_MASTER_PASSWORD }}
+          E2E_SUSPENDED_USERNAME: ${{ vars.E2E_SUSPENDED_USERNAME }}
+          E2E_SUSPENDED_PIN: ${{ secrets.E2E_SUSPENDED_PIN }}
+          E2E_HOTEL2_ADMIN_EMAIL: ${{ vars.E2E_HOTEL2_ADMIN_EMAIL }}
+          E2E_HOTEL2_ADMIN_PASSWORD: ${{ secrets.E2E_HOTEL2_ADMIN_PASSWORD }}
         run: |
           mkdir -p e2e-results
           set +e
-          node e2e/admin-login.mjs; admin_exit=$?
-          node e2e/guest-flow.mjs; guest_exit=$?
+          overall=0
+          node e2e/admin-login.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::admin-login failed (exit $ec)"; overall=1; }
+          node e2e/guest-flow.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::guest-flow failed (exit $ec)"; overall=1; }
+          node e2e/operator-and-master.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::operator-and-master failed (exit $ec)"; overall=1; }
+          node e2e/staff-mgmt-and-boundaries.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::staff-mgmt-and-boundaries failed (exit $ec)"; overall=1; }
+          node e2e/on-duty-and-suspended.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::on-duty-and-suspended failed (exit $ec)"; overall=1; }
+          node e2e/entitlement-and-pms.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::entitlement-and-pms failed (exit $ec)"; overall=1; }
           set -e
-          if [ $admin_exit -ne 0 ] || [ $guest_exit -ne 0 ]; then
-            echo "::error::admin-login exit=$admin_exit guest-flow exit=$guest_exit"
-            exit 1
-          fi
+          exit $overall
 
       - name: Upload screenshot
         if: always()
