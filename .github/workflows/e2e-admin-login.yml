@@ -16,9 +16,6 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - name: Verify target project ref matches expectation
         run: |
@@ -37,14 +34,17 @@ jobs:
           node-version: 22
 
       - name: Install app dependencies
+        working-directory: apps/web
         run: npm ci
 
       - name: Install Playwright + Chromium
+        working-directory: apps/web
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
 
       - name: Write .env.local for this run
+        working-directory: apps/web
         run: |
           cat > .env.local <<EOF
           VITE_SUPABASE_URL=https://${{ vars.SUPABASE_PROJECT_REF }}.supabase.co
@@ -53,6 +53,7 @@ jobs:
           EOF
 
       - name: Start dev server
+        working-directory: apps/web
         run: |
           npm run dev -- --host 0.0.0.0 --port 5173 &
           for i in $(seq 1 30); do
@@ -62,6 +63,7 @@ jobs:
           curl -sf -o /dev/null http://localhost:5173/ || (echo "::error::dev server never came up" && exit 1)
 
       - name: Run admin login E2E test
+        working-directory: apps/web
         env:
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
