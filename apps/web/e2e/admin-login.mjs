@@ -35,22 +35,33 @@ page.on('response', async (res) => {
   }
 });
 
-await page.goto(`${baseUrl}/staff/login`, { waitUntil: 'networkidle' });
+// /staff/login isn't a distinct route — StaffApp (mounted for /staff/*)
+// renders <StaffLogin/> in place whenever there's no profile yet, on
+// whatever sub-path you happened to land on. So the URL never changes on
+// a successful login; the login *form* unmounting is the real signal.
+// Navigating to /staff itself (not /staff/login) also means a successful
+// login lands on the path StaffApp's own "/" child route expects.
+await page.goto(`${baseUrl}/staff`, { waitUntil: 'networkidle' });
 await page.click('button:has-text("Email")');
 await page.fill('#email', email);
 await page.fill('#password', password);
 await page.click('button[type="submit"]');
-await page.waitForTimeout(5000);
+
+let loggedIn = false;
+try {
+  await page.waitForSelector('#email', { state: 'detached', timeout: 10000 });
+  loggedIn = true;
+} catch {
+  loggedIn = false;
+}
+await page.waitForTimeout(500);
 
 await page.screenshot({ path: 'e2e-results/admin-login.png', fullPage: true });
 
-const url = page.url();
-const loggedIn = url.includes('/staff') && !url.includes('/staff/login');
-
 console.log('Auth request reached the server:', authRequestSeen, 'status:', authStatus);
 console.log('staff_profiles request status:', profileStatus, 'body:', profileBody);
-console.log('URL after login:', url);
-console.log('RESULT:', loggedIn ? 'PASS - admin login succeeded' : 'FAIL - still on login screen');
+console.log('URL after login:', page.url());
+console.log('RESULT:', loggedIn ? 'PASS - admin login succeeded (login form unmounted)' : 'FAIL - login form still present after 10s');
 
 await browser.close();
 
