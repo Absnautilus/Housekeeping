@@ -57,19 +57,53 @@ Deno.serve(async (req: Request) => {
     } = await callerClient.auth.getUser()
     if (!user) return json({ error: 'invalid_session' }, 401)
 
+    // caller.active: same distinct liveness gate as create-staff-account —
+    // see its comment. has_permission() below only checks
+    // memberships.status, never staff_profiles.active.
     const { data: caller, error: callerError } = await callerClient
       .from('staff_profiles')
-      .select('id, hotel_id, role, active')
+      .select('id, hotel_id, active')
       .eq('auth_user_id', user.id)
       .maybeSingle()
 
-    if (callerError || !caller || !caller.active || !['admin', 'master'].includes(caller.role)) {
+    if (callerError || !caller || !caller.active) {
+      return json({ error: 'forbidden' }, 403)
+    }
+
+    // current_staff_is_master(): Core-derived, used only to resolve which
+    // hotel the caller may target (org-wide vs. pinned to their own),
+    // exactly as before. The authorization decision is the single
+    // has_permission() call below, once hotelId resolves to a property_id.
+    const { data: isOrgWide, error: orgWideError } = await callerClient.rpc('current_staff_is_master')
+    if (orgWideError) {
       return json({ error: 'forbidden' }, 403)
     }
 
     const body = await req.json().catch(() => ({}))
-    const hotelId = caller.role === 'master' ? String(body.hotelId ?? '') : caller.hotel_id
+    const hotelId = isOrgWide ? String(body.hotelId ?? '') : caller.hotel_id
     if (!hotelId) return json({ error: 'invalid_input' }, 400)
+
+    // The sole authorization gate: guest_requests_property_for_hotel()
+    // resolves hotelId to a property_id (null if unmapped), then
+    // has_permission() checks guest_requests.pms.manage there -- module-
+    // owned, so this also automatically denies when the guest_requests
+    // module is disabled for that property (has_permission() folds module
+    // entitlement in for module-owned permissions), which the legacy check
+    // never verified at all. Must run before any privileged (service-role)
+    // operation below.
+    const { data: propertyId, error: propertyError } = await callerClient.rpc('guest_requests_property_for_hotel', {
+      p_hotel_id: hotelId,
+    })
+    if (propertyError) {
+      return json({ error: 'forbidden' }, 403)
+    }
+    const { data: allowed, error: allowedError } = await callerClient.rpc('has_permission', {
+      p_property_id: propertyId,
+      p_permission_slug: 'guest_requests.pms.manage',
+    })
+    if (allowedError || !allowed) {
+      return json({ error: 'forbidden' }, 403)
+    }
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
 

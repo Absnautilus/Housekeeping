@@ -89,6 +89,7 @@ jobs:
           node e2e/staff-mgmt-and-boundaries.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::staff-mgmt-and-boundaries failed (exit $ec)"; overall=1; }
           node e2e/on-duty-and-suspended.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::on-duty-and-suspended failed (exit $ec)"; overall=1; }
           node e2e/entitlement-and-pms.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::entitlement-and-pms failed (exit $ec)"; overall=1; }
+          node e2e/staff-and-pms-authorization.mjs; ec=$?; [ $ec -ne 0 ] && { echo "::error::staff-and-pms-authorization failed (exit $ec)"; overall=1; }
           set -e
           exit $overall
 

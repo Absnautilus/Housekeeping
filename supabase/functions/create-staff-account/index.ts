@@ -45,13 +45,36 @@ Deno.serve(async (req: Request) => {
     } = await callerClient.auth.getUser()
     if (!user) return json({ error: 'invalid_session' }, 401)
 
+    // caller.active is a distinct, pre-existing liveness gate (not what
+    // Fase 2 Step 9 asks to replace here — staff_profiles.role is) kept
+    // explicit because guest_requests_staff_manage_allowed() below, like
+    // has_permission()/has_organization_permission() it's built on, only
+    // checks memberships.status, never staff_profiles.active; the two are
+    // not kept in sync by anything after the one-time Step 4 backfill (the
+    // admin dashboard's deactivate toggle updates staff_profiles.active
+    // alone, confirmed by reading admin-api.ts) — dropping this check would
+    // let a UI-deactivated caller keep creating staff as long as their
+    // session and membership.status both remain valid.
     const { data: caller, error: callerError } = await callerClient
       .from('staff_profiles')
-      .select('id, hotel_id, role, active')
+      .select('id, hotel_id, active')
       .eq('auth_user_id', user.id)
       .maybeSingle()
 
-    if (callerError || !caller || !caller.active || !['admin', 'master'].includes(caller.role)) {
+    if (callerError || !caller || !caller.active) {
+      return json({ error: 'forbidden' }, 403)
+    }
+
+    // current_staff_is_master() is Core-derived (redefined in Fase 2 Step 6
+    // to read memberships/roles, not staff_profiles.role) -- used here only
+    // to resolve which hotel/role the caller is even allowed to REQUEST
+    // (org-wide callers may target any hotel and either role; everyone else
+    // is pinned to their own hotel, operatore only), exactly as before.
+    // The actual authorization decision is the single
+    // guest_requests_staff_manage_allowed() call below, once hotelId is
+    // known -- this is not a second, parallel authorization path.
+    const { data: isOrgWide, error: orgWideError } = await callerClient.rpc('current_staff_is_master')
+    if (orgWideError) {
       return json({ error: 'forbidden' }, 403)
     }
 
@@ -60,12 +83,23 @@ Deno.serve(async (req: Request) => {
     const requestedRole = body.role === 'admin' ? 'admin' : 'operatore'
 
     // a hotel admin can only ever create operatori for its own hotel; only
-    // master can create another hotel's admin, and picks which hotel
-    const role: 'admin' | 'operatore' = caller.role === 'master' ? requestedRole : 'operatore'
-    const hotelId = caller.role === 'master' ? String(body.hotelId ?? '') : caller.hotel_id
+    // an org-wide caller can create another hotel's admin, and picks which
+    // hotel
+    const role: 'admin' | 'operatore' = isOrgWide ? requestedRole : 'operatore'
+    const hotelId = isOrgWide ? String(body.hotelId ?? '') : caller.hotel_id
 
     if (!name || !hotelId) {
       return json({ error: 'invalid_input' }, 400)
+    }
+
+    // The sole authorization gate: does the caller have core.staff.manage
+    // (directly or org-wide) over the property this hotelId maps to? Must
+    // run before any privileged (service-role) operation below.
+    const { data: allowed, error: allowedError } = await callerClient.rpc('guest_requests_staff_manage_allowed', {
+      p_hotel_id: hotelId,
+    })
+    if (allowedError || !allowed) {
+      return json({ error: 'forbidden' }, 403)
     }
 
     let email: string

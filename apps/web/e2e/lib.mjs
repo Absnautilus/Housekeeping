@@ -110,6 +110,18 @@ export async function rpc(page, fn, args) {
   return { status: res.status(), body: await res.text() };
 }
 
+// Direct Edge Function invocation as the currently-logged-in user —
+// bypasses the UI entirely, needed for precise authorization-matrix
+// assertions (a DENY case has no button to click).
+export async function callFunction(page, fnName, body) {
+  const token = await getAccessToken(page);
+  const res = await page.request.post(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    data: body,
+  });
+  return { status: res.status(), body: await res.text() };
+}
+
 export function report(label, ok, detail) {
   console.log(`[${ok ? 'PASS' : 'FAIL'}] ${label}${detail ? ' — ' + detail : ''}`);
   return ok;
