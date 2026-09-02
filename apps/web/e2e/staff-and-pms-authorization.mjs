@@ -5,25 +5,25 @@
 // directly (callFunction), not through the UI, so DENY cases (which have
 // no button to click) are exercised precisely.
 //
-// Two matrix cells ("organization_admin + property fuori org -> DENY") are
-// NOT covered here: the only two existing hotels/orgs (Hotel Demo, Hotel
-// Demo 2) are BOTH within the E2E master fixture's reach (backfill_staff_
-// identity() gives master one org-wide membership per organization that
-// existed when it ran, and both orgs existed by then) -- there is no
-// current fixture master has zero membership on. Needs one more demo
-// hotel/property_admin, unrelated to master's memberships, provisioned the
-// same way Hotel Demo 2 was. Reported as SKIP, not silently omitted.
+// The two cross-organization boundary cases (master targeting Hotel Demo
+// 3, which belongs to a wholly separate organization/admin -- see
+// fixtures/third-org-hotel.sql) are real PASS/FAIL assertions, not SKIPs:
+// master has org-wide reach on Hotel Demo's and Hotel Demo 2's
+// organizations only (one membership per org that existed when
+// backfill_staff_identity() ran), never on Hotel Demo 3's -- this is what
+// actually isolates "org-wide reach" from "no boundary at all" that the
+// first two existing hotels couldn't. Both cases log in as E2E_MASTER (no
+// new credentials needed -- they assert master is DENIED, not that Admin
+// B's own account works) but do need Hotel Demo 3 to already exist (run
+// fixtures/third-org-hotel.sql first) -- until then these two report as
+// normal FAILs, not a skip, per Step 9's explicit instruction.
 import { newPage, loginEmail, loginOperator, callFunction, report } from './lib.mjs';
 
 const HOTEL1_ID = '00000000-0000-0000-0000-000000000001';
 const HOTEL2_ID = '00000000-0000-0000-0000-000000000002';
+const HOTEL3_ID = '00000000-0000-0000-0000-000000000003';
 
 const results = [];
-
-function skip(label, reason) {
-  console.log(`[SKIP] ${label} — ${reason}`);
-  return true; // does not fail the suite
-}
 
 // ---------------------------------------------------------------------------
 // create-staff-account
@@ -72,12 +72,27 @@ function skip(label, reason) {
   await browser.close();
 }
 
-results.push(
-  skip(
-    'create-staff-account: organization_admin + property fuori org -> DENY',
-    'nessun hotel/org esistente è fuori dalla reach di master (org-wide su entrambe le org attuali) — serve un terzo hotel/property_admin dedicato',
-  ),
-);
+// organization_admin (master, org A) + property fuori org (Hotel Demo 3,
+// org B) -> DENY
+{
+  const { browser, page } = await newPage();
+  const { auth, formGone } = await loginEmail(page, process.env.E2E_MASTER_EMAIL, process.env.E2E_MASTER_PASSWORD);
+  if (auth.status === 200 && formGone) {
+    const res = await callFunction(page, 'create-staff-account', {
+      hotelId: HOTEL3_ID,
+      role: 'operatore',
+      name: 'Should Not Be Created (cross-org)',
+      department: 'reception',
+      username: `shouldnotexistcrossorg${Date.now()}`,
+      pin: '975310',
+    });
+    console.log('create-staff-account, master targeting Hotel Demo 3 (cross-org):', res.status, res.body);
+    results.push(report('create-staff-account: organization_admin + property fuori org -> DENY', res.status === 403, `status=${res.status}`));
+  } else {
+    results.push(report('create-staff-account: organization_admin + property fuori org -> DENY', false, 'master login failed'));
+  }
+  await browser.close();
+}
 
 // suspended/inactive -> DENY (fixture disponibile è un operatore sospeso,
 // che non avrebbe comunque il permesso core.staff.manage indipendentemente
@@ -144,9 +159,19 @@ results.push(
   await browser.close();
 }
 
-results.push(
-  skip('sync-pms-stays: property fuori org -> DENY', 'stessa limitazione di fixture del caso create-staff-account sopra'),
-);
+// property fuori org (Hotel Demo 3, org B) -> DENY
+{
+  const { browser, page } = await newPage();
+  const { auth, formGone } = await loginEmail(page, process.env.E2E_MASTER_EMAIL, process.env.E2E_MASTER_PASSWORD);
+  if (auth.status === 200 && formGone) {
+    const res = await callFunction(page, 'sync-pms-stays', { hotelId: HOTEL3_ID });
+    console.log('sync-pms-stays, master targeting Hotel Demo 3 (cross-org):', res.status, res.body);
+    results.push(report('sync-pms-stays: property fuori org -> DENY', res.status === 403, `status=${res.status}`));
+  } else {
+    results.push(report('sync-pms-stays: property fuori org -> DENY', false, 'master login failed'));
+  }
+  await browser.close();
+}
 
 // entitlement guest_requests disabled -> DENY. This is the case where old
 // and new behavior actually diverge: the legacy role-only check never
