@@ -1,0 +1,78 @@
+name: E2E smoke test - admin login (shared Supabase project)
+
+# Manual only. The sandbox that develops this app cannot reach
+# *.supabase.co directly (organization network policy on that dev
+# environment) — GitHub Actions runners can, so real browser E2E tests
+# against the shared, hosted Supabase project run here instead. Never
+# touches Vercel or production; starts its own throwaway vite dev server
+# against the real backend using a demo-only account.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_project_ref:
+        description: "Type the target Supabase project ref to confirm (must match the SUPABASE_PROJECT_REF repo variable exactly)"
+        required: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Verify target project ref matches expectation
+        run: |
+          if [ "${{ inputs.confirm_project_ref }}" != "${{ vars.SUPABASE_PROJECT_REF }}" ]; then
+            echo "::error::confirm_project_ref ('${{ inputs.confirm_project_ref }}') does not match the configured SUPABASE_PROJECT_REF repo variable — refusing to proceed."
+            exit 1
+          fi
+          echo "Target project ref confirmed: ${{ vars.SUPABASE_PROJECT_REF }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Write .env.local for this run
+        run: |
+          cat > .env.local <<EOF
+          VITE_SUPABASE_URL=https://${{ vars.SUPABASE_PROJECT_REF }}.supabase.co
+          VITE_SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }}
+          VITE_HOTEL_ID=${{ vars.E2E_HOTEL_ID }}
+          EOF
+
+      - name: Start dev server
+        run: |
+          npm run dev -- --host 0.0.0.0 --port 5173 &
+          for i in $(seq 1 30); do
+            curl -s -o /dev/null http://localhost:5173/ && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://localhost:5173/ || (echo "::error::dev server never came up" && exit 1)
+
+      - name: Run admin login E2E test
+        env:
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          mkdir -p e2e-results
+          node e2e/admin-login.mjs
+
+      - name: Upload screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: apps/web/e2e-results/
+          retention-days: 14
