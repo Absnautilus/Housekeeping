@@ -15,11 +15,25 @@ if (!pin) {
 const browser = await chromium.launch();
 const page = await browser.newPage();
 
+let loginStatus = null;
+let loginBody = null;
+page.on('response', async (res) => {
+  if (res.url().includes('/rest/v1/rpc/guest_login')) {
+    loginStatus = res.status();
+    try {
+      loginBody = await res.text();
+    } catch {
+      loginBody = '(could not read body)';
+    }
+  }
+});
+
 async function shot(name) {
   await page.screenshot({ path: `e2e-results/guest-${name}.png`, fullPage: true });
 }
 
 // 1. Guest login (room + PIN)
+console.log('Attempting guest login with room:', JSON.stringify(room), 'pin length:', pin.length);
 await page.goto(`${baseUrl}/g`, { waitUntil: 'networkidle' });
 await page.fill('#roomNumber', room);
 await page.fill('#pin', pin);
@@ -34,6 +48,9 @@ try {
   loginOk = false;
 }
 await shot('01-after-login');
+console.log('guest_login RPC response status:', loginStatus, 'body:', loginBody);
+const visibleErrorText = await page.locator('p.text-bad-ink, p[class*="bad"]').allTextContents().catch(() => []);
+console.log('Visible error text on page:', JSON.stringify(visibleErrorText));
 console.log('Guest login:', loginOk ? 'PASS' : 'FAIL - category grid never appeared');
 if (!loginOk) {
   await browser.close();
