@@ -45,23 +45,26 @@ Deno.serve(async (req: Request) => {
     } = await callerClient.auth.getUser()
     if (!user) return json({ error: 'invalid_session' }, 401)
 
-    // caller.active is a distinct, pre-existing liveness gate (not what
-    // Fase 2 Step 9 asks to replace here — staff_profiles.role is) kept
-    // explicit because guest_requests_staff_manage_allowed() below, like
-    // has_permission()/has_organization_permission() it's built on, only
-    // checks memberships.status, never staff_profiles.active; the two are
-    // not kept in sync by anything after the one-time Step 4 backfill (the
-    // admin dashboard's deactivate toggle updates staff_profiles.active
-    // alone, confirmed by reading admin-api.ts) — dropping this check would
-    // let a UI-deactivated caller keep creating staff as long as their
-    // session and membership.status both remain valid.
+    // No separate staff_profiles.active check here: as of migration
+    // 20260827122600, guest_requests_staff_manage_allowed() (the sole
+    // authorization gate below) checks current_staff_active() internally,
+    // and current_staff_is_master() (called next, for input-shaping only)
+    // already checked sp.active before that migration too. Nothing
+    // privileged happens between this fetch and that RPC call (no service-
+    // role client, no write) — an explicit check here would only move a
+    // 403 slightly earlier for the exact same caller, duplicating the one
+    // authoritative gate instead of relying on it. This is different from
+    // sync-pms-stays (see its own comment): that function's authorization
+    // primitives, guest_requests_property_for_hotel()/has_permission(),
+    // were never touched by 20260827122600 and still don't check .active
+    // at all.
     const { data: caller, error: callerError } = await callerClient
       .from('staff_profiles')
-      .select('id, hotel_id, active')
+      .select('id, hotel_id')
       .eq('auth_user_id', user.id)
       .maybeSingle()
 
-    if (callerError || !caller || !caller.active) {
+    if (callerError || !caller) {
       return json({ error: 'forbidden' }, 403)
     }
 

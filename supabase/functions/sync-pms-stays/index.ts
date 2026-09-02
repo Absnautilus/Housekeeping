@@ -57,9 +57,16 @@ Deno.serve(async (req: Request) => {
     } = await callerClient.auth.getUser()
     if (!user) return json({ error: 'invalid_session' }, 401)
 
-    // caller.active: same distinct liveness gate as create-staff-account —
-    // see its comment. has_permission() below only checks
-    // memberships.status, never staff_profiles.active.
+    // caller.active stays explicit here, unlike create-staff-account (see
+    // its comment for why that one dropped it): this function's own
+    // authorization primitives, guest_requests_property_for_hotel() +
+    // has_permission() below, were never touched by migration
+    // 20260827122600 -- only get_pms_integration_status()/
+    // save_pms_integration() (the two PL/pgSQL RPCs the UI calls directly)
+    // gained a current_staff_active() check, not the raw building blocks
+    // this Edge Function composes itself. has_permission() only checks
+    // memberships.status, never staff_profiles.active -- confirmed by
+    // reading 0006_rls_helpers.sql, not assumed.
     const { data: caller, error: callerError } = await callerClient
       .from('staff_profiles')
       .select('id, hotel_id, active')
