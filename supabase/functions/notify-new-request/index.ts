@@ -12,11 +12,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import webpush from 'npm:web-push@3'
 
-const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!
-const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!
+const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:support@roomcall.app'
-
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 
 interface WebhookPayload {
   type: 'INSERT'
@@ -42,6 +40,18 @@ const DEPARTMENT_LABEL: Record<string, string> = {
 
 Deno.serve(async (req: Request) => {
   try {
+    if (!VAPID_PUBLIC_KEY?.trim()) {
+      return json({ error: 'VAPID_PUBLIC_KEY missing from Edge Function environment' }, 500)
+    }
+    if (!VAPID_PRIVATE_KEY?.trim()) {
+      return json({ error: 'VAPID_PRIVATE_KEY missing from Edge Function environment' }, 500)
+    }
+
+    // Configure web-push inside the request handler so a missing/invalid VAPID
+    // secret becomes a normal diagnostic 500 response instead of crashing the
+    // worker during module initialization (WORKER_ERROR).
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+
     const payload = (await req.json()) as WebhookPayload
     if (payload.type !== 'INSERT' || payload.table !== 'guest_requests') {
       return json({ skipped: 'not_an_insert' }, 200)
