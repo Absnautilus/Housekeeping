@@ -3,7 +3,7 @@ import { LocaleProvider } from '@/lib/i18n/locale-context'
 import { UiScaleProvider } from '@/lib/ui-scale-context'
 import { configureSupabaseClient } from '@/lib/supabase'
 import { StaffApp } from '@/staff/staff-app'
-import './index.css'
+import './embedded.css'
 
 export interface HousekeepingModuleProps {
   supabase: SupabaseClient
