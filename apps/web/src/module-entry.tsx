@@ -28,7 +28,7 @@ export function HousekeepingModule({
   configureSupabaseClient(supabase)
 
   return (
-    <div className="hk-root">
+    <div className="hk-root hk-root--embedded">
       <LocaleProvider>
         <UiScaleProvider>
           <StaffApp mode="embedded" expectedHotelId={hotelId} basePath={basePath} />
