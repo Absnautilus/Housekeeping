@@ -67,6 +67,14 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
+
+  /* Elevation matching the suite's design standard -- without this,
+     shadow-sm/md/lg fall back to Tailwind's own (much subtler) built-in
+     scale, and every card/dropdown/panel in the app reads flatter than
+     the shell they're embedded in. */
+  --shadow-sm: 0 2px 8px rgba(22, 24, 43, 0.05);
+  --shadow-md: 0 8px 24px rgba(22, 24, 43, 0.08);
+  --shadow-lg: 0 16px 40px rgba(22, 24, 43, 0.18);
 }
 
 /* Scoped deliberately to .hk-root, never to `body`: this stylesheet is
