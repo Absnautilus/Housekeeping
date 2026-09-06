@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss/theme.css";
+@import "./housekeeping-theme.css";
+@import "tailwindcss/utilities.css";
+
+/* Embedded mode intentionally ships no Tailwind Preflight. These are the
+   only reset rules the module needs, and every selector is rooted at hk-root
+   so importing the module cannot restyle the Hotsflow shell. */
+.hk-root,
+.hk-root *,
+.hk-root *::before,
+.hk-root *::after {
+  box-sizing: border-box;
+}
+
+.hk-root h1,
+.hk-root h2,
+.hk-root h3,
+.hk-root h4,
+.hk-root p {
+  margin: 0;
+}
+
+.hk-root h1,
+.hk-root h2,
+.hk-root h3,
+.hk-root h4 {
+  font-family: var(--font-head);
+}
+
+.hk-root button,
+.hk-root input,
+.hk-root select,
+.hk-root textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.hk-root button {
+  cursor: pointer;
+}
+
+.hk-root img,
+.hk-root svg {
+  display: block;
+  max-width: 100%;
+}
