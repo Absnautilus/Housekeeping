@@ -3,85 +3,83 @@
 @import "./housekeeping-theme.css";
 @import "tailwindcss/utilities.css";
 
-/* Embedded mode intentionally ships no Tailwind Preflight. Recreate only the
-   subset Housekeeping relies on, and scope every selector to .hk-root so the
-   module cannot restyle the Hotsflow shell. */
-.hk-root,
-.hk-root *,
-.hk-root *::before,
-.hk-root *::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: currentColor;
-}
+/* Embedded mode intentionally ships no Tailwind Preflight. Keep the reset in
+   Tailwind's base layer so utility classes always win the cascade. Every
+   selector remains rooted at .hk-root, so the module cannot restyle the shell. */
+@layer base {
+  .hk-root,
+  .hk-root *,
+  .hk-root *::before,
+  .hk-root *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: currentColor;
+  }
 
-.hk-root h1,
-.hk-root h2,
-.hk-root h3,
-.hk-root h4,
-.hk-root p,
-.hk-root ul,
-.hk-root ol {
-  margin: 0;
-}
+  .hk-root h1,
+  .hk-root h2,
+  .hk-root h3,
+  .hk-root h4,
+  .hk-root p,
+  .hk-root ul,
+  .hk-root ol {
+    margin: 0;
+  }
 
-.hk-root ul,
-.hk-root ol {
-  padding: 0;
-  list-style: none;
-}
+  .hk-root ul,
+  .hk-root ol {
+    padding: 0;
+    list-style: none;
+  }
 
-.hk-root h1,
-.hk-root h2,
-.hk-root h3,
-.hk-root h4 {
-  font-family: var(--font-head);
-}
+  .hk-root h1,
+  .hk-root h2,
+  .hk-root h3,
+  .hk-root h4 {
+    font-family: var(--font-head);
+  }
 
-.hk-root button,
-.hk-root input,
-.hk-root select,
-.hk-root textarea {
-  margin: 0;
-  padding: 0;
-  font: inherit;
-  font-feature-settings: inherit;
-  font-variation-settings: inherit;
-  letter-spacing: inherit;
-  color: inherit;
-  background-color: transparent;
-  border-radius: 0;
-}
+  .hk-root button,
+  .hk-root input,
+  .hk-root select,
+  .hk-root textarea {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+  }
 
-.hk-root button,
-.hk-root input:where([type='button'], [type='reset'], [type='submit']) {
-  appearance: button;
-  background-image: none;
-}
+  .hk-root button,
+  .hk-root input:where([type='button'], [type='reset'], [type='submit']) {
+    appearance: button;
+    background-image: none;
+  }
 
-.hk-root button {
-  cursor: pointer;
-}
+  .hk-root button { cursor: pointer; }
 
-.hk-root button:disabled,
-.hk-root input:disabled,
-.hk-root select:disabled,
-.hk-root textarea:disabled {
-  cursor: default;
-}
+  .hk-root button:disabled,
+  .hk-root input:disabled,
+  .hk-root select:disabled,
+  .hk-root textarea:disabled {
+    cursor: default;
+  }
 
-.hk-root img,
-.hk-root svg {
-  display: block;
-  max-width: 100%;
-}
+  .hk-root img,
+  .hk-root svg {
+    display: block;
+    max-width: 100%;
+  }
 
-.hk-root table {
-  border-collapse: collapse;
-  border-color: inherit;
-}
+  .hk-root table {
+    border-collapse: collapse;
+    border-color: inherit;
+  }
 
-.hk-root :focus-visible {
-  outline: none;
+  .hk-root :focus-visible { outline: none; }
 }
