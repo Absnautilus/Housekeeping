@@ -20,7 +20,7 @@ export async function fetchMenu(): Promise<{ categories: RequestCategory[]; type
   // request_categories/request_types RLS only checks `active`, not
   // hotel_id (a guest session has no per-hotel scope to enforce it with) —
   // this filter is what actually keeps another hotel's menu out of view.
-  const categoriesRes = supabase.from('request_categories').select('*').eq('hotel_id', getHotelId()).order('sort_order')
+  const categoriesRes = await supabase.from('request_categories').select('*').eq('hotel_id', getHotelId()).order('sort_order')
   if (categoriesRes.error) throw categoriesRes.error
   const categories = categoriesRes.data ?? []
 
