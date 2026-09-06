@@ -147,10 +147,14 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
     <Route path="admin/*" element={<AdminHome profile={profile} basePath={`${basePath}/admin`} embedded />} />
   ) : null
 
+  // Embedded: the Hotsflow shell's own .page-content already provides the
+  // page max-width/padding/background — an inner copy of the same chrome
+  // here would double both (this was the "module in a card" look). Standalone
+  // still owns its full page shell, unchanged.
   return (
-    <div className="min-h-full bg-surface-2">
+    <div className={embedded ? undefined : 'min-h-full bg-surface-2'}>
       <DashboardHeader profile={profile} embedded={embedded} basePath={embedded ? basePath : '/staff'} />
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <main className={embedded ? 'pt-4' : 'mx-auto max-w-5xl px-4 py-6 sm:px-6'}>
         {embedded ? (
           <Routes>
             {queueRoute}

@@ -28,10 +28,12 @@ export function HousekeepingModule({
   configureSupabaseClient(supabase)
 
   return (
-    <LocaleProvider>
-      <UiScaleProvider>
-        <StaffApp mode="embedded" expectedHotelId={hotelId} basePath={basePath} />
-      </UiScaleProvider>
-    </LocaleProvider>
+    <div className="hk-root">
+      <LocaleProvider>
+        <UiScaleProvider>
+          <StaffApp mode="embedded" expectedHotelId={hotelId} basePath={basePath} />
+        </UiScaleProvider>
+      </LocaleProvider>
+    </div>
   )
 }

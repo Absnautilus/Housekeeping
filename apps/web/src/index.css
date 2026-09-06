@@ -69,8 +69,19 @@
   --radius-lg: 18px;
 }
 
-body {
-  background: var(--background);
+/* Scoped deliberately to .hk-root, never to `body`: this stylesheet is
+   bundled into the embeddable module (see module-entry.tsx) and loaded
+   into the same document as the Hotsflow shell. A bare `body { ... }`
+   rule would repaint the shell's own background/font, not just this
+   module's subtree. `--standalone` additionally claims the full
+   viewport height/background — only appropriate when this app owns the
+   whole page (main.tsx), not when nested inside the shell's own layout. */
+.hk-root {
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+.hk-root--standalone {
+  min-height: 100vh;
+  background: var(--background);
 }

@@ -40,103 +40,106 @@ export function DashboardHeader({ profile, embedded = false, basePath = '/staff'
   const staysPath = `${basePath}/soggiorni`
   const adminPath = `${basePath}/admin`
 
+  // Embedded: a secondary module tab-strip (same visual pattern as
+  // AdminHome's own tabs — rounded-md bg-surface-2 p-1, no icons, no bar),
+  // clearly subordinate to the shell's global navigation, not a second
+  // top bar. Module-only controls (on-duty, notifications, text size,
+  // language) sit to the right, plain and small — no pill/bar container.
+  if (embedded) {
+    return (
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <nav className="flex w-fit gap-1 rounded-md bg-surface-2 p-1" aria-label={t('staff.nav.requests')}>
+          <TabLink to={requestPath} label={t('staff.nav.requests')} active={location.pathname === requestPath || location.pathname === `${requestPath}/`} />
+          {(isAdminLike || profile.department === 'reception') && (
+            <TabLink to={staysPath} label={t('staff.nav.stays')} active={location.pathname.startsWith(staysPath)} />
+          )}
+          {isAdminLike && <TabLink to={adminPath} label={t('staff.nav.admin')} active={location.pathname.startsWith(adminPath)} />}
+        </nav>
+        <div className="flex items-center gap-1">
+          <OnDutyToggle profile={profile} dark={false} />
+          <NotificationSettingsToggle align="right" />
+          <TextSizeToggle align="right" />
+          <LanguageToggle align="right" />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className={embedded ? 'px-0 pt-0' : 'bg-background px-3 pt-3 sm:px-6 sm:pt-4'}>
-      <div
-        className={cn(
-          'mx-auto flex max-w-5xl items-center gap-1 py-1.5',
-          embedded
-            ? 'border-b border-line bg-background px-1'
-            : 'rounded-full bg-accent pr-2 pl-3 text-white shadow-md',
-        )}
-      >
-        {!embedded && (
-          <>
-            <Link to="/staff" className="flex shrink-0 items-center gap-2 rounded-full py-1.5 pr-2 hover:opacity-80">
-              <LogoMark className="h-5 w-5 text-white" mouthColor="var(--accent)" />
-              <span className="hidden font-head text-sm font-extrabold sm:inline">RoomCall</span>
-            </Link>
-            <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
-          </>
-        )}
+    <div className="bg-background px-3 pt-3 sm:px-6 sm:pt-4">
+      <div className="mx-auto flex max-w-5xl items-center gap-1 rounded-full bg-accent py-1.5 pr-2 pl-3 text-white shadow-md">
+        <Link to="/staff" className="flex shrink-0 items-center gap-2 rounded-full py-1.5 pr-2 hover:opacity-80">
+          <LogoMark className="h-5 w-5 text-white" mouthColor="var(--accent)" />
+          <span className="hidden font-head text-sm font-extrabold sm:inline">RoomCall</span>
+        </Link>
+        <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
         <nav className="flex shrink-0 items-center gap-0.5">
-          <NavLink
-            to={requestPath}
-            label={t('staff.nav.requests')}
-            icon={IconInbox}
-            active={location.pathname === requestPath || location.pathname === `${requestPath}/`}
-            embedded={embedded}
-          />
+          <NavLink to={requestPath} label={t('staff.nav.requests')} icon={IconInbox} active={location.pathname === requestPath || location.pathname === `${requestPath}/`} />
           {(isAdminLike || profile.department === 'reception') && (
-            <NavLink
-              to={staysPath}
-              label={t('staff.nav.stays')}
-              icon={IconBed}
-              active={location.pathname.startsWith(staysPath)}
-              embedded={embedded}
-            />
+            <NavLink to={staysPath} label={t('staff.nav.stays')} icon={IconBed} active={location.pathname.startsWith(staysPath)} />
           )}
-          {isAdminLike && (
-            <NavLink
-              to={adminPath}
-              label={t('staff.nav.admin')}
-              icon={IconSettings}
-              active={location.pathname.startsWith(adminPath)}
-              embedded={embedded}
-            />
-          )}
+          {isAdminLike && <NavLink to={adminPath} label={t('staff.nav.admin')} icon={IconSettings} active={location.pathname.startsWith(adminPath)} />}
         </nav>
 
         <div className="flex-1" />
 
-        <OnDutyToggle profile={profile} />
-        <NotificationSettingsToggle dark={!embedded} align="right" />
-        <TextSizeToggle dark={!embedded} align="right" />
-        <LanguageToggle dark={!embedded} align="right" />
+        <OnDutyToggle profile={profile} dark />
+        <NotificationSettingsToggle dark align="right" />
+        <TextSizeToggle dark align="right" />
+        <LanguageToggle dark align="right" />
 
-        {!embedded && (
-          <>
-            <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
+        <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
 
-            <div className="hidden items-center gap-2 rounded-full bg-white/10 py-1 pr-3 pl-1 sm:flex">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[0.625rem] font-bold text-accent">
-                {initials}
-              </span>
-              <div className="leading-tight">
-                <p className="text-[0.5625rem] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p>
-                <p className="truncate text-xs font-semibold">{profile.name}</p>
-              </div>
-            </div>
+        <div className="hidden items-center gap-2 rounded-full bg-white/10 py-1 pr-3 pl-1 sm:flex">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[0.625rem] font-bold text-accent">
+            {initials}
+          </span>
+          <div className="leading-tight">
+            <p className="text-[0.5625rem] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p>
+            <p className="truncate text-xs font-semibold">{profile.name}</p>
+          </div>
+        </div>
 
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              title={t('staff.nav.logout')}
-              aria-label={t('staff.nav.logout')}
-              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              <IconExit className="h-4 w-4" />
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          title={t('staff.nav.logout')}
+          aria-label={t('staff.nav.logout')}
+          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+        >
+          <IconExit className="h-4 w-4" />
+        </button>
       </div>
     </div>
   )
 }
 
+function TabLink({ to, label, active }: { to: string; label: string; active: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'rounded px-3 py-1.5 text-sm font-medium transition-colors',
+        active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
+      )}
+    >
+      {label}
+    </Link>
+  )
+}
+
+// Standalone only — the dark pill-on-accent-bar look. Embedded uses TabLink.
 function NavLink({
   to,
   label,
   icon: Icon,
   active,
-  embedded,
 }: {
   to: string
   label: string
   icon: (props: SVGProps<SVGSVGElement>) => React.JSX.Element
   active: boolean
-  embedded: boolean
 }) {
   return (
     <Link
@@ -144,13 +147,7 @@ function NavLink({
       title={label}
       className={cn(
         'flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3.5 sm:text-sm',
-        embedded
-          ? active
-            ? 'bg-accent-soft text-accent'
-            : 'text-muted hover:bg-surface-2 hover:text-foreground'
-          : active
-            ? 'bg-white/15 text-white'
-            : 'text-white/60 hover:bg-white/10 hover:text-white',
+        active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white',
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
