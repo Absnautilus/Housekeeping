@@ -104,11 +104,11 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
   useRequestAlerts(active, onAlert)
 
   return (
-    <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">{t('staff.queue.title')}</h1>
-          <p className="text-sm text-muted">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <h1 className="font-head text-2xl font-bold tracking-tight text-foreground">{t('staff.queue.title')}</h1>
+          <p className="mt-1 text-sm text-muted">
             {managesFrontDesk || !profile.department
               ? t('staff.queue.subtitle')
               : t('staff.queue.subtitleOwnDept', { department: t(`department.${profile.department}`) })}
@@ -117,17 +117,16 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
         {managesFrontDesk && <DepartmentFilterBar value={department} onChange={setDepartment} />}
       </div>
 
-      <div className="mb-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <NewRequestForm staffId={profile.id} onCreated={reload} />
-      </div>
-
-      <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
-        <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
-          {t('staff.queue.tabActive')} ({active.length})
-        </TabButton>
-        <TabButton active={tab === 'done'} onClick={() => setTab('done')}>
-          {t('staff.queue.tabDone')}
-        </TabButton>
+        <div className="flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
+          <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
+            {t('staff.queue.tabActive')} ({active.length})
+          </TabButton>
+          <TabButton active={tab === 'done'} onClick={() => setTab('done')}>
+            {t('staff.queue.tabDone')}
+          </TabButton>
+        </div>
       </div>
 
       {loadError ? (
@@ -144,18 +143,16 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
             description={t('staff.queue.emptyActiveDesc')}
           />
         ) : (
-          // Neutral column surfaces, per the suite's table/list rule (design
-          // standard, ref. Transfer): entity status lives in the badge on
-          // each row, never in a full-panel color wash competing with it.
-          // The dot + colored label stays as the column's own signal.
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-line bg-surface-2 p-3">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-wait-ink">
+          <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+            <section className="min-w-0">
+              <h2 className="mb-3 flex items-center gap-2 px-1 text-sm font-semibold text-wait-ink">
                 <span className="h-2 w-2 rounded-full bg-wait-ink" />
                 {t('staff.queue.columnNew')} ({pending.length})
               </h2>
               {pending.length === 0 ? (
-                <p className="px-1 text-sm text-muted">{t('staff.queue.emptyNewShort')}</p>
+                <div className="rounded-lg border border-line bg-surface/70 px-4 py-6 text-sm text-muted">
+                  {t('staff.queue.emptyNewShort')}
+                </div>
               ) : (
                 <div className="space-y-3">
                   {pending.map((request) => (
@@ -163,18 +160,20 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
                   ))}
                 </div>
               )}
-            </div>
-            <div className="rounded-xl border border-line bg-surface-2 p-3">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-prog-ink">
+            </section>
+            <section className="min-w-0">
+              <h2 className="mb-3 flex items-center gap-2 px-1 text-sm font-semibold text-prog-ink">
                 <span className="h-2 w-2 rounded-full bg-prog-ink" />
                 {t('staff.queue.columnInProgress')} ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? (
-                <p className="px-1 text-sm text-muted">{t('staff.queue.emptyInProgressShort')}</p>
+                <div className="rounded-lg border border-line bg-surface/70 px-4 py-6 text-sm text-muted">
+                  {t('staff.queue.emptyInProgressShort')}
+                </div>
               ) : (
                 <InProgressColumn items={inProgress} now={now} staffId={profile.id} canReorder={canReorder} onReordered={reload} />
               )}
-            </div>
+            </section>
           </div>
         )
       ) : done.length === 0 ? (
@@ -217,15 +216,15 @@ function DepartmentFilterBar({ value, onChange }: { value: DepartmentFilter; onC
   const { t } = useLocale()
   const options: DepartmentFilter[] = ['all', ...DEPARTMENTS]
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1.5 lg:justify-end">
       {options.map((opt) => (
         <button
           key={opt}
           type="button"
           onClick={() => onChange(opt)}
           className={cn(
-            'cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-            value === opt ? 'border-accent bg-accent text-white' : 'border-line bg-white text-muted hover:border-accent-soft-line',
+            'cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+            value === opt ? 'border-accent bg-accent text-white' : 'border-line bg-surface text-muted hover:border-accent-soft-line hover:text-foreground',
           )}
         >
           {opt === 'all' ? t('staff.queue.filterAll') : t(`department.${opt}`)}
