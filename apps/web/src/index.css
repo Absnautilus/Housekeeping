@@ -86,30 +86,12 @@
   background: var(--background);
 }
 
-/* Embedded only: retune the design tokens to Hotsflow's own palette/type,
-   not Housekeeping's original RoomCall brand. Every component already
-   consumes these through Tailwind utilities (bg-accent, text-muted,
-   font-sans, ...) via the `@theme inline` block above -- Tailwind v4's
-   `inline` mode keeps them as real runtime custom properties, so
-   overriding the values here on a more specific selector reaches every
-   component without touching a single one of them. Functional status
-   colors (wait/prog/ok/done/bad/off/terracotta) are left alone: they
-   signal operational state, not brand, and Hotsflow has no equivalent
-   to align them to. Standalone is untouched -- it never gets this class. */
+/* Embedded gets no token override: Housekeeping's own tokens above
+   (#9c4fc7 accent, Manrope/Public Sans) already ARE the shared Hotsflow
+   design standard -- hotsflow-app's shell was updated to match them,
+   not the other way around. This class exists only as an extension
+   point for the (rare) embedded-only visual difference, e.g. see
+   staff-app.tsx / dashboard-header.tsx for the chrome that's actually
+   removed in embedded mode. */
 .hk-root--embedded {
-  --background: #f5f4f7;
-  --foreground: #19181c;
-  --muted: #6f6a74;
-  --line: #e8e5ec;
-  --line-strong: #dcd6e2;
-  --surface: #ffffff;
-  --surface-2: #f8f7fa;
-
-  --accent: #6843c9;
-  --accent-ink: #ffffff;
-  --accent-soft: #f1ecff;
-  --accent-soft-line: #d9cdf5;
-
-  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-head: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

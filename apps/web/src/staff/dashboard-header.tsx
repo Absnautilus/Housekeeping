@@ -40,15 +40,15 @@ export function DashboardHeader({ profile, embedded = false, basePath = '/staff'
   const staysPath = `${basePath}/soggiorni`
   const adminPath = `${basePath}/admin`
 
-  // Embedded: a secondary module tab-strip (same visual pattern as
-  // AdminHome's own tabs — rounded-md bg-surface-2 p-1, no icons, no bar),
-  // clearly subordinate to the shell's global navigation, not a second
-  // top bar. Module-only controls (on-duty, notifications, text size,
-  // language) sit to the right, plain and small — no pill/bar container.
+  // Embedded: a secondary module tab-strip -- a pill-shaped track
+  // (bg-surface-2, fully rounded), clearly subordinate to the shell's
+  // global sidebar navigation, not a second top bar. Module-only
+  // controls (on-duty, notifications, text size, language) sit to the
+  // right, plain and small — no pill/bar container.
   if (embedded) {
     return (
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <nav className="flex w-fit gap-1 rounded-md bg-surface-2 p-1" aria-label={t('staff.nav.requests')}>
+        <nav className="flex w-fit gap-0.5 rounded-full bg-surface-2 p-[3px]" aria-label={t('staff.nav.requests')}>
           <TabLink to={requestPath} label={t('staff.nav.requests')} active={location.pathname === requestPath || location.pathname === `${requestPath}/`} />
           {(isAdminLike || profile.department === 'reception') && (
             <TabLink to={staysPath} label={t('staff.nav.stays')} active={location.pathname.startsWith(staysPath)} />
@@ -120,7 +120,7 @@ function TabLink({ to, label, active }: { to: string; label: string; active: boo
     <Link
       to={to}
       className={cn(
-        'rounded px-3 py-1.5 text-sm font-medium transition-colors',
+        'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
         active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
       )}
     >
