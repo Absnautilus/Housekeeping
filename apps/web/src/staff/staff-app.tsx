@@ -11,8 +11,15 @@ import { RequestQueue } from '@/staff/request-queue'
 import { AdminHome } from '@/staff/admin/admin-home'
 import { StaysPage } from '@/staff/stays/stays-page'
 
-export function StaffApp() {
+interface StaffAppProps {
+  mode?: 'standalone' | 'embedded'
+  expectedHotelId?: string
+  basePath?: string
+}
+
+export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/housekeeping' }: StaffAppProps = {}) {
   const { t } = useLocale()
+  const embedded = mode === 'embedded'
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<StaffProfile | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -20,15 +27,7 @@ export function StaffApp() {
   useEffect(() => {
     let cancelled = false
 
-    async function load() {
-      const { data } = await supabase.auth.getSession()
-      if (!data.session) {
-        if (!cancelled) {
-          setProfile(null)
-          setLoading(false)
-        }
-        return
-      }
+    async function loadProfile() {
       try {
         const p = await fetchMyProfile()
         if (!cancelled) setProfile(p)
@@ -37,16 +36,37 @@ export function StaffApp() {
       }
     }
 
-    load()
+    if (embedded) {
+      // The Hotsflow shell already owns the Supabase session lifecycle. In
+      // embedded mode we only resolve the module's compatibility staff row.
+      void loadProfile()
+      return () => {
+        cancelled = true
+      }
+    }
+
+    async function loadStandalone() {
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        if (!cancelled) {
+          setProfile(null)
+          setLoading(false)
+        }
+        return
+      }
+      await loadProfile()
+    }
+
+    void loadStandalone()
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       setLoading(true)
-      load()
+      void loadStandalone()
     })
     return () => {
       cancelled = true
       sub.subscription.unsubscribe()
     }
-  }, [])
+  }, [embedded])
 
   // New-request alerts fire from a realtime callback, not a tap, so on
   // iOS/Safari the alert sound would otherwise stay silently suspended for
@@ -62,9 +82,8 @@ export function StaffApp() {
   }, [])
 
   // A tap on the "Accetta richiesta" push notification action opens
-  // /staff?claim=<id> — claim it on the caller's behalf, then drop the param
-  // so a page refresh doesn't try to re-claim (or un-claim someone else's
-  // pickup) an already-handled request.
+  // /staff?claim=<id> in standalone mode. Integrated push deep links remain
+  // intentionally out of scope for this compatibility mount.
   useEffect(() => {
     const claimId = searchParams.get('claim')
     if (!claimId || !profile) return
@@ -76,7 +95,6 @@ export function StaffApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, profile])
 
-  // Same idea for "Rifiuta richiesta" — opens /staff?reject=<id>.
   useEffect(() => {
     const rejectId = searchParams.get('reject')
     if (!rejectId || !profile) return
@@ -90,39 +108,78 @@ export function StaffApp() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[16rem] items-center justify-center bg-background">
         <div className="h-7 w-7 animate-spin rounded-full border-3 border-line-strong border-t-accent" />
       </div>
     )
   }
-  if (!profile) return <StaffLogin />
+  if (!profile) {
+    if (embedded) {
+      return (
+        <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
+          {t('staff.routeUnavailable')}
+        </div>
+      )
+    }
+    return <StaffLogin />
+  }
   if (!profile.active) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">
+      <div className="flex min-h-[16rem] items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">
         {t('staff.accountDisabled')}
+      </div>
+    )
+  }
+  if (expectedHotelId && profile.hotel_id !== expectedHotelId) {
+    return (
+      <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
+        {t('staff.routeUnavailable')}
       </div>
     )
   }
 
   const isAdminLike = profile.role === 'admin' || profile.role === 'master'
+  const staysAllowed = isAdminLike || profile.department === 'reception'
+
+  const queueRoute = <Route index element={<RequestQueue profile={profile} />} />
+  const staysRoute = staysAllowed ? <Route path="soggiorni" element={<StaysPage />} /> : null
+  const adminRoute = isAdminLike ? (
+    <Route path="admin/*" element={<AdminHome profile={profile} basePath={`${basePath}/admin`} embedded />} />
+  ) : null
 
   return (
-    <div className="min-h-screen bg-surface-2">
-      <DashboardHeader profile={profile} />
+    <div className="min-h-full bg-surface-2">
+      <DashboardHeader profile={profile} embedded={embedded} basePath={embedded ? basePath : '/staff'} />
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-        <Routes>
-          <Route path="/" element={<RequestQueue profile={profile} />} />
-          {(isAdminLike || profile.department === 'reception') && <Route path="/soggiorni" element={<StaysPage />} />}
-          {isAdminLike && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
-          <Route
-            path="*"
-            element={
-              <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-                {t('staff.routeUnavailable')}
-              </div>
-            }
-          />
-        </Routes>
+        {embedded ? (
+          <Routes>
+            {queueRoute}
+            {staysRoute}
+            {adminRoute}
+            <Route
+              path="*"
+              element={
+                <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
+                  {t('staff.routeUnavailable')}
+                </div>
+              }
+            />
+          </Routes>
+        ) : (
+          <Routes>
+            <Route path="/" element={<RequestQueue profile={profile} />} />
+            {staysAllowed && <Route path="/soggiorni" element={<StaysPage />} />}
+            {isAdminLike && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
+            <Route
+              path="*"
+              element={
+                <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
+                  {t('staff.routeUnavailable')}
+                </div>
+              }
+            />
+          </Routes>
+        )}
       </main>
     </div>
   )
