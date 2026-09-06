@@ -144,14 +144,18 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
             description={t('staff.queue.emptyActiveDesc')}
           />
         ) : (
+          // Neutral column surfaces, per the suite's table/list rule (design
+          // standard, ref. Transfer): entity status lives in the badge on
+          // each row, never in a full-panel color wash competing with it.
+          // The dot + colored label stays as the column's own signal.
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-wait-ink/25 bg-wait-bg/60 p-3">
+            <div className="rounded-xl border border-line bg-surface-2 p-3">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-wait-ink">
                 <span className="h-2 w-2 rounded-full bg-wait-ink" />
                 {t('staff.queue.columnNew')} ({pending.length})
               </h2>
               {pending.length === 0 ? (
-                <p className="px-1 text-sm text-wait-ink/60">{t('staff.queue.emptyNewShort')}</p>
+                <p className="px-1 text-sm text-muted">{t('staff.queue.emptyNewShort')}</p>
               ) : (
                 <div className="space-y-3">
                   {pending.map((request) => (
@@ -160,13 +164,13 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-prog-ink/25 bg-prog-bg/60 p-3">
+            <div className="rounded-xl border border-line bg-surface-2 p-3">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-prog-ink">
                 <span className="h-2 w-2 rounded-full bg-prog-ink" />
                 {t('staff.queue.columnInProgress')} ({inProgress.length})
               </h2>
               {inProgress.length === 0 ? (
-                <p className="px-1 text-sm text-prog-ink/60">{t('staff.queue.emptyInProgressShort')}</p>
+                <p className="px-1 text-sm text-muted">{t('staff.queue.emptyInProgressShort')}</p>
               ) : (
                 <InProgressColumn items={inProgress} now={now} staffId={profile.id} canReorder={canReorder} onReordered={reload} />
               )}
