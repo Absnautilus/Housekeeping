@@ -87,3 +87,53 @@
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* Management destinations are a secondary navigation level. Keep them in a
+   single horizontal rail on narrow screens instead of letting the whole page
+   overflow. The rail itself can scroll, with each target remaining readable. */
+.hk-root .admin-tabs {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.hk-root .admin-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hk-root .admin-tab {
+  flex: 0 0 auto;
+  padding: 7px 13px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 165ms cubic-bezier(.4,0,.2,1), color 120ms cubic-bezier(.4,0,.2,1), box-shadow 165ms cubic-bezier(.4,0,.2,1);
+}
+
+.hk-root .admin-tab:hover {
+  color: var(--foreground);
+}
+
+.hk-root .admin-tab.active {
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 640px) {
+  .hk-root .admin-tabs {
+    width: 100%;
+  }
+}
