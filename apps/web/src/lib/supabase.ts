@@ -23,13 +23,14 @@ export function clearInjectedSupabaseClient(): void {
   injectedClient = null
 }
 
-// Keep the existing call sites unchanged while avoiding a second Supabase
-// client in integrated mode. Property reads (auth/functions/etc.) and methods
-// (from/rpc/channel/etc.) are forwarded to whichever client is active.
+// Keep existing call sites unchanged while avoiding a second Supabase client
+// in integrated mode. Access the property through the real client object:
+// SupabaseClient exposes getters such as `from`/`rpc` that depend on `this`,
+// so Reflect.get must not substitute a different receiver.
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_target, property) {
     const client = getClient()
-    const value = Reflect.get(client, property, client)
+    const value = Reflect.get(client, property)
     return typeof value === 'function' ? value.bind(client) : value
   },
 })
