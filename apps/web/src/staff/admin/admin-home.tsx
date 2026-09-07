@@ -71,20 +71,25 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
 
   return (
     <div className="min-w-0">
-      <nav className="admin-tabs mb-5" aria-label={t('staff.nav.admin')}>
-        {primaryTabs.map((tab) => {
-          const active = tab.match(location.pathname)
-          return (
-            <Link
-              key={tab.to}
-              to={tab.to}
-              aria-current={active ? 'page' : undefined}
-              className={cn('admin-tab', active && 'active')}
-            >
-              {tab.label}
-            </Link>
-          )
-        })}
+      <nav
+        className="mb-5 flex w-fit max-w-full items-start gap-1 rounded-md bg-surface-2 p-1"
+        aria-label={t('staff.nav.admin')}
+      >
+        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {primaryTabs.map((tab) => {
+            const active = tab.match(location.pathname)
+            return (
+              <Link
+                key={tab.to}
+                to={tab.to}
+                aria-current={active ? 'page' : undefined}
+                className={cn('admin-tab', active && 'active')}
+              >
+                {tab.label}
+              </Link>
+            )
+          })}
+        </div>
         <details className="group relative shrink-0">
           <summary
             className={cn(
