@@ -16,18 +16,36 @@ interface AdminHomeProps {
   embedded?: boolean
 }
 
+const moreLabels = {
+  it: 'Altro',
+  en: 'More',
+  fr: 'Autres',
+  de: 'Mehr',
+  es: 'Más',
+  pt: 'Mais',
+  ja: 'その他',
+  bn: 'আরও',
+  hi: 'और',
+  ar: 'المزيد',
+  zh: '更多',
+  ru: 'Ещё',
+} as const
+
 export function AdminHome({ profile, basePath = '/staff/admin', embedded = false }: AdminHomeProps) {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const location = useLocation()
-  const tabs = [
+  const primaryTabs = [
     { to: basePath, label: t('staff.admin.tabStaff'), match: (p: string) => p === basePath || p === `${basePath}/` },
     { to: `${basePath}/camere`, label: t('staff.admin.tabRooms'), match: (p: string) => p.startsWith(`${basePath}/camere`) },
     { to: `${basePath}/menu`, label: t('staff.admin.tabMenu'), match: (p: string) => p.startsWith(`${basePath}/menu`) },
     { to: `${basePath}/disponibilita`, label: t('staff.admin.tabAvailability'), match: (p: string) => p.startsWith(`${basePath}/disponibilita`) },
+  ]
+  const secondaryTabs = [
     { to: `${basePath}/statistiche`, label: t('staff.admin.tabStats'), match: (p: string) => p.startsWith(`${basePath}/statistiche`) },
     { to: `${basePath}/archivio`, label: t('staff.admin.tabArchive'), match: (p: string) => p.startsWith(`${basePath}/archivio`) },
     { to: `${basePath}/pms`, label: t('staff.admin.tabPms'), match: (p: string) => p.startsWith(`${basePath}/pms`) },
   ]
+  const secondaryActive = secondaryTabs.some((tab) => tab.match(location.pathname))
 
   const routes = embedded ? (
     <Routes>
@@ -54,15 +72,58 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
   return (
     <div className="min-w-0">
       <nav className="admin-tabs mb-5" aria-label={t('staff.nav.admin')}>
-        {tabs.map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            className={cn('admin-tab', tab.match(location.pathname) && 'active')}
+        {primaryTabs.map((tab) => {
+          const active = tab.match(location.pathname)
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              aria-current={active ? 'page' : undefined}
+              className={cn('admin-tab', active && 'active')}
+            >
+              {tab.label}
+            </Link>
+          )
+        })}
+        <details className="group relative shrink-0">
+          <summary
+            className={cn(
+              'admin-tab flex cursor-pointer list-none items-center gap-1.5 [&::-webkit-details-marker]:hidden',
+              secondaryActive && 'active',
+            )}
           >
-            {tab.label}
-          </Link>
-        ))}
+            {moreLabels[locale]}
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+              aria-hidden="true"
+            >
+              <path d="m6 8 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </summary>
+          <div className="absolute right-0 z-30 mt-2 min-w-52 rounded-md border border-line bg-surface p-1.5 shadow-lg">
+            {secondaryTabs.map((tab) => {
+              const active = tab.match(location.pathname)
+              return (
+                <Link
+                  key={tab.to}
+                  to={tab.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'block rounded-sm px-3 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-foreground',
+                    active && 'bg-accent-soft text-accent',
+                  )}
+                  onClick={(event) => event.currentTarget.closest('details')?.removeAttribute('open')}
+                >
+                  {tab.label}
+                </Link>
+              )
+            })}
+          </div>
+        </details>
       </nav>
       {routes}
     </div>
