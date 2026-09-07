@@ -132,6 +132,14 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* The legacy category form gives its submit button an mb-4 to line up with
+   standalone field spacing. In embedded management mode that lifts the button
+   above the inputs; cancel that margin only for this form. */
+.hk-root form:has(#categoryName) > button[type='submit'] {
+  margin-bottom: 0;
+  align-self: end;
+}
+
 @media (max-width: 640px) {
   .hk-root .admin-tabs {
     width: 100%;
