@@ -81,5 +81,11 @@
     border-color: inherit;
   }
 
-  .hk-root :focus-visible { outline: none; }
+  /* Preflight normally supplies a usable keyboard focus indicator. Because the
+     embedded bundle deliberately omits Preflight, provide an equivalent scoped
+     treatment rather than suppressing focus visibility. */
+  .hk-root :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
