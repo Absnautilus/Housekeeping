@@ -5,6 +5,7 @@ import { cancelRequest, claimRequest, fetchMyProfile } from '@/lib/staff-api'
 import { unlockAudio } from '@/lib/beep'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
+import type { HousekeepingCapabilities } from '@/module-entry'
 import { StaffLogin } from '@/staff/staff-login'
 import { DashboardHeader } from '@/staff/dashboard-header'
 import { RequestQueue } from '@/staff/request-queue'
@@ -15,9 +16,10 @@ interface StaffAppProps {
   mode?: 'standalone' | 'embedded'
   expectedHotelId?: string
   basePath?: string
+  capabilities?: HousekeepingCapabilities
 }
 
-export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/housekeeping' }: StaffAppProps = {}) {
+export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/housekeeping', capabilities }: StaffAppProps = {}) {
   const { t } = useLocale()
   const embedded = mode === 'embedded'
   const [loading, setLoading] = useState(true)
@@ -37,8 +39,6 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
     }
 
     if (embedded) {
-      // The Hotsflow shell already owns the Supabase session lifecycle. In
-      // embedded mode we only resolve the module's compatibility staff row.
       void loadProfile()
       return () => {
         cancelled = true
@@ -68,10 +68,6 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
     }
   }, [embedded])
 
-  // New-request alerts fire from a realtime callback, not a tap, so on
-  // iOS/Safari the alert sound would otherwise stay silently suspended for
-  // the whole session (see beep.ts) — this unlocks it from the very first
-  // real tap anywhere in the dashboard.
   useEffect(() => {
     function onFirstPointer() {
       unlockAudio()
@@ -81,9 +77,6 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
     return () => document.removeEventListener('pointerdown', onFirstPointer)
   }, [])
 
-  // A tap on the "Accetta richiesta" push notification action opens
-  // /staff?claim=<id> in standalone mode. Integrated push deep links remain
-  // intentionally out of scope for this compatibility mount.
   useEffect(() => {
     const claimId = searchParams.get('claim')
     if (!claimId || !profile) return
@@ -92,8 +85,7 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
       next.delete('claim')
       setSearchParams(next, { replace: true })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, profile])
+  }, [searchParams, profile, setSearchParams])
 
   useEffect(() => {
     const rejectId = searchParams.get('reject')
@@ -103,8 +95,7 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
       next.delete('reject')
       setSearchParams(next, { replace: true })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, profile])
+  }, [searchParams, profile, setSearchParams])
 
   if (loading) {
     return (
@@ -115,73 +106,53 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
   }
   if (!profile) {
     if (embedded) {
-      return (
-        <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-          {t('staff.routeUnavailable')}
-        </div>
-      )
+      return <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>
     }
     return <StaffLogin />
   }
   if (!profile.active) {
-    return (
-      <div className="flex min-h-[16rem] items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">
-        {t('staff.accountDisabled')}
-      </div>
-    )
+    return <div className="flex min-h-[16rem] items-center justify-center bg-surface-2 px-4 text-center text-sm text-muted">{t('staff.accountDisabled')}</div>
   }
   if (expectedHotelId && profile.hotel_id !== expectedHotelId) {
-    return (
-      <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-        {t('staff.routeUnavailable')}
-      </div>
-    )
+    return <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>
   }
 
-  const isAdminLike = profile.role === 'admin' || profile.role === 'master'
-  const staysAllowed = isAdminLike || profile.department === 'reception'
+  // Standalone keeps the legacy role/department contract. Embedded Hotsflow
+  // uses capabilities resolved by Core; the fallback is intentionally kept
+  // during migration so existing integrators are not broken.
+  const legacyAdminLike = profile.role === 'admin' || profile.role === 'master'
+  const legacyStaysAllowed = legacyAdminLike || profile.department === 'reception'
+  const manageAllowed = embedded && capabilities ? capabilities.manage : legacyAdminLike
+  const staysAllowed = embedded && capabilities ? capabilities.staysView : legacyStaysAllowed
 
   const queueRoute = <Route index element={<RequestQueue profile={profile} />} />
   const staysRoute = staysAllowed ? <Route path="soggiorni" element={<StaysPage />} /> : null
-  const adminRoute = isAdminLike ? (
+  const adminRoute = manageAllowed ? (
     <Route path="admin/*" element={<AdminHome profile={profile} basePath={`${basePath}/admin`} embedded />} />
   ) : null
 
-  // Embedded: the Hotsflow shell's own .page-content already provides the
-  // page max-width/padding/background — an inner copy of the same chrome
-  // here would double both (this was the "module in a card" look). Standalone
-  // still owns its full page shell, unchanged.
   return (
     <div className={embedded ? undefined : 'min-h-full bg-surface-2'}>
-      <DashboardHeader profile={profile} embedded={embedded} basePath={embedded ? basePath : '/staff'} />
+      <DashboardHeader
+        profile={profile}
+        embedded={embedded}
+        basePath={embedded ? basePath : '/staff'}
+        capabilities={embedded ? { staysView: staysAllowed, manage: manageAllowed } : undefined}
+      />
       <main className={embedded ? 'pt-4' : 'mx-auto max-w-5xl px-4 py-6 sm:px-6'}>
         {embedded ? (
           <Routes>
             {queueRoute}
             {staysRoute}
             {adminRoute}
-            <Route
-              path="*"
-              element={
-                <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-                  {t('staff.routeUnavailable')}
-                </div>
-              }
-            />
+            <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
           </Routes>
         ) : (
           <Routes>
             <Route path="/" element={<RequestQueue profile={profile} />} />
             {staysAllowed && <Route path="/soggiorni" element={<StaysPage />} />}
-            {isAdminLike && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
-            <Route
-              path="*"
-              element={
-                <div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">
-                  {t('staff.routeUnavailable')}
-                </div>
-              }
-            />
+            {manageAllowed && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
+            <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
           </Routes>
         )}
       </main>
