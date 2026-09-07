@@ -3,6 +3,15 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFrame,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from '@/components/ui/table'
 import { createRoom, listRooms, setRoomActive, type Room } from '@/lib/admin-api'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
@@ -80,38 +89,39 @@ export function RoomsPage() {
         </CardBody>
       </Card>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
+      <TableFrame>
+        <Table>
+          <TableHead>
             <tr>
-              <th className="px-4 py-2">{t('staff.rooms.colRoom')}</th>
-              <th className="px-4 py-2">{t('staff.rooms.colStatus')}</th>
-              <th className="px-4 py-2" />
+              <TableHeaderCell>{t('staff.rooms.colRoom')}</TableHeaderCell>
+              <TableHeaderCell>{t('staff.rooms.colStatus')}</TableHeaderCell>
+              <TableHeaderCell className="w-px" />
             </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
+          </TableHead>
+          <TableBody>
             {rooms?.map((room) => (
-              <tr key={room.id}>
-                <td className="px-4 py-2 font-medium text-foreground">{room.room_number}</td>
-                <td className="px-4 py-2">
+              <TableRow key={room.id}>
+                <TableCell className="font-medium text-foreground">{room.room_number}</TableCell>
+                <TableCell>
                   <Badge className={room.active ? 'bg-ok-bg text-ok-ink' : undefined}>
                     {room.active ? t('staff.rooms.statusActive') : t('staff.rooms.statusInactive')}
                   </Badge>
-                </td>
-                <td className="px-4 py-2 text-right">
-                  <button
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
                     type="button"
-                    className="cursor-pointer text-xs text-muted hover:text-foreground"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onToggle(room)}
                   >
                     {room.active ? t('staff.rooms.deactivate') : t('staff.rooms.reactivate')}
-                  </button>
-                </td>
-              </tr>
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableFrame>
     </div>
   )
 }
