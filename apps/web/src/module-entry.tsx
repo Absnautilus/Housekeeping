@@ -3,7 +3,7 @@ import { LocaleProvider } from '@/lib/i18n/locale-context'
 import { UiScaleProvider } from '@/lib/ui-scale-context'
 import { configureSupabaseClient } from '@/lib/supabase'
 import { StaffApp } from '@/staff/staff-app'
-import './index.css'
+import './embedded.css'
 
 export interface HousekeepingModuleProps {
   supabase: SupabaseClient
@@ -28,10 +28,12 @@ export function HousekeepingModule({
   configureSupabaseClient(supabase)
 
   return (
-    <LocaleProvider>
-      <UiScaleProvider>
-        <StaffApp mode="embedded" expectedHotelId={hotelId} basePath={basePath} />
-      </UiScaleProvider>
-    </LocaleProvider>
+    <div className="hk-root hk-root--embedded">
+      <LocaleProvider>
+        <UiScaleProvider>
+          <StaffApp mode="embedded" expectedHotelId={hotelId} basePath={basePath} />
+        </UiScaleProvider>
+      </LocaleProvider>
+    </div>
   )
 }

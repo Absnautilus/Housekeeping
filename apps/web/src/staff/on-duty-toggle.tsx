@@ -8,7 +8,7 @@ import type { StaffProfile } from '@/lib/staff-types'
 // don't work a physical shift), so the toggle only appears for them. Keeps
 // its own on_duty state seeded from the profile rather than bubbling changes
 // up — nothing else in the dashboard needs to know the current value.
-export function OnDutyToggle({ profile }: { profile: StaffProfile }) {
+export function OnDutyToggle({ profile, dark = true }: { profile: StaffProfile; dark?: boolean }) {
   const { t } = useLocale()
   const [onDuty, setOnDuty] = useState(profile.on_duty)
   const [pending, setPending] = useState(false)
@@ -43,10 +43,16 @@ export function OnDutyToggle({ profile }: { profile: StaffProfile }) {
         title={onDuty ? t('staff.onDuty.onTitle') : t('staff.onDuty.offTitle')}
         className={cn(
           'flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
-          onDuty ? 'bg-white text-accent' : 'bg-white/10 text-white/70 hover:bg-white/15',
+          dark
+            ? onDuty
+              ? 'bg-white text-accent'
+              : 'bg-white/10 text-white/70 hover:bg-white/15'
+            : onDuty
+              ? 'bg-accent-soft text-accent'
+              : 'bg-surface-2 text-muted hover:bg-line',
         )}
       >
-        <span className={cn('h-2 w-2 shrink-0 rounded-full', onDuty ? 'bg-ok-ink' : 'bg-white/40')} />
+        <span className={cn('h-2 w-2 shrink-0 rounded-full', onDuty ? 'bg-ok-ink' : dark ? 'bg-white/40' : 'bg-line-strong')} />
         <span className="hidden sm:inline">{onDuty ? t('staff.onDuty.on') : t('staff.onDuty.off')}</span>
       </button>
       {error && (

@@ -52,21 +52,18 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
   )
 
   return (
-    <div>
-      <div className="mb-5 flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
+    <div className="min-w-0">
+      <nav className="admin-tabs mb-5" aria-label={t('staff.nav.admin')}>
         {tabs.map((tab) => (
           <Link
             key={tab.to}
             to={tab.to}
-            className={cn(
-              'rounded px-3 py-1.5 text-sm font-medium transition-colors',
-              tab.match(location.pathname) ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground',
-            )}
+            className={cn('admin-tab', tab.match(location.pathname) && 'active')}
           >
             {tab.label}
           </Link>
         ))}
-      </div>
+      </nav>
       {routes}
     </div>
   )
