@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
 import { EmptyState, IconInboxEmpty } from '@/components/empty-state'
 import { StatusBadge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFrame,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from '@/components/ui/table'
 import { AutoText } from '@/components/auto-text'
 import { fetchArchivedRequests } from '@/lib/staff-api'
 import { formatElapsed, formatTime } from '@/lib/format'
@@ -46,57 +56,59 @@ export function ArchivePage() {
         <EmptyState icon={<IconInboxEmpty className="h-6 w-6" />} title={t('staff.archive.emptyTitle')} description={t('staff.archive.emptyDesc')} />
       ) : (
         <>
-          <div className="overflow-hidden rounded-lg border border-line bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
+          <TableFrame>
+            <Table>
+              <TableHead>
                 <tr>
-                  <th className="px-4 py-2">{t('staff.archive.colRoom')}</th>
-                  <th className="px-4 py-2">{t('staff.archive.colItem')}</th>
-                  <th className="px-4 py-2">{t('staff.archive.colDepartment')}</th>
-                  <th className="px-4 py-2">{t('staff.archive.colStatus')}</th>
-                  <th className="px-4 py-2">{t('staff.archive.colCreated')}</th>
-                  <th className="px-4 py-2">{t('staff.archive.colDuration')}</th>
+                  <TableHeaderCell>{t('staff.archive.colRoom')}</TableHeaderCell>
+                  <TableHeaderCell>{t('staff.archive.colItem')}</TableHeaderCell>
+                  <TableHeaderCell>{t('staff.archive.colDepartment')}</TableHeaderCell>
+                  <TableHeaderCell>{t('staff.archive.colStatus')}</TableHeaderCell>
+                  <TableHeaderCell>{t('staff.archive.colCreated')}</TableHeaderCell>
+                  <TableHeaderCell>{t('staff.archive.colDuration')}</TableHeaderCell>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
+              </TableHead>
+              <TableBody>
                 {items.map((r) => (
-                  <tr key={r.id}>
-                    <td className="px-4 py-2 font-medium text-foreground">{r.room_number}</td>
-                    <td className="px-4 py-2 text-muted">
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium text-foreground">{r.room_number}</TableCell>
+                    <TableCell className="text-muted">
                       <AutoText text={r.request_types?.name ?? t('staff.row.defaultTypeName')} translations={r.request_types?.name_i18n} />
-                    </td>
-                    <td className="px-4 py-2 text-muted">{t(`department.${r.assigned_department}` as const)}</td>
-                    <td className="px-4 py-2">
+                    </TableCell>
+                    <TableCell className="text-muted">{t(`department.${r.assigned_department}` as const)}</TableCell>
+                    <TableCell>
                       <StatusBadge status={r.status} label={t(`statusLabel.${r.status}` as const)} />
-                    </td>
-                    <td className="px-4 py-2 text-muted">{formatTime(r.created_at)}</td>
-                    <td className="px-4 py-2 text-muted">
+                    </TableCell>
+                    <TableCell className="text-muted">{formatTime(r.created_at)}</TableCell>
+                    <TableCell className="text-muted">
                       {r.status === 'completed' && r.completed_at ? formatElapsed(r.created_at, new Date(r.completed_at)) : '—'}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </TableFrame>
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-3">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
-                className="cursor-pointer rounded-md border border-line bg-white px-3 py-1.5 text-sm text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {t('staff.queue.donePagePrev')}
-              </button>
+              </Button>
               <span className="text-xs text-muted">{t('staff.queue.donePageLabel', { page: page + 1, total: totalPages })}</span>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 disabled={page >= totalPages - 1}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                className="cursor-pointer rounded-md border border-line bg-white px-3 py-1.5 text-sm text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {t('staff.queue.donePageNext')}
-              </button>
+              </Button>
             </div>
           )}
         </>
