@@ -9,11 +9,13 @@ import { StatsPage } from '@/staff/admin/stats-page'
 import { AvailabilityPage } from '@/staff/admin/availability-page'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
+import type { PlatformStaffManagementLink } from '@/module-entry'
 
 interface AdminHomeProps {
   profile: StaffProfile
   basePath?: string
   embedded?: boolean
+  platformStaffManagement?: PlatformStaffManagementLink
 }
 
 const moreLabels = {
@@ -31,7 +33,7 @@ const moreLabels = {
   ru: 'Ещё',
 } as const
 
-export function AdminHome({ profile, basePath = '/staff/admin', embedded = false }: AdminHomeProps) {
+export function AdminHome({ profile, basePath = '/staff/admin', embedded = false, platformStaffManagement }: AdminHomeProps) {
   const { t, locale } = useLocale()
   const location = useLocation()
   const primaryTabs = [
@@ -49,7 +51,7 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
 
   const routes = embedded ? (
     <Routes>
-      <Route index element={<OperatorsPage profile={profile} />} />
+      <Route index element={<OperatorsPage profile={profile} platformStaffManagement={platformStaffManagement} />} />
       <Route path="camere" element={<RoomsPage />} />
       <Route path="menu" element={<ItemsPage />} />
       <Route path="disponibilita" element={<AvailabilityPage />} />
