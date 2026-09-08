@@ -37,9 +37,12 @@ const ROLE_KEY: Record<StaffRole, TranslationKey> = {
 export function OperatorsPage({
   profile,
   platformStaffManagement,
+  hotelId,
 }: {
   profile: StaffProfile
   platformStaffManagement?: PlatformStaffManagementLink
+  /** Embedded mode only: scopes the roster to this hotel. Omit in standalone. */
+  hotelId?: string
 }) {
   const { t } = useLocale()
   const isMaster = profile.role === 'master'
@@ -48,13 +51,13 @@ export function OperatorsPage({
   const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
-    setStaff(await listStaff())
+    setStaff(await listStaff(hotelId))
   }
 
   useEffect(() => {
     reload().catch(() => setError(t('staff.operators.loadError')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hotelId])
 
   async function onToggle(person: OperatorSummary) {
     if (person.active) {
@@ -74,9 +77,9 @@ export function OperatorsPage({
       {confirmDialog}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('staff.operators.title')}</h1>
-        <p className="text-sm text-muted">
-          {platformStaffManagement?.description ?? (isMaster ? t('staff.operators.subtitleMaster') : t('staff.operators.subtitleAdmin'))}
-        </p>
+        {!platformStaffManagement && (
+          <p className="text-sm text-muted">{isMaster ? t('staff.operators.subtitleMaster') : t('staff.operators.subtitleAdmin')}</p>
+        )}
       </div>
 
       {platformStaffManagement ? (

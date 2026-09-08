@@ -43,11 +43,18 @@ export interface OperatorSummary {
   active: boolean
 }
 
-export async function listStaff(): Promise<OperatorSummary[]> {
-  const { data, error } = await supabase
+// hotelId scopes the roster to a single hotel -- required by embedded mode,
+// where the shell has already selected one property and a master's RLS-wide
+// read access must not leak other properties' rosters into that view.
+// Standalone mode omits it deliberately: a master there manages every hotel
+// from one screen, which is the existing, intended standalone behavior.
+export async function listStaff(hotelId?: string): Promise<OperatorSummary[]> {
+  let query = supabase
     .from('staff_profiles')
     .select('id, name, role, department, login_username, active')
     .order('name')
+  if (hotelId) query = query.eq('hotel_id', hotelId)
+  const { data, error } = await query
   if (error) throw error
   return data ?? []
 }

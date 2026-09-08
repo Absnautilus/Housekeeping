@@ -16,6 +16,8 @@ interface AdminHomeProps {
   basePath?: string
   embedded?: boolean
   platformStaffManagement?: PlatformStaffManagementLink
+  /** Embedded mode only: scopes the operators roster to this hotel. */
+  hotelId?: string
 }
 
 const moreLabels = {
@@ -33,7 +35,7 @@ const moreLabels = {
   ru: 'Ещё',
 } as const
 
-export function AdminHome({ profile, basePath = '/staff/admin', embedded = false, platformStaffManagement }: AdminHomeProps) {
+export function AdminHome({ profile, basePath = '/staff/admin', embedded = false, platformStaffManagement, hotelId }: AdminHomeProps) {
   const { t, locale } = useLocale()
   const location = useLocation()
   const primaryTabs = [
@@ -51,7 +53,7 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
 
   const routes = embedded ? (
     <Routes>
-      <Route index element={<OperatorsPage profile={profile} platformStaffManagement={platformStaffManagement} />} />
+      <Route index element={<OperatorsPage profile={profile} platformStaffManagement={platformStaffManagement} hotelId={hotelId} />} />
       <Route path="camere" element={<RoomsPage />} />
       <Route path="menu" element={<ItemsPage />} />
       <Route path="disponibilita" element={<AvailabilityPage />} />

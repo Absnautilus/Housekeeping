@@ -137,6 +137,7 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
           basePath={`${basePath}/admin`}
           embedded
           platformStaffManagement={platformStaffManagement}
+          hotelId={expectedHotelId}
         />
       )}
     />
