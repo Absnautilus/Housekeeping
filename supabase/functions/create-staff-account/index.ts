@@ -95,6 +95,25 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'invalid_input' }, 400)
     }
 
+    // Audit finding: once a hotel is bridged to a Core property
+    // (legacy_property_mapping), Team is the single intended source of
+    // truth for identities on it (see hotsflow's Team directory
+    // migrations) -- Housekeeping's own embedded UI already hides this
+    // flow (see operators-page.tsx's platformStaffManagement branch), but
+    // that is a frontend-only decision the backend must enforce too, or
+    // this endpoint stays reachable directly regardless of which UI a
+    // caller is using. Checked before the authorization RPC so a blocked
+    // hotel never reaches core.staff.manage evaluation for this purpose.
+    const { data: embedded, error: embeddedError } = await callerClient.rpc('legacy_hotel_is_embedded', {
+      p_hotel_id: hotelId,
+    })
+    if (embeddedError) {
+      return json({ error: 'forbidden' }, 403)
+    }
+    if (embedded) {
+      return json({ error: 'hotel_managed_by_hotsflow_team' }, 409)
+    }
+
     // The sole authorization gate: does the caller have core.staff.manage
     // (directly or org-wide) over the property this hotelId maps to? Must
     // run before any privileged (service-role) operation below.
