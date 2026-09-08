@@ -1,11 +1,24 @@
 name: Deploy Edge Functions to shared Supabase project
 
 # Manual only, on purpose — same guard pattern as hotsflow-core's
-# deploy-migrations.yml. Deploys this repo's supabase/functions/* to the
-# real hosted project. Never triggers automatically on push.
+# deploy-migrations.yml. Deploys exactly one function from this repo's
+# supabase/functions/* to the real hosted project per run. Never
+# triggers automatically on push.
+#
+# function_name is a `choice` input (no free text, no "all") so a run
+# can only ever target one of the three functions actually enumerated
+# here — there is no value that deploys more than one.
 on:
   workflow_dispatch:
     inputs:
+      function_name:
+        description: "Edge Function to deploy (exactly one per run)"
+        required: true
+        type: choice
+        options:
+          - create-staff-account
+          - notify-new-request
+          - sync-pms-stays
       confirm_project_ref:
         description: "Type the target Supabase project ref to confirm (must match the SUPABASE_PROJECT_REF repo variable exactly)"
         required: true
@@ -30,17 +43,10 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy create-staff-account
+      - name: Deploy selected function
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy create-staff-account --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
-
-      - name: Deploy notify-new-request
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy notify-new-request --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
-
-      - name: Deploy sync-pms-stays
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy sync-pms-stays --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          FUNCTION_NAME: ${{ inputs.function_name }}
+        run: |
+          echo "Deploying exactly one function: $FUNCTION_NAME"
+          supabase functions deploy "$FUNCTION_NAME" --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
