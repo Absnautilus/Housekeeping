@@ -12,6 +12,15 @@ export interface HousekeepingCapabilities {
   manage: boolean
 }
 
+export interface PlatformStaffManagementLink {
+  /** Shell-owned destination where platform identities and access are managed. */
+  href: string
+  /** Shell-owned localized call to action. */
+  label: string
+  /** Shell-owned localized explanation shown instead of account creation. */
+  description: string
+}
+
 export interface HousekeepingModuleProps {
   supabase: SupabaseClient
   hotelId: string
@@ -21,6 +30,12 @@ export interface HousekeepingModuleProps {
    * Omit in standalone/compatibility integrations to preserve legacy behavior.
    */
   capabilities?: HousekeepingCapabilities
+  /**
+   * When supplied by an embedding shell, Housekeeping treats its Staff page as
+   * a read-only module roster and delegates account lifecycle to this target.
+   * Standalone mode deliberately keeps the legacy account-management flow.
+   */
+  platformStaffManagement?: PlatformStaffManagementLink
 }
 
 /**
@@ -35,6 +50,7 @@ export function HousekeepingModule({
   hotelId,
   basePath = '/housekeeping',
   capabilities,
+  platformStaffManagement,
 }: HousekeepingModuleProps) {
   // This compatibility boundary must run before StaffApp effects or API calls
   // so integrated mode never creates Housekeeping's standalone Supabase client.
@@ -49,6 +65,7 @@ export function HousekeepingModule({
             expectedHotelId={hotelId}
             basePath={basePath}
             capabilities={capabilities}
+            platformStaffManagement={platformStaffManagement}
           />
         </UiScaleProvider>
       </LocaleProvider>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button, LinkButton } from '@/components/ui/button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -18,6 +18,7 @@ import type { TranslationKey } from '@/lib/i18n/dictionaries'
 import type { StaffDepartment, StaffRole } from '@/lib/types'
 import type { StaffProfile } from '@/lib/staff-types'
 import { useConfirm } from '@/components/confirm-dialog'
+import type { PlatformStaffManagementLink } from '@/module-entry'
 
 function describeCreateAccountError(err: unknown, t: (key: TranslationKey, vars?: Record<string, string | number>) => string): string {
   const message = getErrorMessage(err)
@@ -33,7 +34,13 @@ const ROLE_KEY: Record<StaffRole, TranslationKey> = {
   operatore: 'role.operatore',
 }
 
-export function OperatorsPage({ profile }: { profile: StaffProfile }) {
+export function OperatorsPage({
+  profile,
+  platformStaffManagement,
+}: {
+  profile: StaffProfile
+  platformStaffManagement?: PlatformStaffManagementLink
+}) {
   const { t } = useLocale()
   const isMaster = profile.role === 'master'
   const [staff, setStaff] = useState<OperatorSummary[] | null>(null)
@@ -67,10 +74,25 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
       {confirmDialog}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('staff.operators.title')}</h1>
-        <p className="text-sm text-muted">{isMaster ? t('staff.operators.subtitleMaster') : t('staff.operators.subtitleAdmin')}</p>
+        <p className="text-sm text-muted">
+          {platformStaffManagement?.description ?? (isMaster ? t('staff.operators.subtitleMaster') : t('staff.operators.subtitleAdmin'))}
+        </p>
       </div>
 
-      <NewStaffForm isMaster={isMaster} onCreated={reload} />
+      {platformStaffManagement ? (
+        <Card>
+          <CardBody>
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+              <p className="text-sm text-muted">{platformStaffManagement.description}</p>
+              <LinkButton className="shrink-0" to={platformStaffManagement.href}>
+                {platformStaffManagement.label}
+              </LinkButton>
+            </div>
+          </CardBody>
+        </Card>
+      ) : (
+        <NewStaffForm isMaster={isMaster} onCreated={reload} />
+      )}
 
       {error && <p className="text-sm text-bad-ink">{error}</p>}
 
@@ -90,7 +112,7 @@ export function OperatorsPage({ profile }: { profile: StaffProfile }) {
               const roleLabel = person.role === 'operatore' ? t(`department.${person.department ?? 'reception'}`) : t(ROLE_KEY[person.role])
               // an admin can only ever touch operatori; only master can deactivate an admin,
               // and nobody deactivates a master from this screen
-              const canToggle = person.role === 'operatore' || (person.role === 'admin' && isMaster)
+              const canToggle = !platformStaffManagement && (person.role === 'operatore' || (person.role === 'admin' && isMaster))
               return (
                 <tr key={person.id}>
                   <td className="px-4 py-2 font-medium text-foreground">{person.name}</td>
