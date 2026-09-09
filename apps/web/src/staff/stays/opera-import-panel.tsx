@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { FileInput } from '@/components/ui/file-input'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
@@ -16,7 +17,7 @@ interface DraftRow {
   key: string
   roomNumber: string | null
   roomId: string
-  guestLastName: string
+  guestName: string
   checkIn: string
   checkOut: string
   include: boolean
@@ -43,10 +44,10 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
     setResult(null)
     setDrafts(
       rows.map((row, index) => ({
-        key: `${index}-${row.roomNumber ?? 'tba'}-${row.guestLastName}`,
+        key: `${index}-${row.roomNumber ?? 'tba'}-${row.guestName}`,
         roomNumber: row.roomNumber,
         roomId: roomIdFor(row.roomNumber),
-        guestLastName: row.guestLastName,
+        guestName: row.guestName,
         checkIn: operaDateToLocalValue(row.arrivalDate, DEFAULT_CHECK_IN_TIME),
         checkOut: operaDateToLocalValue(row.departureDate, DEFAULT_CHECK_OUT_TIME),
         include: Boolean(roomIdFor(row.roomNumber)),
@@ -68,7 +69,7 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
       try {
         await createStay({
           roomId: draft.roomId,
-          guestLastName: draft.guestLastName,
+          guestLastName: draft.guestName,
           checkInAt: new Date(draft.checkIn).toISOString(),
           checkOutAt: new Date(draft.checkOut).toISOString(),
         })
@@ -85,6 +86,12 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
   }
 
   const includedCount = drafts?.filter((d) => d.include && d.roomId).length ?? 0
+  const eligibleDrafts = drafts?.filter((d) => d.roomId) ?? []
+  const allSelected = eligibleDrafts.length > 0 && eligibleDrafts.every((d) => d.include)
+
+  function toggleAll(checked: boolean) {
+    setDrafts((current) => current?.map((draft) => (draft.roomId ? { ...draft, include: checked } : draft)) ?? null)
+  }
 
   return (
     <Card>
@@ -132,9 +139,16 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
                 <table className="w-full min-w-max text-sm">
                   <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
                     <tr>
-                      <th className="px-3 py-2" />
+                      <th className="px-3 py-2">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleAll}
+                          disabled={eligibleDrafts.length === 0}
+                          aria-label={t('staff.stays.importSelectAll')}
+                        />
+                      </th>
                       <th className="px-3 py-2">{t('staff.stays.room')}</th>
-                      <th className="px-3 py-2">{t('staff.stays.guestLastName')}</th>
+                      <th className="px-3 py-2">{t('staff.stays.importGuestName')}</th>
                       <th className="px-3 py-2">{t('staff.stays.checkIn')}</th>
                       <th className="px-3 py-2">{t('staff.stays.checkOut')}</th>
                     </tr>
@@ -143,11 +157,11 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
                     {drafts.map((draft) => (
                       <tr key={draft.key} className={draft.include ? undefined : 'opacity-50'}>
                         <td className="px-3 py-2">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={draft.include}
                             disabled={!draft.roomId}
-                            onChange={(e) => updateDraft(draft.key, { include: e.target.checked })}
+                            onCheckedChange={(checked) => updateDraft(draft.key, { include: checked })}
+                            aria-label={t('staff.stays.importIncludeRow', { name: draft.guestName })}
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -165,7 +179,7 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
                           </Select>
                         </td>
                         <td className="px-3 py-2">
-                          <Input value={draft.guestLastName} onChange={(e) => updateDraft(draft.key, { guestLastName: e.target.value })} />
+                          <Input value={draft.guestName} onChange={(e) => updateDraft(draft.key, { guestName: e.target.value })} />
                         </td>
                         <td className="px-3 py-2">
                           <DateTimePicker value={draft.checkIn} onChange={(value) => updateDraft(draft.key, { checkIn: value })} />
