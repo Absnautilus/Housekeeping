@@ -8,9 +8,9 @@ export interface Room {
   active: boolean
 }
 
-export async function listRooms(hotelId?: string): Promise<Room[]> {
+export async function listRooms(hotelId: string): Promise<Room[]> {
   const query = supabase.from('rooms').select('id, room_number, active').order('room_number')
-  const { data, error } = await (hotelId ? query.eq(...hotelFilter(hotelId)) : query)
+  const { data, error } = await query.eq(...hotelFilter(hotelId))
   if (error) throw error
   return data ?? []
 }
@@ -192,10 +192,11 @@ export interface StatsSummary {
 // All-time, computed client-side over every completed row — small enough at
 // hotel scale that a dedicated aggregate query/materialized view isn't
 // worth the added moving part yet.
-export async function fetchCompletionStats(): Promise<StatsSummary> {
+export async function fetchCompletionStats(hotelId: string): Promise<StatsSummary> {
   const { data, error } = await supabase
     .from('guest_requests')
     .select('assigned_department, created_at, accepted_at, completed_at, accepted_by, accepted_by_staff:staff_profiles!accepted_by(name)')
+    .eq(...hotelFilter(hotelId))
     .eq('status', 'completed')
     .not('completed_at', 'is', null)
   if (error) throw error
@@ -283,6 +284,7 @@ export async function fetchItemAvailability(hotelId: string): Promise<ItemAvaila
   const { data: active, error: activeError } = await supabase
     .from('guest_requests')
     .select('request_type_id, room_number')
+    .eq(...hotelFilter(hotelId))
     .in('request_type_id', ids)
     .or('status.in.(requested,in_progress),and(status.eq.completed,returned_at.is.null)')
   if (activeError) throw activeError

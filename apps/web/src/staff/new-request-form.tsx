@@ -49,7 +49,7 @@ export function NewRequestForm({ staffId, hotelId, onCreated }: { staffId: strin
     setPending(true)
     setError(null)
     try {
-      await createStaffRequest({ roomNumber: room.room_number, requestTypeId: typeId, note: note.trim() || null, staffId })
+      await createStaffRequest({ hotelId, roomNumber: room.room_number, requestTypeId: typeId, note: note.trim() || null, staffId })
       setNote('')
       setOpen(false)
       onCreated()

@@ -36,7 +36,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
 
   const reload = useCallback(async () => {
     try {
-      const data = await fetchQueue()
+      const data = await fetchQueue(profile.hotel_id)
       setLoadError(null)
       setQueue(data)
 
@@ -61,15 +61,15 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       setLoadError(getErrorMessage(err))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pushCard, profile.id])
+  }, [pushCard, profile.id, profile.hotel_id])
 
   useEffect(() => {
     reload()
-    const unsubscribe = subscribeToQueue(() => {
+    const unsubscribe = subscribeToQueue(profile.hotel_id, () => {
       reload()
     })
     return unsubscribe
-  }, [reload])
+  }, [reload, profile.hotel_id])
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30_000)

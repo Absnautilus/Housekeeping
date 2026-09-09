@@ -58,8 +58,8 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
       <Route path="camere" element={<RoomsPage hotelId={operationalHotelId} />} />
       <Route path="menu" element={<ItemsPage hotelId={operationalHotelId} />} />
       <Route path="disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
-      <Route path="statistiche" element={<StatsPage />} />
-      <Route path="archivio" element={<ArchivePage />} />
+      <Route path="statistiche" element={<StatsPage hotelId={operationalHotelId} />} />
+      <Route path="archivio" element={<ArchivePage hotelId={operationalHotelId} />} />
       <Route path="pms" element={<PmsIntegrationPage profile={profile} />} />
     </Routes>
   ) : (
@@ -68,8 +68,8 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
       <Route path="/camere" element={<RoomsPage hotelId={operationalHotelId} />} />
       <Route path="/menu" element={<ItemsPage hotelId={operationalHotelId} />} />
       <Route path="/disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
-      <Route path="/statistiche" element={<StatsPage />} />
-      <Route path="/archivio" element={<ArchivePage />} />
+      <Route path="/statistiche" element={<StatsPage hotelId={operationalHotelId} />} />
+      <Route path="/archivio" element={<ArchivePage hotelId={operationalHotelId} />} />
       <Route path="/pms" element={<PmsIntegrationPage profile={profile} />} />
     </Routes>
   )
