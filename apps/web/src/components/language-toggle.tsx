@@ -26,7 +26,7 @@ export function LanguageToggle({ dark = false, align = 'center' }: { dark?: bool
         aria-label="Lingua"
         aria-expanded={open}
         className={cn(
-          'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors',
+          'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors',
           dark ? 'hover:bg-white/10' : 'border border-line shadow-sm hover:border-accent-soft-line',
         )}
       >
@@ -50,7 +50,7 @@ export function LanguageToggle({ dark = false, align = 'center' }: { dark?: bool
               aria-label={l.label}
               title={l.label}
               className={cn(
-                'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
+                'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
                 l.code === locale && 'ring-2 ring-accent',
               )}
             >

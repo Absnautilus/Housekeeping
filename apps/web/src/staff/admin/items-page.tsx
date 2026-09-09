@@ -24,7 +24,7 @@ import type { Department } from '@/lib/types'
 
 const TRANSLATABLE_LOCALES = LOCALES.filter((l) => l.code !== 'it')
 
-export function ItemsPage() {
+export function ItemsPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [categories, setCategories] = useState<RequestCategoryAdmin[]>([])
   const [types, setTypes] = useState<RequestTypeAdmin[]>([])
@@ -32,7 +32,7 @@ export function ItemsPage() {
   const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
-    const menu = await listMenu()
+    const menu = await listMenu(hotelId)
     setCategories(menu.categories)
     setTypes(menu.types)
   }
@@ -40,7 +40,7 @@ export function ItemsPage() {
   useEffect(() => {
     reload().catch(() => setError(t('staff.items.loadError')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hotelId])
 
   async function onToggleCategory(category: RequestCategoryAdmin) {
     if (category.active) {
@@ -69,13 +69,13 @@ export function ItemsPage() {
         <h1 className="text-xl font-semibold text-foreground">{t('staff.items.title')}</h1>
         <p className="text-sm text-muted">{t('staff.items.subtitle')}</p>
       </div>
-      {error && <p className="text-sm text-bad-ink">{error}</p>}
+      {error && <p role="alert" className="text-sm text-bad-ink">{error}</p>}
       <NewCategoryForm onCreated={reload} />
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
-        <table className="w-full text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDepartment')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{categories.map((category) => <CategoryRow key={category.id} category={category} onToggle={() => onToggleCategory(category)} onSaved={reload} />)}</tbody></table>
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
+        <table aria-label={t('staff.items.title')} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDepartment')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{categories.map((category) => <CategoryRow key={category.id} category={category} onToggle={() => onToggleCategory(category)} onSaved={reload} />)}</tbody></table>
       </div>
       <NewItemForm categories={activeCategories} onCreated={reload} />
-      <div className="space-y-6">{categories.map((category) => { const items = types.filter((rt) => rt.category_id === category.id); if (items.length === 0) return null; return <div key={category.id}><h2 className="mb-2 text-sm font-semibold text-muted"><AutoText text={category.name} translations={category.name_i18n} /></h2><div className="overflow-hidden rounded-lg border border-line bg-white"><table className="w-full text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDescription')}</th><th className="px-4 py-2">{t('staff.items.colQuantity')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{items.map((item) => <ItemRow key={item.id} item={item} onToggle={() => onToggleItem(item)} onSaved={reload} />)}</tbody></table></div></div> })}</div>
+      <div className="space-y-6">{categories.map((category) => { const items = types.filter((rt) => rt.category_id === category.id); if (items.length === 0) return null; const headingId = `category-${category.id}`; return <div key={category.id}><h2 id={headingId} className="mb-2 text-sm font-semibold text-muted"><AutoText text={category.name} translations={category.name_i18n} /></h2><div className="overflow-x-auto rounded-lg border border-line bg-white"><table aria-labelledby={headingId} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDescription')}</th><th className="px-4 py-2">{t('staff.items.colQuantity')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{items.map((item) => <ItemRow key={item.id} item={item} onToggle={() => onToggleItem(item)} onSaved={reload} />)}</tbody></table></div></div> })}</div>
     </div>
   )
 }

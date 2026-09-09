@@ -118,7 +118,7 @@ export function RequestQueue({ profile }: { profile: StaffProfile }) {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <NewRequestForm staffId={profile.id} onCreated={reload} />
+        <NewRequestForm staffId={profile.id} hotelId={profile.hotel_id} onCreated={reload} />
         <div className="flex gap-1 rounded-md bg-surface-2 p-1 sm:w-fit">
           <TabButton active={tab === 'active'} onClick={() => setTab('active')}>
             {t('staff.queue.tabActive')} ({active.length})

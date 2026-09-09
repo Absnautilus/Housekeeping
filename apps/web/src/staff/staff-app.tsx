@@ -100,8 +100,9 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
 
   if (loading) {
     return (
-      <div className="flex min-h-[16rem] items-center justify-center bg-background">
-        <div className="h-7 w-7 animate-spin rounded-full border-3 border-line-strong border-t-accent" />
+      <div role="status" className="flex min-h-[16rem] items-center justify-center bg-background">
+        <div aria-hidden="true" className="h-7 w-7 animate-spin rounded-full border-3 border-line-strong border-t-accent" />
+        <span className="sr-only">{t('staff.availability.loading')}</span>
       </div>
     )
   }
@@ -143,6 +144,22 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
     />
   ) : null
 
+  const routeContent = embedded ? (
+    <Routes>
+      {queueRoute}
+      {staysRoute}
+      {adminRoute}
+      <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
+    </Routes>
+  ) : (
+    <Routes>
+      <Route path="/" element={<RequestQueue profile={profile} />} />
+      {staysAllowed && <Route path="/soggiorni" element={<StaysPage />} />}
+      {manageAllowed && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
+      <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
+    </Routes>
+  )
+
   return (
     <div className={embedded ? undefined : 'min-h-full bg-surface-2'}>
       <DashboardHeader
@@ -151,23 +168,11 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
         basePath={embedded ? basePath : '/staff'}
         capabilities={embedded ? { staysView: staysAllowed, manage: manageAllowed } : undefined}
       />
-      <main className={embedded ? 'pt-4' : 'mx-auto max-w-5xl px-4 py-6 sm:px-6'}>
-        {embedded ? (
-          <Routes>
-            {queueRoute}
-            {staysRoute}
-            {adminRoute}
-            <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
-          </Routes>
-        ) : (
-          <Routes>
-            <Route path="/" element={<RequestQueue profile={profile} />} />
-            {staysAllowed && <Route path="/soggiorni" element={<StaysPage />} />}
-            {manageAllowed && <Route path="/admin/*" element={<AdminHome profile={profile} />} />}
-            <Route path="*" element={<div className="rounded-lg border border-line bg-surface p-10 text-center text-sm text-muted">{t('staff.routeUnavailable')}</div>} />
-          </Routes>
-        )}
-      </main>
+      {embedded ? (
+        <div className="pt-4">{routeContent}</div>
+      ) : (
+        <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">{routeContent}</main>
+      )}
     </div>
   )
 }

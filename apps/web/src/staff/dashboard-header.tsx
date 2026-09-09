@@ -72,18 +72,18 @@ export function DashboardHeader({ profile, embedded = false, basePath = '/staff'
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[0.625rem] font-bold text-accent">{initials}</span>
           <div className="leading-tight"><p className="text-[0.5625rem] font-bold tracking-wide text-white/50 uppercase">{roleLabel}</p><p className="truncate text-xs font-semibold">{profile.name}</p></div>
         </div>
-        <button type="button" onClick={() => void signOut()} title={t('staff.nav.logout')} aria-label={t('staff.nav.logout')} className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"><IconExit className="h-4 w-4" /></button>
+        <button type="button" onClick={() => void signOut()} title={t('staff.nav.logout')} aria-label={t('staff.nav.logout')} className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"><IconExit className="h-4 w-4" /></button>
       </div>
     </div>
   )
 }
 
 function TabLink({ to, label, active }: { to: string; label: string; active: boolean }) {
-  return <Link to={to} className={cn('rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors', active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground')}>{label}</Link>
+  return <Link to={to} className={cn('inline-flex min-h-11 items-center rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors', active ? 'bg-white text-foreground shadow-sm' : 'text-muted hover:text-foreground')}>{label}</Link>
 }
 
 function NavLink({ to, label, icon: Icon, active }: { to: string; label: string; icon: (props: SVGProps<SVGSVGElement>) => React.JSX.Element; active: boolean }) {
-  return <Link to={to} title={label} className={cn('flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3.5 sm:text-sm', active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white')}><Icon className="h-4 w-4 shrink-0" /><span className="hidden sm:inline">{label}</span></Link>
+  return <Link to={to} title={label} className={cn('flex min-h-11 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-colors sm:px-3.5 sm:text-sm', active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white')}><Icon className="h-4 w-4 shrink-0" /><span className="hidden sm:inline">{label}</span></Link>
 }
 
 function IconInbox(props: SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 12h4l2 3h6l2-3h4" /><path d="M5.5 5h13L21 12v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6L5.5 5Z" /></svg> }

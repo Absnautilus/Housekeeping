@@ -97,10 +97,10 @@ export function OperatorsPage({
         <NewStaffForm isMaster={isMaster} onCreated={reload} />
       )}
 
-      {error && <p className="text-sm text-bad-ink">{error}</p>}
+      {error && <p role="alert" className="text-sm text-bad-ink">{error}</p>}
 
-      <div className="overflow-hidden rounded-lg border border-line bg-white">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-lg border border-line bg-white">
+        <table aria-label={t('staff.operators.title')} className="w-full min-w-max text-sm">
           <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-2">{t('staff.operators.colName')}</th>
@@ -130,7 +130,7 @@ export function OperatorsPage({
                     {canToggle && (
                       <button
                         type="button"
-                        className="cursor-pointer text-xs text-muted hover:text-foreground"
+                        className="min-h-11 cursor-pointer px-2 text-xs text-muted hover:text-foreground"
                         onClick={() => onToggle(person)}
                       >
                         {person.active ? t('staff.operators.deactivate') : t('staff.operators.reactivate')}

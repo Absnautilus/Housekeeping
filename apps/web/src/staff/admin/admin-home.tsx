@@ -50,13 +50,14 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
     { to: `${basePath}/pms`, label: t('staff.admin.tabPms'), match: (p: string) => p.startsWith(`${basePath}/pms`) },
   ]
   const secondaryActive = secondaryTabs.some((tab) => tab.match(location.pathname))
+  const operationalHotelId = hotelId ?? profile.hotel_id
 
   const routes = embedded ? (
     <Routes>
       <Route index element={<OperatorsPage profile={profile} platformStaffManagement={platformStaffManagement} hotelId={hotelId} />} />
       <Route path="camere" element={<RoomsPage />} />
-      <Route path="menu" element={<ItemsPage />} />
-      <Route path="disponibilita" element={<AvailabilityPage />} />
+      <Route path="menu" element={<ItemsPage hotelId={operationalHotelId} />} />
+      <Route path="disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
       <Route path="statistiche" element={<StatsPage />} />
       <Route path="archivio" element={<ArchivePage />} />
       <Route path="pms" element={<PmsIntegrationPage profile={profile} />} />
@@ -65,8 +66,8 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
     <Routes>
       <Route path="/" element={<OperatorsPage profile={profile} />} />
       <Route path="/camere" element={<RoomsPage />} />
-      <Route path="/menu" element={<ItemsPage />} />
-      <Route path="/disponibilita" element={<AvailabilityPage />} />
+      <Route path="/menu" element={<ItemsPage hotelId={operationalHotelId} />} />
+      <Route path="/disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
       <Route path="/statistiche" element={<StatsPage />} />
       <Route path="/archivio" element={<ArchivePage />} />
       <Route path="/pms" element={<PmsIntegrationPage profile={profile} />} />

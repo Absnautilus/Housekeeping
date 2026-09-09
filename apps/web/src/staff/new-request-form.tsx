@@ -9,7 +9,7 @@ import { useLocale } from '@/lib/i18n/locale-context'
 import { getErrorMessage } from '@/lib/errors'
 import type { RequestCategoryAdmin, RequestTypeAdmin } from '@/lib/admin-api'
 
-export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCreated: () => void }) {
+export function NewRequestForm({ staffId, hotelId, onCreated }: { staffId: string; hotelId: string; onCreated: () => void }) {
   const { t } = useLocale()
   const [open, setOpen] = useState(false)
   const [rooms, setRooms] = useState<Room[]>([])
@@ -24,7 +24,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
 
   useEffect(() => {
     if (!open) return
-    Promise.all([listRooms(), listMenu()]).then(([roomList, menu]) => {
+    Promise.all([listRooms(hotelId), listMenu(hotelId)]).then(([roomList, menu]) => {
       const activeRooms = roomList.filter((r) => r.active)
       setRooms(activeRooms)
       setRoomId((c) => c || (activeRooms[0]?.id ?? ''))
@@ -33,7 +33,7 @@ export function NewRequestForm({ staffId, onCreated }: { staffId: string; onCrea
       setCategoryId((c) => c || (activeCategories[0]?.id ?? ''))
       setTypes(menu.types.filter((t) => t.active))
     })
-  }, [open])
+  }, [open, hotelId])
 
   const typesForCategory = types.filter((t) => t.category_id === categoryId)
 

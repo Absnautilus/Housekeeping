@@ -39,7 +39,7 @@ export function TextSizeToggle({ dark = false, align = 'center' }: { dark?: bool
         title={t('uiScale.label')}
         aria-expanded={open}
         className={cn(
-          'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors',
+          'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors',
           dark ? 'hover:bg-white/10' : 'border border-line shadow-sm hover:border-accent-soft-line',
         )}
       >
@@ -63,7 +63,7 @@ export function TextSizeToggle({ dark = false, align = 'center' }: { dark?: bool
               aria-label={t(SCALE_KEY[s])}
               title={t(SCALE_KEY[s])}
               className={cn(
-                'flex h-10 w-10 cursor-pointer items-center justify-center rounded-full font-bold text-foreground transition-colors hover:bg-surface-2',
+                'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full font-bold text-foreground transition-colors hover:bg-surface-2',
                 SAMPLE_SIZE[s],
                 s === scale && 'bg-accent-soft text-accent ring-2 ring-accent',
               )}
