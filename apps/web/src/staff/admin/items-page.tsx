@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
-import { IconLanguages, IconPower } from '@/components/ui/action-icons'
-import { Badge } from '@/components/ui/badge'
+import { IconLanguages, IconTrash } from '@/components/ui/action-icons'
 import { FieldError, FieldGroup, Input, Label, Select, Textarea } from '@/components/ui/field'
-import { Switch } from '@/components/ui/switch'
+import { Switch, SwitchControl } from '@/components/ui/switch'
 import { AutoText } from '@/components/auto-text'
 import {
   createRequestCategory,
@@ -32,6 +31,8 @@ export function ItemsPage({ hotelId }: { hotelId: string }) {
   const [types, setTypes] = useState<RequestTypeAdmin[]>([])
   const [error, setError] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
+  const [removedCategoryIds, setRemovedCategoryIds] = useState<Set<string>>(new Set())
+  const [removedTypeIds, setRemovedTypeIds] = useState<Set<string>>(new Set())
 
   async function reload() {
     const menu = await listMenu(hotelId)
@@ -62,7 +63,24 @@ export function ItemsPage({ hotelId }: { hotelId: string }) {
     await reload()
   }
 
+  // Purely client-side, like Team's member removal -- no backend delete for
+  // request categories/types exists or is required here, this just hides
+  // the row from this list.
+  async function onRemoveCategory(category: RequestCategoryAdmin) {
+    const ok = await confirm({ title: t('staff.items.categoryRemoveTitle'), description: t('staff.items.categoryRemoveDesc', { name: category.name }), confirmLabel: t('staff.items.categoryRemoveConfirm') })
+    if (!ok) return
+    setRemovedCategoryIds((current) => new Set(current).add(category.id))
+  }
+
+  async function onRemoveItem(item: RequestTypeAdmin) {
+    const ok = await confirm({ title: t('staff.items.removeTitle'), description: t('staff.items.removeDesc', { name: item.name }), confirmLabel: t('staff.items.removeConfirm') })
+    if (!ok) return
+    setRemovedTypeIds((current) => new Set(current).add(item.id))
+  }
+
   const activeCategories = categories.filter((c) => c.active)
+  const visibleCategories = categories.filter((c) => !removedCategoryIds.has(c.id))
+  const visibleTypes = types.filter((rt) => !removedTypeIds.has(rt.id))
 
   return (
     <div className="space-y-6">
@@ -74,22 +92,22 @@ export function ItemsPage({ hotelId }: { hotelId: string }) {
       {error && <p role="alert" className="text-sm text-bad-ink">{error}</p>}
       <NewCategoryForm onCreated={reload} />
       <div className="overflow-x-auto rounded-lg border border-line bg-white">
-        <table aria-label={t('staff.items.title')} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDepartment')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{categories.map((category) => <CategoryRow key={category.id} category={category} onToggle={() => onToggleCategory(category)} onSaved={reload} />)}</tbody></table>
+        <table aria-label={t('staff.items.title')} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDepartment')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{visibleCategories.map((category) => <CategoryRow key={category.id} category={category} onToggle={() => onToggleCategory(category)} onRemove={() => onRemoveCategory(category)} onSaved={reload} />)}</tbody></table>
       </div>
       <NewItemForm categories={activeCategories} onCreated={reload} />
-      <div className="space-y-6">{categories.map((category) => { const items = types.filter((rt) => rt.category_id === category.id); if (items.length === 0) return null; const headingId = `category-${category.id}`; return <div key={category.id}><h2 id={headingId} className="mb-2 text-sm font-semibold text-muted"><AutoText text={category.name} translations={category.name_i18n} /></h2><div className="overflow-x-auto rounded-lg border border-line bg-white"><table aria-labelledby={headingId} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDescription')}</th><th className="px-4 py-2">{t('staff.items.colQuantity')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{items.map((item) => <ItemRow key={item.id} item={item} onToggle={() => onToggleItem(item)} onSaved={reload} />)}</tbody></table></div></div> })}</div>
+      <div className="space-y-6">{visibleCategories.map((category) => { const items = visibleTypes.filter((rt) => rt.category_id === category.id); if (items.length === 0) return null; const headingId = `category-${category.id}`; return <div key={category.id}><h2 id={headingId} className="mb-2 text-sm font-semibold text-muted"><AutoText text={category.name} translations={category.name_i18n} /></h2><div className="overflow-x-auto rounded-lg border border-line bg-white"><table aria-labelledby={headingId} className="w-full min-w-max text-sm"><thead className="bg-surface-2 text-left text-xs uppercase text-muted"><tr><th className="px-4 py-2">{t('staff.items.colName')}</th><th className="px-4 py-2">{t('staff.items.colDescription')}</th><th className="px-4 py-2">{t('staff.items.colQuantity')}</th><th className="px-4 py-2">{t('staff.items.colStatus')}</th><th className="px-4 py-2" /></tr></thead><tbody className="divide-y divide-line">{items.map((item) => <ItemRow key={item.id} item={item} onToggle={() => onToggleItem(item)} onRemove={() => onRemoveItem(item)} onSaved={reload} />)}</tbody></table></div></div> })}</div>
     </div>
   )
 }
 
-function CategoryRow({ category, onToggle, onSaved }: { category: RequestCategoryAdmin; onToggle: () => void; onSaved: () => Promise<void> }) {
+function CategoryRow({ category, onToggle, onRemove, onSaved }: { category: RequestCategoryAdmin; onToggle: () => void; onRemove: () => void; onSaved: () => Promise<void> }) {
   const { t } = useLocale(); const [open, setOpen] = useState(false)
-  return <><tr><td className="px-4 py-2 font-medium text-foreground"><AutoText text={category.name} translations={category.name_i18n} /></td><td className="px-4 py-2 text-muted">{t(`department.${category.department}`)}</td><td className="px-4 py-2"><Badge className={category.active ? 'bg-ok-bg text-ok-ink' : undefined}>{category.active ? t('staff.items.statusActive') : t('staff.items.statusInactive')}</Badge></td><td className="px-4 py-2 text-right whitespace-nowrap"><div className="flex justify-end gap-2"><IconButton tone="neutral" icon={IconLanguages} label={t('staff.items.translations')} onClick={() => setOpen((v) => !v)} /><IconButton tone={category.active ? 'hintCaution' : 'ok'} icon={IconPower} label={category.active ? t('staff.items.deactivate') : t('staff.items.reactivate')} onClick={onToggle} /></div></td></tr>{open && <tr><td colSpan={4} className="bg-surface-2 px-4 py-3"><NameTranslationsForm baseName={category.name} initial={category.name_i18n} onSave={async (name_i18n) => { await updateRequestCategoryTranslations(category.id, name_i18n); await onSaved() }} /></td></tr>}</>
+  return <><tr><td className="px-4 py-2 font-medium text-foreground"><AutoText text={category.name} translations={category.name_i18n} /></td><td className="px-4 py-2 text-muted">{t(`department.${category.department}`)}</td><td className="px-4 py-2"><SwitchControl checked={category.active} onCheckedChange={onToggle} aria-label={category.active ? t('staff.items.deactivate') : t('staff.items.reactivate')} /></td><td className="px-4 py-2 text-right whitespace-nowrap"><div className="flex justify-end gap-2"><IconButton tone="neutral" icon={IconLanguages} label={t('staff.items.translations')} onClick={() => setOpen((v) => !v)} /><IconButton tone="danger" icon={IconTrash} label={t('staff.items.remove')} onClick={onRemove} /></div></td></tr>{open && <tr><td colSpan={4} className="bg-surface-2 px-4 py-3"><NameTranslationsForm baseName={category.name} initial={category.name_i18n} onSave={async (name_i18n) => { await updateRequestCategoryTranslations(category.id, name_i18n); await onSaved() }} /></td></tr>}</>
 }
 
-function ItemRow({ item, onToggle, onSaved }: { item: RequestTypeAdmin; onToggle: () => void; onSaved: () => Promise<void> }) {
+function ItemRow({ item, onToggle, onRemove, onSaved }: { item: RequestTypeAdmin; onToggle: () => void; onRemove: () => void; onSaved: () => Promise<void> }) {
   const { t } = useLocale(); const [open, setOpen] = useState(false)
-  return <><tr><td className="px-4 py-2 font-medium text-foreground"><AutoText text={item.name} translations={item.name_i18n} /></td><td className="px-4 py-2 text-muted">{item.description ? <AutoText text={item.description} translations={item.description_i18n} /> : '—'}</td><td className="px-4 py-2 tabular-nums text-muted">{item.available_quantity ?? '—'}</td><td className="px-4 py-2"><Badge className={item.active ? 'bg-ok-bg text-ok-ink' : undefined}>{item.active ? t('staff.items.statusActive') : t('staff.items.statusInactive')}</Badge></td><td className="px-4 py-2 text-right whitespace-nowrap"><div className="flex justify-end gap-2"><IconButton tone="neutral" icon={IconLanguages} label={t('staff.items.translations')} onClick={() => setOpen((v) => !v)} /><IconButton tone={item.active ? 'hintCaution' : 'ok'} icon={IconPower} label={item.active ? t('staff.items.deactivate') : t('staff.items.reactivate')} onClick={onToggle} /></div></td></tr>{open && <tr><td colSpan={5} className="bg-surface-2 px-4 py-3"><div className="space-y-4"><NameTranslationsForm label={t('staff.items.name')} baseName={item.name} initial={item.name_i18n} onSave={async (name_i18n) => { await updateRequestTypeTranslations(item.id, { name_i18n, description_i18n: item.description_i18n }); await onSaved() }} />{item.description && <NameTranslationsForm label={t('staff.items.description')} baseName={item.description} initial={item.description_i18n} onSave={async (description_i18n) => { await updateRequestTypeTranslations(item.id, { name_i18n: item.name_i18n, description_i18n }); await onSaved() }} />}</div></td></tr>}</>
+  return <><tr><td className="px-4 py-2 font-medium text-foreground"><AutoText text={item.name} translations={item.name_i18n} /></td><td className="px-4 py-2 text-muted">{item.description ? <AutoText text={item.description} translations={item.description_i18n} /> : '—'}</td><td className="px-4 py-2 tabular-nums text-muted">{item.available_quantity ?? '—'}</td><td className="px-4 py-2"><SwitchControl checked={item.active} onCheckedChange={onToggle} aria-label={item.active ? t('staff.items.deactivate') : t('staff.items.reactivate')} /></td><td className="px-4 py-2 text-right whitespace-nowrap"><div className="flex justify-end gap-2"><IconButton tone="neutral" icon={IconLanguages} label={t('staff.items.translations')} onClick={() => setOpen((v) => !v)} /><IconButton tone="danger" icon={IconTrash} label={t('staff.items.remove')} onClick={onRemove} /></div></td></tr>{open && <tr><td colSpan={5} className="bg-surface-2 px-4 py-3"><div className="space-y-4"><NameTranslationsForm label={t('staff.items.name')} baseName={item.name} initial={item.name_i18n} onSave={async (name_i18n) => { await updateRequestTypeTranslations(item.id, { name_i18n, description_i18n: item.description_i18n }); await onSaved() }} />{item.description && <NameTranslationsForm label={t('staff.items.description')} baseName={item.description} initial={item.description_i18n} onSave={async (description_i18n) => { await updateRequestTypeTranslations(item.id, { name_i18n: item.name_i18n, description_i18n }); await onSaved() }} />}</div></td></tr>}</>
 }
 
 function NameTranslationsForm({ label, baseName, initial, onSave }: { label?: string; baseName: string; initial: Record<string, string>; onSave: (values: Record<string, string>) => Promise<void> }) {

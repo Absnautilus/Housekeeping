@@ -92,13 +92,17 @@ export function IconPower(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+// Exact glyph as specified (lucide's "languages" icon) -- not redrawn to
+// the suite's shared 1.8 stroke width, since the reference given used 2.
 export function IconLanguages(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg {...shared} {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18" />
-      <path d="M12 3c2.5 2.7 2.5 15.3 0 18" />
-      <path d="M12 3c-2.5 2.7-2.5 15.3 0 18" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m5 8 6 6" />
+      <path d="m4 14 6-6 2-3" />
+      <path d="M2 5h12" />
+      <path d="M7 2h1" />
+      <path d="m22 22-5-10-5 10" />
+      <path d="M14 18h6" />
     </svg>
   )
 }
