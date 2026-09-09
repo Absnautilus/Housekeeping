@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldGroup, Input, Label, Select } from '@/components/ui/field'
+import { FileInput } from '@/components/ui/file-input'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import type { Room } from '@/lib/admin-api'
 import { createStay } from '@/lib/stays-api'
@@ -28,7 +29,7 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
   const [warnings, setWarnings] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<{ ok: number; failed: number } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [fileInputKey, setFileInputKey] = useState(0)
 
   function roomIdFor(roomNumber: string | null): string {
     if (!roomNumber) return ''
@@ -79,7 +80,7 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
     setSubmitting(false)
     setResult({ ok, failed })
     setDrafts(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    setFileInputKey((key) => key + 1)
     if (ok > 0) await onImported()
   }
 
@@ -98,14 +99,11 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
           <p className="mb-3 text-sm text-muted">{t('staff.stays.importSubtitle')}</p>
           <FieldGroup className="mb-3">
             <Label htmlFor="opera-file">{t('staff.stays.importFileLabel')}</Label>
-            <input
-              ref={fileInputRef}
+            <FileInput
+              key={fileInputKey}
               id="opera-file"
-              type="file"
               accept=".txt,.csv,text/plain"
-              className="block w-full text-sm"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
+              onFileSelected={(file) => {
                 if (file) void onFileSelected(file)
               }}
             />

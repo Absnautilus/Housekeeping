@@ -361,6 +361,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Disattiva',
   },
   en: {
@@ -722,6 +724,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Room to be assigned',
     'staff.stays.importSubmit': 'Activate {count} stays',
     'staff.stays.importSubmitPending': 'Activating…',
+    'ui.fileInput.choose': 'Choose file',
+    'ui.fileInput.none': 'No file selected',
     'staff.stays.deactivateConfirm': 'Deactivate',
   },
   fr: {
@@ -1085,6 +1089,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Désactiver',
   },
   de: {
@@ -1447,6 +1453,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Deaktivieren',
   },
   es: {
@@ -1810,6 +1818,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Desactivar',
   },
   pt: {
@@ -2172,6 +2182,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Desativar',
   },
   ja: {
@@ -2533,6 +2545,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': '無効化',
   },
   bn: {
@@ -2894,6 +2908,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'নিষ্ক্রিয় করুন',
   },
   hi: {
@@ -3255,6 +3271,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'निष्क्रिय करें',
   },
   ar: {
@@ -3616,6 +3634,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'تعطيل',
   },
   zh: {
@@ -3977,6 +3997,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': '停用',
   },
   ru: {
@@ -4338,6 +4360,8 @@ export const dictionaries = {
     'staff.stays.importRoomUnassigned': 'Camera da assegnare',
     'staff.stays.importSubmit': 'Attiva {count} soggiorni',
     'staff.stays.importSubmitPending': 'Attivazione…',
+    'ui.fileInput.choose': 'Scegli file',
+    'ui.fileInput.none': 'Nessun file selezionato',
     'staff.stays.deactivateConfirm': 'Отключить',
   },
 } satisfies Record<Locale, Record<string, string>>
