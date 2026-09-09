@@ -55,7 +55,7 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
   const routes = embedded ? (
     <Routes>
       <Route index element={<OperatorsPage profile={profile} platformStaffManagement={platformStaffManagement} hotelId={hotelId} />} />
-      <Route path="camere" element={<RoomsPage />} />
+      <Route path="camere" element={<RoomsPage hotelId={operationalHotelId} />} />
       <Route path="menu" element={<ItemsPage hotelId={operationalHotelId} />} />
       <Route path="disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
       <Route path="statistiche" element={<StatsPage />} />
@@ -65,7 +65,7 @@ export function AdminHome({ profile, basePath = '/staff/admin', embedded = false
   ) : (
     <Routes>
       <Route path="/" element={<OperatorsPage profile={profile} />} />
-      <Route path="/camere" element={<RoomsPage />} />
+      <Route path="/camere" element={<RoomsPage hotelId={operationalHotelId} />} />
       <Route path="/menu" element={<ItemsPage hotelId={operationalHotelId} />} />
       <Route path="/disponibilita" element={<AvailabilityPage hotelId={operationalHotelId} />} />
       <Route path="/statistiche" element={<StatsPage />} />
