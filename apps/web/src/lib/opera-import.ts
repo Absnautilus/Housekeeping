@@ -22,7 +22,7 @@ const DATE_PAIR = /(\d{2}\/\d{2}\/\d{2})\t(\d{2}\/\d{2}\/\d{2})/g
 
 export interface OperaArrivalRow {
   roomNumber: string | null
-  guestLastName: string
+  guestName: string
   arrivalDate: string
   departureDate: string
 }
@@ -32,9 +32,16 @@ export interface OperaImportResult {
   warnings: string[]
 }
 
-function guestSurname(rawName: string): string {
-  const [surname] = rawName.split(',')
-  return (surname ?? rawName).trim()
+// Opera's guest field is "Cognome,Nome". stays.guest_last_name is the only
+// name field the schema has (it's a display string for staff/greeting use
+// since the PIN migration, not a login lookup key anymore), so both parts
+// are combined into it in natural reading order rather than dropping the
+// first name.
+function guestFullName(rawName: string): string {
+  const [surname, firstName] = rawName.split(',').map((part) => part.trim())
+  if (!surname) return rawName.trim()
+  if (!firstName) return surname
+  return `${firstName} ${surname}`
 }
 
 export function parseOperaArrivals(text: string): OperaImportResult {
@@ -67,7 +74,7 @@ export function parseOperaArrivals(text: string): OperaImportResult {
       }
       rows.push({
         roomNumber,
-        guestLastName: guestSurname(guestRaw),
+        guestName: guestFullName(guestRaw),
         arrivalDate: match[1] ?? '',
         departureDate: match[2] ?? '',
       })

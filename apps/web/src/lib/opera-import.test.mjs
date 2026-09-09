@@ -12,31 +12,36 @@ const SAMPLE = [
 ].join('\n')
 
 describe('parseOperaArrivals', () => {
-  it('parses a simple single-booking line', () => {
+  it('parses a simple single-booking line, keeping first and last name', () => {
     const { rows } = parseOperaArrivals(SAMPLE)
     const row = rows.find((r) => r.roomNumber === '101')
-    assert.deepEqual(row, { roomNumber: '101', guestLastName: 'Rossi', arrivalDate: '09/09/26', departureDate: '10/09/26' })
+    assert.deepEqual(row, { roomNumber: '101', guestName: 'Mario Rossi', arrivalDate: '09/09/26', departureDate: '10/09/26' })
   })
 
   it('splits a line that concatenates two bookings back to back', () => {
     const { rows } = parseOperaArrivals(SAMPLE)
     const first = rows.find((r) => r.roomNumber === '220')
     const second = rows.find((r) => r.roomNumber === '006')
-    assert.equal(first?.guestLastName, 'Verdi')
-    assert.equal(second?.guestLastName, 'Bianchi')
+    assert.equal(first?.guestName, 'Anna Verdi')
+    assert.equal(second?.guestName, 'Luca Bianchi')
     assert.equal(second?.departureDate, '11/09/26')
   })
 
   it('ignores trailing page-total numbers appended after the status field', () => {
     const { rows } = parseOperaArrivals(SAMPLE)
     const row = rows.find((r) => r.roomNumber === '105')
-    assert.deepEqual(row, { roomNumber: '105', guestLastName: 'Ferrari', arrivalDate: '09/09/26', departureDate: '13/09/26' })
+    assert.deepEqual(row, { roomNumber: '105', guestName: 'Giulia Ferrari', arrivalDate: '09/09/26', departureDate: '13/09/26' })
   })
 
   it('keeps a booking with no room assigned yet (TBA) with roomNumber null', () => {
     const { rows } = parseOperaArrivals(SAMPLE)
-    const row = rows.find((r) => r.guestLastName === 'TBA')
-    assert.equal(row?.roomNumber, null)
+    const row = rows.find((r) => r.roomNumber === null)
+    assert.equal(row?.guestName, 'TBA TBA')
+  })
+
+  it('falls back to the surname alone when no first name follows the comma', () => {
+    const { rows } = parseOperaArrivals('101\tSolo\t\t2609GROUP\t09/09/26\t10/09/26\tJSGV\t1\t0\t1\tCASH\tWEBNR\t\t00:00\t00:00\tDue In\t')
+    assert.equal(rows[0]?.guestName, 'Solo')
   })
 
   it('extracts every booking, including both from the concatenated line', () => {
