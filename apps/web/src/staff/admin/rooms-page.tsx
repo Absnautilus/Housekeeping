@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
-import { IconPower, IconTrash } from '@/components/ui/action-icons'
+import { IconTrash } from '@/components/ui/action-icons'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
-import { Badge } from '@/components/ui/badge'
+import { SwitchControl } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -126,18 +126,14 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
               <TableRow key={room.id}>
                 <TableCell className="font-medium text-foreground">{room.room_number}</TableCell>
                 <TableCell>
-                  <Badge className={room.active ? 'bg-ok-bg text-ok-ink' : undefined}>
-                    {room.active ? t('staff.rooms.statusActive') : t('staff.rooms.statusInactive')}
-                  </Badge>
+                  <SwitchControl
+                    checked={room.active}
+                    onCheckedChange={() => onToggle(room)}
+                    aria-label={room.active ? t('staff.rooms.deactivate') : t('staff.rooms.reactivate')}
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <IconButton
-                      tone={room.active ? 'hintCaution' : 'ok'}
-                      icon={IconPower}
-                      label={room.active ? t('staff.rooms.deactivate') : t('staff.rooms.reactivate')}
-                      onClick={() => onToggle(room)}
-                    />
                     <IconButton
                       tone="danger"
                       icon={IconTrash}
