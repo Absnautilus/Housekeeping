@@ -95,14 +95,14 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
           <h2 className="text-sm font-semibold text-foreground">{t('staff.rooms.addTitle')}</h2>
         </CardHeader>
         <CardBody>
-          <form onSubmit={onSubmit} className="flex items-end gap-3">
-            <FieldGroup className="mb-0 flex-1">
+          <form onSubmit={onSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <FieldGroup className="mb-0 min-w-0 flex-1">
               <Label htmlFor="roomNumber" required>
                 {t('staff.rooms.roomNumber')}
               </Label>
               <Input id="roomNumber" required value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} />
             </FieldGroup>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending} className="w-full sm:w-auto">
               {t('staff.rooms.add')}
             </Button>
           </form>
