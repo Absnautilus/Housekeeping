@@ -6,7 +6,7 @@ import { AutoText } from '@/components/auto-text'
 import { listMenu, listRooms, type Room } from '@/lib/admin-api'
 import { createStaffRequest } from '@/lib/staff-api'
 import { useLocale } from '@/lib/i18n/locale-context'
-import { getErrorMessage } from '@/lib/errors'
+import { getErrorMessage, tenantIntegrityErrorRef } from '@/lib/errors'
 import type { RequestCategoryAdmin, RequestTypeAdmin } from '@/lib/admin-api'
 
 export function NewRequestForm({ staffId, hotelId, onCreated }: { staffId: string; hotelId: string; onCreated: () => void }) {
@@ -54,7 +54,8 @@ export function NewRequestForm({ staffId, hotelId, onCreated }: { staffId: strin
       setOpen(false)
       onCreated()
     } catch (err) {
-      setError(getErrorMessage(err) || t('staff.newRequest.error'))
+      const ref = tenantIntegrityErrorRef(err)
+      setError(ref ? t('staff.newRequest.tenantMismatchError', { ref }) : getErrorMessage(err) || t('staff.newRequest.error'))
     } finally {
       setPending(false)
     }
