@@ -16,7 +16,7 @@ import { createRoom, listRooms, setRoomActive, type Room } from '@/lib/admin-api
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
 
-export function RoomsPage() {
+export function RoomsPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [roomNumber, setRoomNumber] = useState('')
@@ -25,13 +25,13 @@ export function RoomsPage() {
   const [confirmDialog, confirm] = useConfirm()
 
   async function reload() {
-    setRooms(await listRooms())
+    setRooms(await listRooms(hotelId))
   }
 
   useEffect(() => {
     reload().catch(() => setError(t('staff.rooms.loadError')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hotelId])
 
   async function onToggle(room: Room) {
     if (room.active) {
