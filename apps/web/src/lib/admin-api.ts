@@ -25,6 +25,15 @@ export async function setRoomActive(id: string, active: boolean): Promise<void> 
   if (error) throw error
 }
 
+// stays.room_id has a plain foreign key with no ON DELETE clause, so Postgres
+// rejects (23503) deleting a room that any stay -- current or historical --
+// still references. That's the intended guardrail: a room with usage
+// history should be deactivated, not deleted.
+export async function deleteRoom(id: string): Promise<void> {
+  const { error } = await supabase.from('rooms').delete().eq('id', id)
+  if (error) throw error
+}
+
 export interface Hotel {
   id: string
   name: string

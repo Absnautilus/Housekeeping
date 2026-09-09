@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
+import { IconPower, IconTrash } from '@/components/ui/action-icons'
 import { FieldError, FieldGroup, Input, Label } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -12,7 +14,7 @@ import {
   TableHeaderCell,
   TableRow,
 } from '@/components/ui/table'
-import { createRoom, listRooms, setRoomActive, type Room } from '@/lib/admin-api'
+import { createRoom, deleteRoom, listRooms, setRoomActive, type Room } from '@/lib/admin-api'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
 
@@ -21,6 +23,7 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
   const [rooms, setRooms] = useState<Room[] | null>(null)
   const [roomNumber, setRoomNumber] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [tableError, setTableError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDialog, confirm] = useConfirm()
 
@@ -34,6 +37,7 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
   }, [hotelId])
 
   async function onToggle(room: Room) {
+    setTableError(null)
     if (room.active) {
       const ok = await confirm({
         title: t('staff.rooms.deactivateTitle'),
@@ -44,6 +48,23 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
     }
     await setRoomActive(room.id, !room.active)
     await reload()
+  }
+
+  async function onDelete(room: Room) {
+    setTableError(null)
+    const ok = await confirm({
+      title: t('staff.rooms.deleteTitle'),
+      description: t('staff.rooms.deleteDesc', { room: room.room_number }),
+      confirmLabel: t('staff.rooms.deleteConfirm'),
+    })
+    if (!ok) return
+    try {
+      await deleteRoom(room.id)
+      await reload()
+    } catch (err) {
+      const code = typeof err === 'object' && err !== null && 'code' in err ? (err as { code?: unknown }).code : undefined
+      setTableError(code === '23503' ? t('staff.rooms.deleteErrorHasHistory') : t('staff.rooms.deleteError'))
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -89,6 +110,8 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
         </CardBody>
       </Card>
 
+      <FieldError>{tableError ?? undefined}</FieldError>
+
       <TableFrame>
         <Table>
           <TableHead>
@@ -108,14 +131,20 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onToggle(room)}
-                  >
-                    {room.active ? t('staff.rooms.deactivate') : t('staff.rooms.reactivate')}
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <IconButton
+                      tone={room.active ? 'hintCaution' : 'ok'}
+                      icon={IconPower}
+                      label={room.active ? t('staff.rooms.deactivate') : t('staff.rooms.reactivate')}
+                      onClick={() => onToggle(room)}
+                    />
+                    <IconButton
+                      tone="danger"
+                      icon={IconTrash}
+                      label={t('staff.rooms.delete')}
+                      onClick={() => onDelete(room)}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
