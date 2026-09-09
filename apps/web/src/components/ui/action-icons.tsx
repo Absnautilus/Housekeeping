@@ -82,3 +82,12 @@ export function IconReturn(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+export function IconPower(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...shared} {...props}>
+      <path d="M12 3v8" />
+      <path d="M7 6.3a8 8 0 1 0 10 0" />
+    </svg>
+  )
+}
