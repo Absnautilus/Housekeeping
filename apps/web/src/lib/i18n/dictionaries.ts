@@ -249,8 +249,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Menu richieste',
     'staff.items.subtitle': "Gli oggetti/servizi che l'ospite può richiedere, raggruppati per categoria.",
@@ -623,8 +621,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Delete this room?',
     'staff.rooms.deleteDesc': 'Room {room} will be permanently removed.',
     'staff.rooms.deleteConfirm': 'Delete',
-    'staff.rooms.deleteError': 'Could not delete the room.',
-    'staff.rooms.deleteErrorHasHistory': 'Could not delete: this room has recorded stays. Deactivate it instead of deleting it.',
 
     'staff.items.title': 'Request menu',
     'staff.items.subtitle': 'The items/services guests can request, grouped by category.',
@@ -999,8 +995,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Menu des demandes',
     'staff.items.subtitle': 'Les objets/services que le client peut demander, regroupés par catégorie.',
@@ -1374,8 +1368,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Anfragenmenü',
     'staff.items.subtitle': 'Die Gegenstände/Leistungen, die Gäste anfragen können, gruppiert nach Kategorie.',
@@ -1750,8 +1742,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Menú de solicitudes',
     'staff.items.subtitle': 'Los objetos/servicios que el huésped puede solicitar, agrupados por categoría.',
@@ -2125,8 +2115,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Menu de pedidos',
     'staff.items.subtitle': 'Os objetos/serviços que o hóspede pode pedir, agrupados por categoria.',
@@ -2499,8 +2487,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'リクエストメニュー',
     'staff.items.subtitle': 'ゲストがリクエストできる物品やサービスをカテゴリー別に表示します。',
@@ -2873,8 +2859,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'অনুরোধ মেনু',
     'staff.items.subtitle': 'অতিথিরা যে আইটেম/সেবা অনুরোধ করতে পারেন, বিভাগ অনুযায়ী সাজানো।',
@@ -3247,8 +3231,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'अनुरोध मेनू',
     'staff.items.subtitle': 'अतिथि जो वस्तुएं/सेवाएं अनुरोध कर सकते हैं, श्रेणी अनुसार समूहित।',
@@ -3621,8 +3603,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'قائمة الطلبات',
     'staff.items.subtitle': 'العناصر/الخدمات التي يمكن للنزيل طلبها، مصنّفة حسب الفئة.',
@@ -3995,8 +3975,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': '请求菜单',
     'staff.items.subtitle': '客人可请求的物品/服务，按分类分组。',
@@ -4369,8 +4347,6 @@ export const dictionaries = {
     'staff.rooms.deleteTitle': 'Eliminare questa camera?',
     'staff.rooms.deleteDesc': 'La camera {room} verrà rimossa definitivamente.',
     'staff.rooms.deleteConfirm': 'Elimina',
-    'staff.rooms.deleteError': 'Impossibile eliminare la camera.',
-    'staff.rooms.deleteErrorHasHistory': 'Impossibile eliminare: la camera ha soggiorni registrati. Disattivala invece di eliminarla.',
 
     'staff.items.title': 'Меню запросов',
     'staff.items.subtitle': 'Предметы/услуги, которые может запросить гость, сгруппированные по категориям.',
