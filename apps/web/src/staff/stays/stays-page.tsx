@@ -11,6 +11,7 @@ import { AutoText } from '@/components/auto-text'
 import { formatElapsed, formatTime } from '@/lib/format'
 import { useConfirm } from '@/components/confirm-dialog'
 import { useLocale } from '@/lib/i18n/locale-context'
+import { tenantIntegrityErrorRef } from '@/lib/errors'
 
 function toLocalInputValue(iso: string): string {
   const d = new Date(iso)
@@ -88,8 +89,9 @@ function NewStayForm({ hotelId, rooms, onCreated }: { hotelId: string; rooms: Ro
       setCheckIn('')
       setCheckOut('')
       await onCreated()
-    } catch {
-      setError(t('staff.stays.addError'))
+    } catch (err) {
+      const ref = tenantIntegrityErrorRef(err)
+      setError(ref ? t('staff.stays.tenantMismatchError', { ref }) : t('staff.stays.addError'))
     } finally {
       setPending(false)
     }
