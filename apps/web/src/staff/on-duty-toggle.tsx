@@ -42,7 +42,7 @@ export function OnDutyToggle({ profile, dark = true }: { profile: StaffProfile; 
         disabled={pending}
         title={onDuty ? t('staff.onDuty.onTitle') : t('staff.onDuty.offTitle')}
         className={cn(
-          'flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+          'flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60',
           dark
             ? onDuty
               ? 'bg-white text-accent'

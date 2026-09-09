@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { hotelFilter } from '@/lib/hotel-query-scope'
 import type { Department, StaffDepartment, StaffRole } from '@/lib/types'
 
 export interface Room {
@@ -7,8 +8,9 @@ export interface Room {
   active: boolean
 }
 
-export async function listRooms(): Promise<Room[]> {
-  const { data, error } = await supabase.from('rooms').select('id, room_number, active').order('room_number')
+export async function listRooms(hotelId?: string): Promise<Room[]> {
+  const query = supabase.from('rooms').select('id, room_number, active').order('room_number')
+  const { data, error } = await (hotelId ? query.eq(...hotelFilter(hotelId)) : query)
   if (error) throw error
   return data ?? []
 }
@@ -49,12 +51,11 @@ export interface OperatorSummary {
 // Standalone mode omits it deliberately: a master there manages every hotel
 // from one screen, which is the existing, intended standalone behavior.
 export async function listStaff(hotelId?: string): Promise<OperatorSummary[]> {
-  let query = supabase
+  const query = supabase
     .from('staff_profiles')
     .select('id, name, role, department, login_username, active')
     .order('name')
-  if (hotelId) query = query.eq('hotel_id', hotelId)
-  const { data, error } = await query
+  const { data, error } = await (hotelId ? query.eq(...hotelFilter(hotelId)) : query)
   if (error) throw error
   return data ?? []
 }
@@ -94,14 +95,23 @@ export interface RequestCategoryAdmin {
   active: boolean
 }
 
-export async function listMenu(): Promise<{ categories: RequestCategoryAdmin[]; types: RequestTypeAdmin[] }> {
-  const [categoriesRes, typesRes] = await Promise.all([
-    supabase.from('request_categories').select('id, name, name_i18n, department, active').order('sort_order'),
-    supabase.from('request_types').select('*').order('sort_order'),
-  ])
+export async function listMenu(hotelId: string): Promise<{ categories: RequestCategoryAdmin[]; types: RequestTypeAdmin[] }> {
+  const categoriesRes = await supabase
+    .from('request_categories')
+    .select('id, name, name_i18n, department, active')
+    .order('sort_order')
+    .eq(...hotelFilter(hotelId))
   if (categoriesRes.error) throw categoriesRes.error
+  const categories = categoriesRes.data ?? []
+  if (categories.length === 0) return { categories, types: [] }
+
+  const typesRes = await supabase
+    .from('request_types')
+    .select('*')
+    .in('category_id', categories.map((category) => category.id))
+    .order('sort_order')
   if (typesRes.error) throw typesRes.error
-  return { categories: categoriesRes.data ?? [], types: typesRes.data ?? [] }
+  return { categories, types: typesRes.data ?? [] }
 }
 
 export async function createRequestCategory(input: { name: string; department: Department }): Promise<void> {
@@ -252,12 +262,13 @@ export interface ItemAvailability {
 // delivered) or delivered-and-completed but not yet marked returned (see
 // 0016_item_return_tracking.sql — returned_at is set explicitly by staff,
 // or automatically when the guest's stay ends).
-export async function fetchItemAvailability(): Promise<ItemAvailability[]> {
-  const { data: types, error: typesError } = await supabase
+export async function fetchItemAvailability(hotelId: string): Promise<ItemAvailability[]> {
+  const query = supabase
     .from('request_types')
-    .select('id, name, name_i18n, available_quantity, request_categories(name, name_i18n)')
+    .select('id, name, name_i18n, available_quantity, request_categories!inner(name, name_i18n, hotel_id)')
     .not('available_quantity', 'is', null)
     .eq('active', true)
+  const { data: types, error: typesError } = await query.eq(...hotelFilter(hotelId, 'request_categories.hotel_id'))
   if (typesError) throw typesError
   const typeList = (types ?? []) as unknown as {
     id: string

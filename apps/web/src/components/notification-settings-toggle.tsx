@@ -35,7 +35,7 @@ export function NotificationSettingsToggle({ dark = false, align = 'center' }: {
         title={t('staff.notifSettings.label')}
         aria-expanded={open}
         className={cn(
-          'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors',
+          'flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors',
           dark ? 'hover:bg-white/10' : 'border border-line shadow-sm hover:border-accent-soft-line',
         )}
       >
@@ -65,7 +65,7 @@ export function NotificationSettingsToggle({ dark = false, align = 'center' }: {
           <button
             type="button"
             onClick={() => playAlertSound()}
-            className="mt-3 w-full cursor-pointer rounded-full bg-surface-2 px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-line-strong"
+            className="mt-3 min-h-11 w-full cursor-pointer rounded-full bg-surface-2 px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-line-strong"
           >
             {t('staff.notifSettings.test')}
           </button>

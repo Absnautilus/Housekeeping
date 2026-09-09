@@ -5,16 +5,16 @@ import { fetchItemAvailability, type ItemAvailability } from '@/lib/admin-api'
 import { getErrorMessage } from '@/lib/errors'
 import { useLocale } from '@/lib/i18n/locale-context'
 
-export function AvailabilityPage() {
+export function AvailabilityPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [items, setItems] = useState<ItemAvailability[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchItemAvailability()
+    fetchItemAvailability(hotelId)
       .then(setItems)
       .catch((err) => setError(getErrorMessage(err)))
-  }, [])
+  }, [hotelId])
 
   return (
     <div className="space-y-6">
@@ -24,14 +24,14 @@ export function AvailabilityPage() {
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">{t('staff.availability.loadError', { error })}</div>
+        <div role="alert" className="rounded-lg border border-bad-ink/25 bg-bad-bg p-4 text-sm text-bad-ink">{t('staff.availability.loadError', { error })}</div>
       ) : items === null ? (
-        <p className="text-sm text-muted">{t('staff.availability.loading')}</p>
+        <p role="status" className="text-sm text-muted">{t('staff.availability.loading')}</p>
       ) : items.length === 0 ? (
         <p className="text-sm text-muted">{t('staff.availability.empty')}</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-line bg-white">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border border-line bg-white">
+          <table aria-label={t('staff.availability.title')} className="w-full min-w-max text-sm">
             <thead className="bg-surface-2 text-left text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-2">{t('staff.availability.colItem')}</th>

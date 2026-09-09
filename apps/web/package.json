@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:module": "vite build --config vite.module.config.ts",
     "lint": "oxlint",
+    "test": "node --experimental-strip-types --test src/lib/hotel-query-scope.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

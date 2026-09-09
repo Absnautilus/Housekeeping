@@ -89,6 +89,9 @@
 }
 
 .hk-root .admin-tab {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   flex: 0 0 auto;
   padding: 7px 13px;
   border-radius: 8px;
