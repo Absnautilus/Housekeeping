@@ -18,14 +18,14 @@ function toLocalInputValue(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export function StaysPage() {
+export function StaysPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [stays, setStays] = useState<Stay[] | null>(null)
   const [rooms, setRooms] = useState<Room[]>([])
   const [error, setError] = useState<string | null>(null)
 
   async function reload() {
-    const [s, r] = await Promise.all([listStays(), listRooms()])
+    const [s, r] = await Promise.all([listStays(hotelId), listRooms(hotelId)])
     setStays(s)
     setRooms(r.filter((room) => room.active))
   }
@@ -33,7 +33,7 @@ export function StaysPage() {
   useEffect(() => {
     reload().catch(() => setError(t('staff.stays.loadError')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hotelId])
 
   return (
     <div className="space-y-6">
@@ -42,8 +42,8 @@ export function StaysPage() {
         <p className="text-sm text-muted">{t('staff.stays.subtitle')}</p>
       </div>
 
-      <NewStayForm rooms={rooms} onCreated={reload} />
-      <OperaImportPanel rooms={rooms} onImported={reload} />
+      <NewStayForm hotelId={hotelId} rooms={rooms} onCreated={reload} />
+      <OperaImportPanel hotelId={hotelId} rooms={rooms} onImported={reload} />
 
       {error && <p className="text-sm text-bad-ink">{error}</p>}
 
@@ -53,14 +53,14 @@ export function StaysPage() {
         ) : stays.length === 0 ? (
           <EmptyState icon={<IconBedEmpty className="h-6 w-6" />} title={t('staff.stays.emptyTitle')} description={t('staff.stays.emptyDesc')} />
         ) : (
-          stays.map((stay) => <StayRow key={stay.id} stay={stay} onChanged={reload} />)
+          stays.map((stay) => <StayRow key={stay.id} hotelId={hotelId} stay={stay} onChanged={reload} />)
         )}
       </div>
     </div>
   )
 }
 
-function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Promise<void> }) {
+function NewStayForm({ hotelId, rooms, onCreated }: { hotelId: string; rooms: Room[]; onCreated: () => Promise<void> }) {
   const { t } = useLocale()
   const [roomId, setRoomId] = useState('')
   const [lastName, setLastName] = useState('')
@@ -77,6 +77,7 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
     setCreatedPin(null)
     try {
       const stay = await createStay({
+        hotelId,
         roomId,
         guestLastName: lastName.trim(),
         checkInAt: new Date(checkIn).toISOString(),
@@ -156,7 +157,7 @@ function NewStayForm({ rooms, onCreated }: { rooms: Room[]; onCreated: () => Pro
   )
 }
 
-function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<void> }) {
+function StayRow({ hotelId, stay, onChanged }: { hotelId: string; stay: Stay; onChanged: () => Promise<void> }) {
   const { t } = useLocale()
   const [editingCheckout, setEditingCheckout] = useState(false)
   const [checkOut, setCheckOut] = useState(toLocalInputValue(stay.check_out_at))
@@ -172,7 +173,7 @@ function StayRow({ stay, onChanged }: { stay: Stay; onChanged: () => Promise<voi
     }
     setHistoryOpen(true)
     if (history === null) {
-      const items = await fetchRequestsForStay(stay.id).catch(() => [])
+      const items = await fetchRequestsForStay(stay.id, hotelId).catch(() => [])
       setHistory(items)
     }
   }

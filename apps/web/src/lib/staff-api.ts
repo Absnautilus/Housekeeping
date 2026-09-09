@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import type { Department } from '@/lib/types'
 import type { QueuedRequest, StaffProfile } from '@/lib/staff-types'
 import { usernameToEmail } from '@/lib/operator-login'
+import { hotelFilter, realtimeHotelFilter } from '@/lib/hotel-query-scope'
 
 const QUEUE_SELECT =
   '*, request_types(name, name_i18n, allows_quantity, available_quantity, request_categories(name, name_i18n)), accepted_by_staff:staff_profiles!accepted_by(name)'
@@ -34,8 +35,13 @@ export async function signOut() {
   await supabase.auth.signOut()
 }
 
-export async function fetchQueue(): Promise<QueuedRequest[]> {
-  const { data, error } = await supabase.from('guest_requests').select(QUEUE_SELECT).is('archived_at', null).order('priority')
+export async function fetchQueue(hotelId: string): Promise<QueuedRequest[]> {
+  const { data, error } = await supabase
+    .from('guest_requests')
+    .select(QUEUE_SELECT)
+    .eq(...hotelFilter(hotelId))
+    .is('archived_at', null)
+    .order('priority')
   if (error) throw error
   return (data ?? []) as unknown as QueuedRequest[]
 }
@@ -44,12 +50,13 @@ const ARCHIVE_PAGE_SIZE = 15
 
 // The 72h auto-archive job (0012) only hides rows from fetchQueue — RLS
 // already lets admin/master read them, this just exposes that in the UI.
-export async function fetchArchivedRequests(page: number): Promise<{ items: QueuedRequest[]; total: number }> {
+export async function fetchArchivedRequests(page: number, hotelId: string): Promise<{ items: QueuedRequest[]; total: number }> {
   const from = page * ARCHIVE_PAGE_SIZE
   const to = from + ARCHIVE_PAGE_SIZE - 1
   const { data, error, count } = await supabase
     .from('guest_requests')
     .select(QUEUE_SELECT, { count: 'exact' })
+    .eq(...hotelFilter(hotelId))
     .not('archived_at', 'is', null)
     .order('archived_at', { ascending: false })
     .range(from, to)
@@ -58,11 +65,16 @@ export async function fetchArchivedRequests(page: number): Promise<{ items: Queu
 }
 
 export function subscribeToQueue(
+  hotelId: string,
   onChange: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
 ) {
   const channel = supabase
-    .channel('guest_requests-queue')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_requests' }, onChange)
+    .channel(`guest_requests-queue-${hotelId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'guest_requests', filter: realtimeHotelFilter(hotelId) },
+      onChange,
+    )
     .subscribe()
   return () => {
     supabase.removeChannel(channel)
@@ -140,10 +152,12 @@ export async function reassignRequest(id: string, department: Department) {
   if (error) throw error
 }
 
-// Staff-reported issue, not tied to a guest — hotel_id and assigned_department
-// are filled in by DB triggers (see 0009_maintenance_and_staff_requests.sql)
-export async function createStaffRequest(input: { roomNumber: string; requestTypeId: string; note: string | null; staffId: string }) {
+// Staff-reported issue, not tied to a guest. The client sends the selected
+// hotel explicitly; the DB trigger still derives assigned_department and
+// independently validates the room, menu item, and staff tenant references.
+export async function createStaffRequest(input: { hotelId: string; roomNumber: string; requestTypeId: string; note: string | null; staffId: string }) {
   const { error } = await supabase.from('guest_requests').insert({
+    hotel_id: input.hotelId,
     room_number: input.roomNumber,
     request_type_id: input.requestTypeId,
     note: input.note,

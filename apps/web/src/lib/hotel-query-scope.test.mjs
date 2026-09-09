@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { hotelFilter } from './hotel-query-scope.ts'
+import { hotelFilter, realtimeHotelFilter } from './hotel-query-scope.ts'
 
 describe('scopeQueryToHotel', () => {
   it('adds a direct hotel_id filter', () => {
@@ -12,5 +12,9 @@ describe('scopeQueryToHotel', () => {
       'request_categories.hotel_id',
       'hotel-palazzo',
     ])
+  })
+
+  it('builds a Realtime hotel filter', () => {
+    assert.equal(realtimeHotelFilter('hotel-palazzo'), 'hotel_id=eq.hotel-palazzo')
   })
 })

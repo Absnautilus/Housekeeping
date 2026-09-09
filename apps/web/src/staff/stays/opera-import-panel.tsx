@@ -23,7 +23,7 @@ interface DraftRow {
   include: boolean
 }
 
-export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImported: () => Promise<void> }) {
+export function OperaImportPanel({ hotelId, rooms, onImported }: { hotelId: string; rooms: Room[]; onImported: () => Promise<void> }) {
   const { t } = useLocale()
   const [open, setOpen] = useState(false)
   const [drafts, setDrafts] = useState<DraftRow[] | null>(null)
@@ -68,6 +68,7 @@ export function OperaImportPanel({ rooms, onImported }: { rooms: Room[]; onImpor
       if (!draft.include || !draft.roomId) continue
       try {
         await createStay({
+          hotelId,
           roomId: draft.roomId,
           guestLastName: draft.guestName,
           checkInAt: new Date(draft.checkIn).toISOString(),

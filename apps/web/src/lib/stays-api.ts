@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Room } from '@/lib/admin-api'
 import type { Department } from '@/lib/types'
+import { hotelFilter } from '@/lib/hotel-query-scope'
 
 export interface Stay {
   id: string
@@ -13,10 +14,11 @@ export interface Stay {
   rooms: Pick<Room, 'room_number'> | null
 }
 
-export async function listStays(): Promise<Stay[]> {
+export async function listStays(hotelId: string): Promise<Stay[]> {
   const { data, error } = await supabase
     .from('stays')
     .select('id, room_id, guest_last_name, guest_pin, check_in_at, check_out_at, status, rooms(room_number)')
+    .eq(...hotelFilter(hotelId))
     .eq('status', 'active')
     .order('check_in_at', { ascending: false })
   if (error) throw error
@@ -24,6 +26,7 @@ export async function listStays(): Promise<Stay[]> {
 }
 
 export async function createStay(input: {
+  hotelId: string
   roomId: string
   guestLastName: string
   checkInAt: string
@@ -32,6 +35,7 @@ export async function createStay(input: {
   const { data, error } = await supabase
     .from('stays')
     .insert({
+      hotel_id: input.hotelId,
       room_id: input.roomId,
       guest_last_name: input.guestLastName,
       check_in_at: input.checkInAt,
@@ -62,10 +66,11 @@ export interface StayRequest {
   request_types: { name: string; name_i18n: Record<string, string> } | null
 }
 
-export async function fetchRequestsForStay(stayId: string): Promise<StayRequest[]> {
+export async function fetchRequestsForStay(stayId: string, hotelId: string): Promise<StayRequest[]> {
   const { data, error } = await supabase
     .from('guest_requests')
     .select('id, status, created_at, completed_at, assigned_department, request_types(name, name_i18n)')
+    .eq(...hotelFilter(hotelId))
     .eq('stay_id', stayId)
     .order('created_at', { ascending: false })
   if (error) throw error

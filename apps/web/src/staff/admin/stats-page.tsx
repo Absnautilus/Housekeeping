@@ -6,16 +6,16 @@ import { getErrorMessage } from '@/lib/errors'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { TranslationKey } from '@/lib/i18n/dictionaries'
 
-export function StatsPage() {
+export function StatsPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [stats, setStats] = useState<StatsSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCompletionStats()
+    fetchCompletionStats(hotelId)
       .then(setStats)
       .catch((err) => setError(getErrorMessage(err)))
-  }, [])
+  }, [hotelId])
 
   return (
     <div className="space-y-6">

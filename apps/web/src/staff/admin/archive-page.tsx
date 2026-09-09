@@ -20,7 +20,7 @@ import type { QueuedRequest } from '@/lib/staff-types'
 
 const PAGE_SIZE = 15
 
-export function ArchivePage() {
+export function ArchivePage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [page, setPage] = useState(0)
   const [items, setItems] = useState<QueuedRequest[] | null>(null)
@@ -29,13 +29,13 @@ export function ArchivePage() {
 
   useEffect(() => {
     setItems(null)
-    fetchArchivedRequests(page)
+    fetchArchivedRequests(page, hotelId)
       .then(({ items, total }) => {
         setItems(items)
         setTotal(total)
       })
       .catch((err) => setError(getErrorMessage(err)))
-  }, [page])
+  }, [page, hotelId])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
