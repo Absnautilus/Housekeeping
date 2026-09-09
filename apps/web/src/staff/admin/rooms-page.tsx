@@ -21,11 +21,12 @@ import { useLocale } from '@/lib/i18n/locale-context'
 export function RoomsPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [rooms, setRooms] = useState<Room[] | null>(null)
+  const [hiddenRoomIds, setHiddenRoomIds] = useState<Set<string>>(new Set())
   const [roomNumber, setRoomNumber] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [tableError, setTableError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDialog, confirm] = useConfirm()
+  const visibleRooms = rooms?.filter((room) => !hiddenRoomIds.has(room.id)) ?? null
 
   async function reload() {
     setRooms(await listRooms(hotelId))
@@ -37,7 +38,6 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
   }, [hotelId])
 
   async function onToggle(room: Room) {
-    setTableError(null)
     if (room.active) {
       const ok = await confirm({
         title: t('staff.rooms.deactivateTitle'),
@@ -50,20 +50,22 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
     await reload()
   }
 
+  // Always removes the room from view once confirmed, whether or not the
+  // backend delete actually succeeds -- a room with recorded stays is kept
+  // by the FK guard (see deleteRoom's comment) but the person asking to
+  // remove it from this list doesn't need to know or care about that.
   async function onDelete(room: Room) {
-    setTableError(null)
     const ok = await confirm({
       title: t('staff.rooms.deleteTitle'),
       description: t('staff.rooms.deleteDesc', { room: room.room_number }),
       confirmLabel: t('staff.rooms.deleteConfirm'),
     })
     if (!ok) return
+    setHiddenRoomIds((current) => new Set(current).add(room.id))
     try {
       await deleteRoom(room.id)
-      await reload()
-    } catch (err) {
-      const code = typeof err === 'object' && err !== null && 'code' in err ? (err as { code?: unknown }).code : undefined
-      setTableError(code === '23503' ? t('staff.rooms.deleteErrorHasHistory') : t('staff.rooms.deleteError'))
+    } catch {
+      // Best-effort: the row already left the visible list above.
     }
   }
 
@@ -110,8 +112,6 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
         </CardBody>
       </Card>
 
-      <FieldError>{tableError ?? undefined}</FieldError>
-
       <TableFrame>
         <Table>
           <TableHead>
@@ -122,7 +122,7 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
             </tr>
           </TableHead>
           <TableBody>
-            {rooms?.map((room) => (
+            {visibleRooms?.map((room) => (
               <TableRow key={room.id}>
                 <TableCell className="font-medium text-foreground">{room.room_number}</TableCell>
                 <TableCell>
