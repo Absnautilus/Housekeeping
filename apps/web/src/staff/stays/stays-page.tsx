@@ -6,6 +6,7 @@ import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/fi
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { listRooms, type Room } from '@/lib/admin-api'
 import { cancelStay, createStay, fetchRequestsForStay, listStays, updateCheckout, type Stay, type StayRequest } from '@/lib/stays-api'
+import { OperaImportPanel } from '@/staff/stays/opera-import-panel'
 import { AutoText } from '@/components/auto-text'
 import { formatElapsed, formatTime } from '@/lib/format'
 import { useConfirm } from '@/components/confirm-dialog'
@@ -42,6 +43,7 @@ export function StaysPage() {
       </div>
 
       <NewStayForm rooms={rooms} onCreated={reload} />
+      <OperaImportPanel rooms={rooms} onImported={reload} />
 
       {error && <p className="text-sm text-bad-ink">{error}</p>}
 
