@@ -21,8 +21,9 @@ export async function createRoom(roomNumber: string): Promise<void> {
 }
 
 export async function setRoomActive(id: string, active: boolean): Promise<void> {
-  const { error } = await supabase.from('rooms').update({ active }).eq('id', id)
+  const { data, error } = await supabase.from('rooms').update({ active }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('room_active_update_not_applied')
 }
 
 // stays.room_id has a plain foreign key with no ON DELETE clause, so Postgres
@@ -30,8 +31,9 @@ export async function setRoomActive(id: string, active: boolean): Promise<void> 
 // still references. That's the intended guardrail: a room with usage
 // history should be deactivated, not deleted.
 export async function deleteRoom(id: string): Promise<void> {
-  const { error } = await supabase.from('rooms').delete().eq('id', id)
+  const { data, error } = await supabase.from('rooms').delete().eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('room_delete_not_applied')
 }
 
 export interface Hotel {
@@ -70,8 +72,9 @@ export async function listStaff(hotelId?: string): Promise<OperatorSummary[]> {
 }
 
 export async function setStaffActive(id: string, active: boolean): Promise<void> {
-  const { error } = await supabase.from('staff_profiles').update({ active }).eq('id', id)
+  const { data, error } = await supabase.from('staff_profiles').update({ active }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('staff_active_update_not_applied')
 }
 
 export async function createStaffAccount(
@@ -129,8 +132,9 @@ export async function createRequestCategory(input: { name: string; department: D
 }
 
 export async function setRequestCategoryActive(id: string, active: boolean): Promise<void> {
-  const { error } = await supabase.from('request_categories').update({ active }).eq('id', id)
+  const { data, error } = await supabase.from('request_categories').update({ active }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('request_category_active_update_not_applied')
 }
 
 export async function updateRequestCategoryTranslations(id: string, name_i18n: Record<string, string>): Promise<void> {
@@ -164,8 +168,9 @@ export async function createRequestType(input: {
 }
 
 export async function setRequestTypeActive(id: string, active: boolean): Promise<void> {
-  const { error } = await supabase.from('request_types').update({ active }).eq('id', id)
+  const { data, error } = await supabase.from('request_types').update({ active }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('request_type_active_update_not_applied')
 }
 
 export interface DepartmentStat {

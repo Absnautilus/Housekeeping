@@ -50,8 +50,13 @@ export function ItemsPage({ hotelId }: { hotelId: string }) {
       const ok = await confirm({ title: t('staff.items.categoryDeactivateTitle'), description: t('staff.items.categoryDeactivateDesc', { name: category.name }), confirmLabel: t('staff.items.categoryDeactivateConfirm') })
       if (!ok) return
     }
-    await setRequestCategoryActive(category.id, !category.active)
-    await reload()
+    setError(null)
+    try {
+      await setRequestCategoryActive(category.id, !category.active)
+      await reload()
+    } catch {
+      setError(t('staff.items.toggleError'))
+    }
   }
 
   async function onToggleItem(item: RequestTypeAdmin) {
@@ -59,8 +64,13 @@ export function ItemsPage({ hotelId }: { hotelId: string }) {
       const ok = await confirm({ title: t('staff.items.deactivateTitle'), description: t('staff.items.deactivateDesc', { name: item.name }), confirmLabel: t('staff.items.deactivateConfirm') })
       if (!ok) return
     }
-    await setRequestTypeActive(item.id, !item.active)
-    await reload()
+    setError(null)
+    try {
+      await setRequestTypeActive(item.id, !item.active)
+      await reload()
+    } catch {
+      setError(t('staff.items.toggleError'))
+    }
   }
 
   // Purely client-side, like Team's member removal -- no backend delete for
