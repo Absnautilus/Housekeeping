@@ -68,8 +68,13 @@ export function OperatorsPage({
       })
       if (!ok) return
     }
-    await setStaffActive(person.id, !person.active)
-    await reload()
+    setError(null)
+    try {
+      await setStaffActive(person.id, !person.active)
+      await reload()
+    } catch {
+      setError(t('staff.operators.toggleError'))
+    }
   }
 
   return (

@@ -46,14 +46,21 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
       })
       if (!ok) return
     }
-    await setRoomActive(room.id, !room.active)
-    await reload()
+    setError(null)
+    try {
+      await setRoomActive(room.id, !room.active)
+      await reload()
+    } catch {
+      setError(t('staff.rooms.toggleError'))
+    }
   }
 
-  // Always removes the room from view once confirmed, whether or not the
-  // backend delete actually succeeds -- a room with recorded stays is kept
-  // by the FK guard (see deleteRoom's comment) but the person asking to
-  // remove it from this list doesn't need to know or care about that.
+  // A room with recorded stays is kept by the FK guard (see deleteRoom's
+  // comment) -- that's an expected outcome, so it's still hidden here
+  // without an error; the person asking to remove it doesn't need a
+  // Postgres constraint explained, and deactivating is the right next step.
+  // Any other failure (e.g. blocked by RLS) is a real error and must be
+  // surfaced instead of leaving the room silently un-deleted.
   async function onDelete(room: Room) {
     const ok = await confirm({
       title: t('staff.rooms.deleteTitle'),
@@ -61,11 +68,16 @@ export function RoomsPage({ hotelId }: { hotelId: string }) {
       confirmLabel: t('staff.rooms.deleteConfirm'),
     })
     if (!ok) return
-    setHiddenRoomIds((current) => new Set(current).add(room.id))
+    setError(null)
     try {
       await deleteRoom(room.id)
-    } catch {
-      // Best-effort: the row already left the visible list above.
+      setHiddenRoomIds((current) => new Set(current).add(room.id))
+    } catch (err) {
+      if (err && typeof err === 'object' && 'code' in err && err.code === '23503') {
+        setHiddenRoomIds((current) => new Set(current).add(room.id))
+        return
+      }
+      setError(t('staff.rooms.deleteError'))
     }
   }
 
