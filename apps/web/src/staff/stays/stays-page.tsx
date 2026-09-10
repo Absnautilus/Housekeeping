@@ -172,6 +172,7 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
   const [detailsCheckIn, setDetailsCheckIn] = useState(toLocalInputValue(stay.check_in_at))
   const [detailsCheckOut, setDetailsCheckOut] = useState(toLocalInputValue(stay.check_out_at))
   const [pending, setPending] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
   const [historyOpen, setHistoryOpen] = useState(false)
   const [history, setHistory] = useState<StayRequest[] | null>(null)
@@ -196,11 +197,19 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
     }
   }
 
-  async function run(action: () => Promise<void>) {
+  // Returns whether the action actually succeeded so a caller chaining a
+  // "close the inline editor" step can skip it on failure -- the person
+  // should see the error and be able to retry, not lose what they typed.
+  async function run(action: () => Promise<void>): Promise<boolean> {
     setPending(true)
+    setActionError(null)
     try {
       await action()
       await onChanged()
+      return true
+    } catch {
+      setActionError(t('staff.stays.actionError'))
+      return false
     } finally {
       setPending(false)
     }
@@ -212,7 +221,7 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
       description: t('staff.stays.deactivateDesc', { room: stay.rooms?.room_number ?? '', name: stay.guest_last_name, pin: stay.guest_pin }),
       confirmLabel: t('staff.stays.deactivateConfirm'),
     })
-    if (ok) run(() => cancelStay(stay.id))
+    if (ok) await run(() => cancelStay(stay.id))
   }
 
   return (
@@ -273,7 +282,7 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
                         checkInAt: new Date(detailsCheckIn).toISOString(),
                         checkOutAt: new Date(detailsCheckOut).toISOString(),
                       }),
-                    ).then(() => setEditingDetails(false))
+                    ).then((ok) => { if (ok) setEditingDetails(false) })
                   }
                 >
                   {t('staff.stays.save')}
@@ -289,7 +298,7 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
               <Button
                 size="sm"
                 disabled={pending}
-                onClick={() => run(() => updateCheckout(stay.id, new Date(checkOut).toISOString())).then(() => setEditingCheckout(false))}
+                onClick={() => run(() => updateCheckout(stay.id, new Date(checkOut).toISOString())).then((ok) => { if (ok) setEditingCheckout(false) })}
               >
                 {t('staff.stays.save')}
               </Button>
@@ -307,6 +316,7 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
                 disabled={pending}
                 onClick={toggleHistory}
               />
+              <IconButton tone="neutral" icon={ChevronsRight} label={t('staff.stays.extend')} disabled={pending} onClick={() => setEditingCheckout(true)} />
               <IconButton
                 tone="neutral"
                 icon={LogOut}
@@ -314,11 +324,11 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
                 disabled={pending}
                 onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}
               />
-              <IconButton tone="neutral" icon={ChevronsRight} label={t('staff.stays.extend')} disabled={pending} onClick={() => setEditingCheckout(true)} />
               <IconButton tone="danger" icon={Power} label={t('staff.stays.deactivate')} disabled={pending} onClick={onDeactivate} />
             </div>
           )}
         </div>
+        {actionError && <p className="mt-2 text-xs font-semibold text-bad-ink" role="alert">{actionError}</p>}
 
         {historyOpen && (
           <div className="mt-3 border-t border-line pt-3">

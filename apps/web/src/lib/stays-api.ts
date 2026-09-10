@@ -48,24 +48,29 @@ export async function createStay(input: {
 }
 
 export async function updateCheckout(id: string, checkOutAt: string): Promise<void> {
-  const { error } = await supabase.from('stays').update({ check_out_at: checkOutAt }).eq('id', id)
+  const { data, error } = await supabase.from('stays').update({ check_out_at: checkOutAt }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('stay_checkout_update_not_applied')
 }
 
 export async function updateStay(
   id: string,
   input: { roomId: string; guestLastName: string; checkInAt: string; checkOutAt: string },
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('stays')
     .update({ room_id: input.roomId, guest_last_name: input.guestLastName, check_in_at: input.checkInAt, check_out_at: input.checkOutAt })
     .eq('id', id)
+    .select('id')
+    .maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('stay_update_not_applied')
 }
 
 export async function cancelStay(id: string): Promise<void> {
-  const { error } = await supabase.from('stays').update({ status: 'cancelled' }).eq('id', id)
+  const { data, error } = await supabase.from('stays').update({ status: 'cancelled' }).eq('id', id).select('id').maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('stay_cancel_not_applied')
 }
 
 export interface StayRequest {
