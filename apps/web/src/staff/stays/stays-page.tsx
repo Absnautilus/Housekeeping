@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
+import { ChevronsRight, History, LogOut, Pencil, Power } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { listRooms, type Room } from '@/lib/admin-api'
-import { cancelStay, createStay, fetchRequestsForStay, listStays, updateCheckout, type Stay, type StayRequest } from '@/lib/stays-api'
+import { cancelStay, createStay, fetchRequestsForStay, listStays, updateCheckout, updateStay, type Stay, type StayRequest } from '@/lib/stays-api'
 import { OperaImportPanel } from '@/staff/stays/opera-import-panel'
 import { AutoText } from '@/components/auto-text'
 import { formatElapsed, formatTime } from '@/lib/format'
@@ -22,13 +24,14 @@ function toLocalInputValue(iso: string): string {
 export function StaysPage({ hotelId }: { hotelId: string }) {
   const { t } = useLocale()
   const [stays, setStays] = useState<Stay[] | null>(null)
-  const [rooms, setRooms] = useState<Room[]>([])
+  const [allRooms, setAllRooms] = useState<Room[]>([])
   const [error, setError] = useState<string | null>(null)
+  const rooms = allRooms.filter((room) => room.active)
 
   async function reload() {
     const [s, r] = await Promise.all([listStays(hotelId), listRooms(hotelId)])
     setStays(s)
-    setRooms(r.filter((room) => room.active))
+    setAllRooms(r)
   }
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function StaysPage({ hotelId }: { hotelId: string }) {
         ) : stays.length === 0 ? (
           <EmptyState icon={<IconBedEmpty className="h-6 w-6" />} title={t('staff.stays.emptyTitle')} description={t('staff.stays.emptyDesc')} />
         ) : (
-          stays.map((stay) => <StayRow key={stay.id} hotelId={hotelId} stay={stay} onChanged={reload} />)
+          stays.map((stay) => <StayRow key={stay.id} hotelId={hotelId} stay={stay} rooms={allRooms} onChanged={reload} />)
         )}
       </div>
     </div>
@@ -159,14 +162,27 @@ function NewStayForm({ hotelId, rooms, onCreated }: { hotelId: string; rooms: Ro
   )
 }
 
-function StayRow({ hotelId, stay, onChanged }: { hotelId: string; stay: Stay; onChanged: () => Promise<void> }) {
+function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: Stay; rooms: Room[]; onChanged: () => Promise<void> }) {
   const { t } = useLocale()
   const [editingCheckout, setEditingCheckout] = useState(false)
   const [checkOut, setCheckOut] = useState(toLocalInputValue(stay.check_out_at))
+  const [editingDetails, setEditingDetails] = useState(false)
+  const [detailsRoomId, setDetailsRoomId] = useState(stay.room_id)
+  const [detailsGuestLastName, setDetailsGuestLastName] = useState(stay.guest_last_name)
+  const [detailsCheckIn, setDetailsCheckIn] = useState(toLocalInputValue(stay.check_in_at))
+  const [detailsCheckOut, setDetailsCheckOut] = useState(toLocalInputValue(stay.check_out_at))
   const [pending, setPending] = useState(false)
   const [confirmDialog, confirm] = useConfirm()
   const [historyOpen, setHistoryOpen] = useState(false)
   const [history, setHistory] = useState<StayRequest[] | null>(null)
+
+  function startEditingDetails() {
+    setDetailsRoomId(stay.room_id)
+    setDetailsGuestLastName(stay.guest_last_name)
+    setDetailsCheckIn(toLocalInputValue(stay.check_in_at))
+    setDetailsCheckOut(toLocalInputValue(stay.check_out_at))
+    setEditingDetails(true)
+  }
 
   async function toggleHistory() {
     if (historyOpen) {
@@ -213,7 +229,61 @@ function StayRow({ hotelId, stay, onChanged }: { hotelId: string; stay: Stay; on
               {t('staff.stays.pinLabel')} <span className="font-mono font-semibold tracking-widest text-foreground">{stay.guest_pin}</span>
             </p>
           </div>
-          {editingCheckout ? (
+          {editingDetails ? (
+            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+              <FieldGroup className="mb-0">
+                <Label htmlFor={`edit-room-${stay.id}`} required>
+                  {t('staff.stays.room')}
+                </Label>
+                <Select id={`edit-room-${stay.id}`} required value={detailsRoomId} onChange={(e) => setDetailsRoomId(e.target.value)}>
+                  {rooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.room_number}
+                    </option>
+                  ))}
+                </Select>
+              </FieldGroup>
+              <FieldGroup className="mb-0">
+                <Label htmlFor={`edit-guest-${stay.id}`} required>
+                  {t('staff.stays.guestLastName')}
+                </Label>
+                <Input id={`edit-guest-${stay.id}`} required value={detailsGuestLastName} onChange={(e) => setDetailsGuestLastName(e.target.value)} />
+              </FieldGroup>
+              <FieldGroup className="mb-0">
+                <Label htmlFor={`edit-checkin-${stay.id}`} required>
+                  {t('staff.stays.checkIn')}
+                </Label>
+                <DateTimePicker id={`edit-checkin-${stay.id}`} required value={detailsCheckIn} onChange={setDetailsCheckIn} />
+              </FieldGroup>
+              <FieldGroup className="mb-0">
+                <Label htmlFor={`edit-checkout-${stay.id}`} required>
+                  {t('staff.stays.checkOut')}
+                </Label>
+                <DateTimePicker id={`edit-checkout-${stay.id}`} required value={detailsCheckOut} onChange={setDetailsCheckOut} />
+              </FieldGroup>
+              <div className="flex items-center gap-2 sm:col-span-2">
+                <Button
+                  size="sm"
+                  disabled={pending || !detailsRoomId || !detailsGuestLastName.trim()}
+                  onClick={() =>
+                    run(() =>
+                      updateStay(stay.id, {
+                        roomId: detailsRoomId,
+                        guestLastName: detailsGuestLastName.trim(),
+                        checkInAt: new Date(detailsCheckIn).toISOString(),
+                        checkOutAt: new Date(detailsCheckOut).toISOString(),
+                      }),
+                    ).then(() => setEditingDetails(false))
+                  }
+                >
+                  {t('staff.stays.save')}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditingDetails(false)}>
+                  {t('staff.stays.cancel')}
+                </Button>
+              </div>
+            </div>
+          ) : editingCheckout ? (
             <div className="flex items-center gap-2">
               <DateTimePicker value={checkOut} onChange={setCheckOut} />
               <Button
@@ -229,18 +299,23 @@ function StayRow({ hotelId, stay, onChanged }: { hotelId: string; stay: Stay; on
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" disabled={pending} onClick={toggleHistory}>
-                {historyOpen ? t('staff.stays.hideHistory') : t('staff.stays.showHistory')}
-              </Button>
-              <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}>
-                {t('staff.stays.checkoutNow')}
-              </Button>
-              <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
-                {t('staff.stays.extend')}
-              </Button>
-              <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
-                {t('staff.stays.deactivate')}
-              </Button>
+              <IconButton tone="neutral" icon={Pencil} label={t('staff.stays.edit')} disabled={pending} onClick={startEditingDetails} />
+              <IconButton
+                tone="neutral"
+                icon={History}
+                label={historyOpen ? t('staff.stays.hideHistory') : t('staff.stays.showHistory')}
+                disabled={pending}
+                onClick={toggleHistory}
+              />
+              <IconButton
+                tone="neutral"
+                icon={LogOut}
+                label={t('staff.stays.checkoutNow')}
+                disabled={pending}
+                onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}
+              />
+              <IconButton tone="neutral" icon={ChevronsRight} label={t('staff.stays.extend')} disabled={pending} onClick={() => setEditingCheckout(true)} />
+              <IconButton tone="danger" icon={Power} label={t('staff.stays.deactivate')} disabled={pending} onClick={onDeactivate} />
             </div>
           )}
         </div>
