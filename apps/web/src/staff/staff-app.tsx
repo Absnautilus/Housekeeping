@@ -5,7 +5,7 @@ import { cancelRequest, claimRequest, fetchMyProfile } from '@/lib/staff-api'
 import { unlockAudio } from '@/lib/beep'
 import { useLocale } from '@/lib/i18n/locale-context'
 import type { StaffProfile } from '@/lib/staff-types'
-import type { HousekeepingCapabilities, PlatformStaffManagementLink } from '@/module-entry'
+import type { HousekeepingCapabilities, PlatformHotelSettings, PlatformStaffManagementLink } from '@/module-entry'
 import { StaffLogin } from '@/staff/staff-login'
 import { DashboardHeader } from '@/staff/dashboard-header'
 import { RequestQueue } from '@/staff/request-queue'
@@ -18,9 +18,10 @@ interface StaffAppProps {
   basePath?: string
   capabilities?: HousekeepingCapabilities
   platformStaffManagement?: PlatformStaffManagementLink
+  hotelSettings?: PlatformHotelSettings
 }
 
-export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/housekeeping', capabilities, platformStaffManagement }: StaffAppProps = {}) {
+export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/housekeeping', capabilities, platformStaffManagement, hotelSettings }: StaffAppProps = {}) {
   const { t } = useLocale()
   const embedded = mode === 'embedded'
   const [loading, setLoading] = useState(true)
@@ -128,7 +129,7 @@ export function StaffApp({ mode = 'standalone', expectedHotelId, basePath = '/ho
   const staysAllowed = embedded && capabilities ? capabilities.staysView : legacyStaysAllowed
 
   const queueRoute = <Route index element={<RequestQueue profile={profile} />} />
-  const staysRoute = staysAllowed ? <Route path="soggiorni" element={<StaysPage hotelId={profile.hotel_id} />} /> : null
+  const staysRoute = staysAllowed ? <Route path="soggiorni" element={<StaysPage hotelId={profile.hotel_id} hotelSettings={hotelSettings} />} /> : null
   const adminRoute = manageAllowed ? (
     <Route
       path="admin/*"

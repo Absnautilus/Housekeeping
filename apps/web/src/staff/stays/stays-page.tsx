@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronsRight, History, LogOut, Pencil, Power } from 'lucide-react'
+import type { PlatformHotelSettings } from '@/module-entry'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,18 @@ function toLocalInputValue(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export function StaysPage({ hotelId }: { hotelId: string }) {
+// Combines "days from now" with an "HH:mm" hotel-configured default into a
+// datetime-local value -- e.g. today at the configured check-in time, or
+// tomorrow at the configured check-out time, for a typical one-night stay.
+function defaultDateTimeInput(daysFromNow: number, time: string): string {
+  const [hours, minutes] = time.split(':').map(Number)
+  const d = new Date()
+  d.setDate(d.getDate() + daysFromNow)
+  d.setHours(hours || 0, minutes || 0, 0, 0)
+  return toLocalInputValue(d.toISOString())
+}
+
+export function StaysPage({ hotelId, hotelSettings }: { hotelId: string; hotelSettings?: PlatformHotelSettings }) {
   const { t } = useLocale()
   const [stays, setStays] = useState<Stay[] | null>(null)
   const [allRooms, setAllRooms] = useState<Room[]>([])
@@ -46,7 +58,7 @@ export function StaysPage({ hotelId }: { hotelId: string }) {
         <p className="text-sm text-muted">{t('staff.stays.subtitle')}</p>
       </div>
 
-      <NewStayForm hotelId={hotelId} rooms={rooms} onCreated={reload} />
+      <NewStayForm hotelId={hotelId} rooms={rooms} hotelSettings={hotelSettings} onCreated={reload} />
       <OperaImportPanel hotelId={hotelId} rooms={rooms} onImported={reload} />
 
       {error && <p className="text-sm text-bad-ink">{error}</p>}
@@ -64,12 +76,12 @@ export function StaysPage({ hotelId }: { hotelId: string }) {
   )
 }
 
-function NewStayForm({ hotelId, rooms, onCreated }: { hotelId: string; rooms: Room[]; onCreated: () => Promise<void> }) {
+function NewStayForm({ hotelId, rooms, hotelSettings, onCreated }: { hotelId: string; rooms: Room[]; hotelSettings?: PlatformHotelSettings; onCreated: () => Promise<void> }) {
   const { t } = useLocale()
   const [roomId, setRoomId] = useState('')
   const [lastName, setLastName] = useState('')
-  const [checkIn, setCheckIn] = useState('')
-  const [checkOut, setCheckOut] = useState('')
+  const [checkIn, setCheckIn] = useState(() => hotelSettings?.checkInTime ? defaultDateTimeInput(0, hotelSettings.checkInTime) : '')
+  const [checkOut, setCheckOut] = useState(() => hotelSettings?.checkOutTime ? defaultDateTimeInput(1, hotelSettings.checkOutTime) : '')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [createdPin, setCreatedPin] = useState<{ roomNumber: string; pin: string } | null>(null)
@@ -89,8 +101,8 @@ function NewStayForm({ hotelId, rooms, onCreated }: { hotelId: string; rooms: Ro
       })
       setCreatedPin({ roomNumber: stay.rooms?.room_number ?? '', pin: stay.guest_pin })
       setLastName('')
-      setCheckIn('')
-      setCheckOut('')
+      setCheckIn(hotelSettings?.checkInTime ? defaultDateTimeInput(0, hotelSettings.checkInTime) : '')
+      setCheckOut(hotelSettings?.checkOutTime ? defaultDateTimeInput(1, hotelSettings.checkOutTime) : '')
       await onCreated()
     } catch (err) {
       const ref = tenantIntegrityErrorRef(err)

@@ -21,6 +21,13 @@ export interface PlatformStaffManagementLink {
   description: string
 }
 
+export interface PlatformHotelSettings {
+  /** "HH:mm" 24h default check-in time, or null if the shell has none set. */
+  checkInTime: string | null
+  /** "HH:mm" 24h default check-out time, or null if the shell has none set. */
+  checkOutTime: string | null
+}
+
 export interface HousekeepingModuleProps {
   supabase: SupabaseClient
   hotelId: string
@@ -36,6 +43,12 @@ export interface HousekeepingModuleProps {
    * Standalone mode deliberately keeps the legacy account-management flow.
    */
   platformStaffManagement?: PlatformStaffManagementLink
+  /**
+   * Shell-owned hotel-level configuration (edited once in Hotsflow Settings,
+   * not duplicated here) -- currently just the default check-in/check-out
+   * times used to prefill a new stay's dates. Omit in standalone mode.
+   */
+  hotelSettings?: PlatformHotelSettings
 }
 
 /**
@@ -51,6 +64,7 @@ export function HousekeepingModule({
   basePath = '/housekeeping',
   capabilities,
   platformStaffManagement,
+  hotelSettings,
 }: HousekeepingModuleProps) {
   // This compatibility boundary must run before StaffApp effects or API calls
   // so integrated mode never creates Housekeeping's standalone Supabase client.
@@ -66,6 +80,7 @@ export function HousekeepingModule({
             basePath={basePath}
             capabilities={capabilities}
             platformStaffManagement={platformStaffManagement}
+            hotelSettings={hotelSettings}
           />
         </UiScaleProvider>
       </LocaleProvider>
