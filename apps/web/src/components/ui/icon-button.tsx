@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, JSX } from 'react'
+import type { ButtonHTMLAttributes, ComponentType } from 'react'
 import { cn } from '@/lib/cn'
 
 type Tone = 'neutral' | 'hintPositive' | 'hintCaution' | 'ok' | 'warning' | 'danger'
@@ -24,7 +24,7 @@ export function IconButton({
 }: {
   tone: Tone
   label: string
-  icon: (props: { className?: string }) => JSX.Element
+  icon: ComponentType<{ className?: string }>
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>) {
   return (
     <button

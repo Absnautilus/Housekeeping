@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { ChevronsRight, History, LogOut, Pencil, Power } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { EmptyState, IconBedEmpty } from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { FieldError, FieldGroup, Input, Label, Select } from '@/components/ui/field'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { listRooms, type Room } from '@/lib/admin-api'
@@ -297,21 +299,23 @@ function StayRow({ hotelId, stay, rooms, onChanged }: { hotelId: string; stay: S
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" disabled={pending} onClick={startEditingDetails}>
-                {t('staff.stays.edit')}
-              </Button>
-              <Button size="sm" variant="outline" disabled={pending} onClick={toggleHistory}>
-                {historyOpen ? t('staff.stays.hideHistory') : t('staff.stays.showHistory')}
-              </Button>
-              <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}>
-                {t('staff.stays.checkoutNow')}
-              </Button>
-              <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditingCheckout(true)}>
-                {t('staff.stays.extend')}
-              </Button>
-              <Button size="sm" variant="danger" disabled={pending} onClick={onDeactivate}>
-                {t('staff.stays.deactivate')}
-              </Button>
+              <IconButton tone="neutral" icon={Pencil} label={t('staff.stays.edit')} disabled={pending} onClick={startEditingDetails} />
+              <IconButton
+                tone="neutral"
+                icon={History}
+                label={historyOpen ? t('staff.stays.hideHistory') : t('staff.stays.showHistory')}
+                disabled={pending}
+                onClick={toggleHistory}
+              />
+              <IconButton
+                tone="neutral"
+                icon={LogOut}
+                label={t('staff.stays.checkoutNow')}
+                disabled={pending}
+                onClick={() => run(() => updateCheckout(stay.id, new Date().toISOString()))}
+              />
+              <IconButton tone="neutral" icon={ChevronsRight} label={t('staff.stays.extend')} disabled={pending} onClick={() => setEditingCheckout(true)} />
+              <IconButton tone="danger" icon={Power} label={t('staff.stays.deactivate')} disabled={pending} onClick={onDeactivate} />
             </div>
           )}
         </div>
