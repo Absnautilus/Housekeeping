@@ -1,0 +1,119 @@
+name: One-off encrypted Housekeeping database backup
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_project_ref:
+        description: "Type bqurkxmkqviewzbndldh"
+        required: true
+        type: string
+      confirm_export:
+        description: "Type EXPORT"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    if: ${{ inputs.confirm_project_ref == 'bqurkxmkqviewzbndldh' && inputs.confirm_export == 'EXPORT' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the source snapshot
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validate required secrets
+        env:
+          DB_PASSWORD: ${{ secrets.HOUSEKEEPING_DB_PASSWORD }}
+          ARCHIVE_PASSWORD: ${{ secrets.HOUSEKEEPING_BACKUP_ENCRYPTION_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$DB_PASSWORD" || {
+            echo "::error::Missing HOUSEKEEPING_DB_PASSWORD"
+            exit 1
+          }
+          test -n "$ARCHIVE_PASSWORD" || {
+            echo "::error::Missing HOUSEKEEPING_BACKUP_ENCRYPTION_PASSWORD"
+            exit 1
+          }
+
+      - name: Build protected connection string
+        env:
+          DB_PASSWORD: ${{ secrets.HOUSEKEEPING_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import os
+          from urllib.parse import quote
+
+          password = quote(os.environ["DB_PASSWORD"], safe="")
+          print(
+              "HOUSEKEEPING_DB_URL="
+              "postgresql://postgres.bqurkxmkqviewzbndldh:"
+              f"{password}@"
+              "aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
+          )
+          PY
+
+      - name: Create Supabase logical dump
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          supabase db dump             --db-url "$HOUSEKEEPING_DB_URL"             -f backup/roles.sql             --role-only
+          supabase db dump             --db-url "$HOUSEKEEPING_DB_URL"             -f backup/schema.sql
+          supabase db dump             --db-url "$HOUSEKEEPING_DB_URL"             -f backup/data.sql             --use-copy             --data-only             -x "storage.buckets_vectors"             -x "storage.vector_indexes"
+
+      - name: Add recovery metadata
+        run: |
+          set -euo pipefail
+          {
+            echo "Project: Housekeeping"
+            echo "Project ref: bqurkxmkqviewzbndldh"
+            echo "Repository: ${GITHUB_REPOSITORY}"
+            echo "Source commit: ${GITHUB_SHA}"
+            echo "Workflow run: ${GITHUB_RUN_ID}"
+            echo "Created UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo
+            echo "Contents:"
+            echo "- roles.sql"
+            echo "- schema.sql"
+            echo "- data.sql"
+            echo
+            echo "Storage objects were previously verified as empty."
+            echo "Edge Functions and platform settings are not contained in the SQL dump."
+          } > backup/README.txt
+
+      - name: Encrypt the backup
+        env:
+          ARCHIVE_PASSWORD: ${{ secrets.HOUSEKEEPING_BACKUP_ENCRYPTION_PASSWORD }}
+        run: |
+          set -euo pipefail
+          tar -C backup -czf housekeeping-backup.tar.gz .
+          openssl enc             -aes-256-cbc             -salt             -pbkdf2             -iter 200000             -md sha256             -pass env:ARCHIVE_PASSWORD             -in housekeeping-backup.tar.gz             -out housekeeping-backup.tar.gz.enc
+          sha256sum housekeeping-backup.tar.gz.enc             > housekeeping-backup.tar.gz.enc.sha256
+
+      - name: Upload encrypted artifact only
+        uses: actions/upload-artifact@v4
+        with:
+          name: housekeeping-db-backup-${{ github.run_id }}
+          path: |
+            housekeeping-backup.tar.gz.enc
+            housekeeping-backup.tar.gz.enc.sha256
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Remove plaintext material
+        if: always()
+        run: |
+          find backup -type f -exec shred -u {} + 2>/dev/null || true
+          rm -rf backup
+          rm -f housekeeping-backup.tar.gz
