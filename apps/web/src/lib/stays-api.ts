@@ -52,6 +52,17 @@ export async function updateCheckout(id: string, checkOutAt: string): Promise<vo
   if (error) throw error
 }
 
+export async function updateStay(
+  id: string,
+  input: { roomId: string; guestLastName: string; checkInAt: string; checkOutAt: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('stays')
+    .update({ room_id: input.roomId, guest_last_name: input.guestLastName, check_in_at: input.checkInAt, check_out_at: input.checkOutAt })
+    .eq('id', id)
+  if (error) throw error
+}
+
 export async function cancelStay(id: string): Promise<void> {
   const { error } = await supabase.from('stays').update({ status: 'cancelled' }).eq('id', id)
   if (error) throw error
