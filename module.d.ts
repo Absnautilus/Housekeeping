@@ -12,12 +12,18 @@ export interface PlatformStaffManagementLink {
   description: string
 }
 
+export interface PlatformHotelSettings {
+  checkInTime: string | null
+  checkOutTime: string | null
+}
+
 export interface HousekeepingModuleProps {
   supabase: SupabaseClient
   hotelId: string
   basePath?: string
   capabilities?: HousekeepingCapabilities
   platformStaffManagement?: PlatformStaffManagementLink
+  hotelSettings?: PlatformHotelSettings
 }
 
 export declare function HousekeepingModule(props: HousekeepingModuleProps): JSX.Element
